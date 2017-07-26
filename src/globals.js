@@ -53,6 +53,12 @@ function setDebug (value) {
 
 const WebglErrorMessage = '<div style="display:flex;align-items:center;justify-content:center;height:100%;"><p style="padding:15px;text-align:center;">Your browser/graphics card does not seem to support <a target="_blank" href="https://en.wikipedia.org/wiki/WebGL">WebGL</a>.<br/><br/>Find out how to get it <a target="_blank" href="http://get.webgl.org/">here</a>.</p></div>'
 
+/**
+ * List of file extensions to be recognized as scripts
+ * @type {String[]}
+ */
+const ScriptExtensions = [ 'ngl', 'js' ]
+
 const WorkerRegistry = new _WorkerRegistry()
 /**
  * Global instance of {@link src/color/colormaker-registry.js~ColormakerRegistry}
@@ -65,6 +71,8 @@ const ParserRegistry = new _ParserRegistry()
 const ShaderRegistry = new Registry('shader')
 const DecompressorRegistry = new Registry('decompressor')
 const ComponentRegistry = new Registry('component')
+const BufferRegistry = new Registry('buffer')
+const PickerRegistry = new Registry('picker')
 
 export {
     Browser,
@@ -77,6 +85,7 @@ export {
     Debug,
     setDebug,
     WebglErrorMessage,
+    ScriptExtensions,
     WorkerRegistry,
     ColormakerRegistry,
     DatasourceRegistry,
@@ -84,5 +93,7 @@ export {
     ParserRegistry,
     ShaderRegistry,
     DecompressorRegistry,
-    ComponentRegistry
+    ComponentRegistry,
+    BufferRegistry,
+    PickerRegistry
 }

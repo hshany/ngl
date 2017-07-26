@@ -9,9 +9,9 @@ import { Color, CanvasTexture } from '../../lib/three.es6.js'
 import '../shader/SDFFont.vert'
 import '../shader/SDFFont.frag'
 
-import { Browser } from '../globals.js'
+import { Browser, BufferRegistry } from '../globals.js'
 import { defaults } from '../utils.js'
-import QuadBuffer from './quad-buffer.js'
+import MappedQuadBuffer from './mappedquad-buffer.js'
 import { IgnorePicker } from '../utils/picker.js'
 
 const TextAtlasCache = {}
@@ -291,7 +291,7 @@ class TextAtlas {
  *     text: [ "Hello" ]
  * } );
  */
-class TextBuffer extends QuadBuffer {
+class TextBuffer extends MappedQuadBuffer {
     /**
      * @param  {Object} data - attribute object
      * @param  {Float32Array} data.position - positions
@@ -615,5 +615,7 @@ class TextBuffer extends QuadBuffer {
   get vertexShader () { return 'SDFFont.vert' }
   get fragmentShader () { return 'SDFFont.frag' }
 }
+
+BufferRegistry.add('text', TextBuffer)
 
 export default TextBuffer

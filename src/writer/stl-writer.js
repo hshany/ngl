@@ -4,7 +4,10 @@
  * @private
  */
 
+import { Vector3 } from '../../lib/three.es6.js'
+
 import Writer from './writer.js'
+import IOBuffer from '../utils/io-buffer.js'
 
 // https://en.wikipedia.org/wiki/STL_(file_format)#ASCII_STL
 
@@ -12,13 +15,15 @@ import Writer from './writer.js'
  * Create an STL File from a surface Object (e.g. for 3D printing)
  *
  * @example
- * molsurf = new NGL.MolecularSurface(structure)
- * surf = molsurf.getSurface({type: ‘av’, probeRadius: 1.4})
- * stl = new NGL.StlWriter(surf)
- * stl.download(‘my_file_name’)
- * @class StlWriter
+ * molsurf = new MolecularSurface(structure)
+ * surf = molsurf.getSurface({type: 'av', probeRadius: 1.4})
+ * stl = new StlWriter(surf)
+ * stl.download('myFileName')
  */
 class StlWriter extends Writer {
+  /**
+   * @param {Surface} surface - the surface to write out
+   */
   constructor (surface) {
     super()
 
@@ -26,60 +31,61 @@ class StlWriter extends Writer {
     this._records = []
   }
 
-  get mimeType () { return 'text/plain' }
+  get mimeType () { return 'application/vnd.ms-pki.stl' }
   get defaultName () { return 'surface' }
   get defaultExt () { return 'stl' }
 
-  _writeRecords () {
-    this._records.length = 0
-
-    this._writeHeader()
-    this._writeFacets()
-    this._writeFooter()
-  }
-
-  _avgNormal (normals, vertIndices) {
-    let v = []
-    for (let i = 0; i < 3; i++) {
-      v[i] = (normals[vertIndices[0] * 3 + i] + normals[vertIndices[1] * 3 + i] + normals[vertIndices[2] * 3 + i]) / 3
-    }
-    return v
-  }
-
-  _writeHeader () {
-    this._records.push('solid surface')
-  }
-
-  _writeFooter () {
-    this._records.push('endsolid surface')
-  }
-
-  _writeLoop (vertices) {
-    this._records.push('outer loop')
-    for (let i = 0; i < 3; i++) {
-      this._records.push(`    vertex ${this.surface.position[vertices[i] * 3]} ${this.surface.position[vertices[i] * 3 + 1]} ${this.surface.position[vertices[i] * 3 + 2]}`)
-    }
-    this._records.push('outer loop')
-  }
-
-  _writeFacets () {
-    for (let i = 0; i < this.surface.index.length / 3; i++) {
-      let vert1Index = this.surface.index[i * 3]
-      let vert2Index = this.surface.index[i * 3 + 1]
-      let vert3Index = this.surface.index[i * 3 + 2]
-
-      let facetNormal = this._avgNormal(this.surface.normal, [vert1Index, vert2Index, vert3Index])
-      this._records.push(`facet normal ${facetNormal[0]} ${facetNormal[1]} ${facetNormal[2]}`)
-
-      this._writeLoop([vert1Index, vert2Index, vert3Index])
-
-      this._records.push('endfacet')
-    }
-  }
-
+  /*
+   * Get STL Binary data
+   *
+   * Adapted from: https://github.com/mrdoob/three.js/blob/master/examples/js/exporters/STLBinaryExporter.js
+   * see https://en.wikipedia.org/wiki/STL_(file_format)#Binary_STL for the file format description
+   *
+   * @return {DataView} the data
+   */
   getData () {
-    this._writeRecords()
-    return this._records.join('\n')
+    const triangles = this.surface.index.length / 3
+    const bufferLength = triangles * 2 + triangles * 3 * 4 * 4 + 80 + 4
+    const output = new IOBuffer(bufferLength)
+
+    output.skip(80)  // skip header
+    output.writeUint32(triangles)
+
+    const vector = new Vector3()
+    const vectorNorm1 = new Vector3()
+    const vectorNorm2 = new Vector3()
+    const vectorNorm3 = new Vector3()
+
+    // traversing vertices
+    for (let i = 0; i < triangles; i++) {
+      const indices = [
+        this.surface.index[i * 3],
+        this.surface.index[i * 3 + 1],
+        this.surface.index[i * 3 + 2]
+      ]
+
+      vectorNorm1.fromArray(this.surface.normal, indices[0] * 3)
+      vectorNorm2.fromArray(this.surface.normal, indices[1] * 3)
+      vectorNorm3.fromArray(this.surface.normal, indices[2] * 3)
+
+      vector.addVectors(vectorNorm1, vectorNorm2).add(vectorNorm3).normalize()
+
+      output.writeFloat32(vector.x)
+      output.writeFloat32(vector.y)
+      output.writeFloat32(vector.z)
+
+      for (let j = 0; j < 3; j++) {
+        vector.fromArray(this.surface.position, indices[j] * 3)
+
+        output.writeFloat32(vector.x)  // vertices
+        output.writeFloat32(vector.y)
+        output.writeFloat32(vector.z)
+      }
+
+      output.writeUint16(0)  // attribute byte count
+    }
+
+    return new DataView(output.buffer)
   }
 }
 

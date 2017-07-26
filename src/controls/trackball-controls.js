@@ -16,6 +16,7 @@ const tmpRotateVector = new Vector3()
 const tmpRotateQuaternion = new Quaternion()
 const tmpPanMatrix = new Matrix4()
 const tmpPanVector = new Vector3()
+const tmpAtomVector = new Vector3()
 
 /**
  * Trackball controls
@@ -38,15 +39,22 @@ class TrackballControls {
     return this.stage.transformComponent
   }
 
-  _setPanVector (x, y) {
+  get atom () {
+    return this.stage.transformAtom
+  }
+
+  _setPanVector (x, y, z) {
     let scaleFactor
     const camera = this.viewer.camera
+
+    z = -z || 0
+    z += camera.position.z
 
     if (camera.type === 'OrthographicCamera') {
       scaleFactor = 1 / camera.zoom
     } else {
       const fov = degToRad(camera.fov)
-      const unitHeight = -2.0 * camera.position.z * Math.tan(fov / 2)
+      const unitHeight = -2.0 * z * Math.tan(fov / 2)
       scaleFactor = unitHeight / this.viewer.height
     }
 
@@ -59,6 +67,13 @@ class TrackballControls {
       this.rotateSpeed * -x * 0.01,
       this.rotateSpeed * y * 0.01
     ]
+  }
+
+  _transformPanVector () {
+    tmpPanMatrix.extractRotation(this.component.transform)
+    tmpPanMatrix.premultiply(this.viewer.rotationGroup.matrix)
+    tmpPanMatrix.getInverse(tmpPanMatrix)
+    tmpPanVector.applyMatrix4(tmpPanMatrix)
   }
 
   zoom (delta) {
@@ -77,13 +92,24 @@ class TrackballControls {
     if (!this.component) return
 
     this._setPanVector(x, y)
+    this._transformPanVector()
 
-    tmpPanMatrix.extractRotation(this.component.transform)
-    tmpPanMatrix.premultiply(this.viewer.rotationGroup.matrix)
-    tmpPanMatrix.getInverse(tmpPanMatrix)
-    tmpPanVector.applyMatrix4(tmpPanMatrix)
     this.component.position.add(tmpPanVector)
     this.component.updateMatrix()
+  }
+
+  panAtom (x, y) {
+    if (!this.atom || !this.component) return
+
+    this.atom.positionToVector3(tmpAtomVector)
+    tmpAtomVector.add(this.viewer.translationGroup.position)
+    tmpAtomVector.applyMatrix4(this.viewer.rotationGroup.matrix)
+
+    this._setPanVector(x, y, tmpAtomVector.z)
+    this._transformPanVector()
+
+    this.atom.positionAdd(tmpPanVector)
+    this.component.updateRepresentations({ 'position': true })
   }
 
   rotate (x, y) {

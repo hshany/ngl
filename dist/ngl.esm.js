@@ -42855,7 +42855,7 @@ AudioAnalyser.prototype.getData = function () {
 function getQuery (id) {
   if (typeof window === 'undefined') { return undefined }
 
-  var a = new RegExp(id + '=([^&#=]*)');
+  var a = new RegExp((id + "=([^&#=]*)"));
   var m = a.exec(window.location.search);
 
   if (m) {
@@ -42990,7 +42990,7 @@ function download (data, downloadName) {
 }
 
 function getFileInfo (file) {
-  var compressedExtList = [ 'gz' ];
+  var compressedExtList = DecompressorRegistry.names;
 
   var path, compressed, protocol;
 
@@ -46735,7 +46735,7 @@ Colormaker.prototype.positionColorToArray = function positionColorToArray (coord
     };
 
 /**
- * @file Selection
+ * @file Selection Constants
  * @author Alexander Rose <alexander.rose@weirdbyte.de>
  * @private
  */
@@ -46784,208 +46784,23 @@ var NonpolarResname = [ 'ALA', 'ILE', 'LEU', 'MET', 'PHE', 'PRO', 'TRP', 'VAL' ]
 var CyclicResname = [ 'HIS', 'PHE', 'PRO', 'TRP', 'TYR' ];
 var AliphaticResname = [ 'ALA', 'GLY', 'ILE', 'LEU', 'VAL' ];
 
-function atomTestFn (a, s) {
-  // returning -1 means the rule is not applicable
-  if (s.atomname === undefined && s.element === undefined &&
-    s.altloc === undefined && s.atomindex === undefined &&
-    s.keyword === undefined && s.inscode === undefined &&
-    s.resname === undefined && s.sstruc === undefined &&
-    s.resno === undefined && s.chainname === undefined &&
-    s.model === undefined
-  ) { return -1 }
-
-  if (s.keyword !== undefined) {
-    if (s.keyword === kwd.BACKBONE && !a.isBackbone()) { return false }
-    if (s.keyword === kwd.SIDECHAIN && !a.isSidechain()) { return false }
-    if (s.keyword === kwd.BONDED && !a.isBonded()) { return false }
-    if (s.keyword === kwd.RING && !a.isRing()) { return false }
-
-    if (s.keyword === kwd.HETERO && !a.isHetero()) { return false }
-    if (s.keyword === kwd.PROTEIN && !a.isProtein()) { return false }
-    if (s.keyword === kwd.NUCLEIC && !a.isNucleic()) { return false }
-    if (s.keyword === kwd.RNA && !a.isRna()) { return false }
-    if (s.keyword === kwd.DNA && !a.isDna()) { return false }
-    if (s.keyword === kwd.POLYMER && !a.isPolymer()) { return false }
-    if (s.keyword === kwd.WATER && !a.isWater()) { return false }
-    if (s.keyword === kwd.HELIX && !a.isHelix()) { return false }
-    if (s.keyword === kwd.SHEET && !a.isSheet()) { return false }
-    if (s.keyword === kwd.TURN && !a.isTurn()) { return false }
-    if (s.keyword === kwd.ION && !a.isIon()) { return false }
-    if (s.keyword === kwd.SACCHARIDE && !a.isSaccharide()) { return false }
-  }
-
-  if (s.atomname !== undefined && s.atomname !== a.atomname) { return false }
-  if (s.element !== undefined && s.element !== a.element) { return false }
-  if (s.altloc !== undefined && s.altloc !== a.altloc) { return false }
-
-  if (s.atomindex !== undefined &&
-      binarySearchIndexOf(s.atomindex, a.index) < 0
-  ) { return false }
-
-  if (s.resname !== undefined) {
-    if (Array.isArray(s.resname)) {
-      if (!s.resname.includes(a.resname)) { return false }
-    } else {
-      if (s.resname !== a.resname) { return false }
-    }
-  }
-  if (s.sstruc !== undefined && s.sstruc !== a.sstruc) { return false }
-  if (s.resno !== undefined) {
-    if (Array.isArray(s.resno) && s.resno.length === 2) {
-      if (s.resno[0] > a.resno || s.resno[1] < a.resno) { return false }
-    } else {
-      if (s.resno !== a.resno) { return false }
-    }
-  }
-  if (s.inscode !== undefined && s.inscode !== a.inscode) { return false }
-
-  if (s.chainname !== undefined && s.chainname !== a.chainname) { return false }
-  if (s.model !== undefined && s.model !== a.modelIndex) { return false }
-
-  return true
-}
-
-function residueTestFn (r, s) {
-  // returning -1 means the rule is not applicable
-  if (s.resname === undefined && s.resno === undefined && s.inscode === undefined &&
-      s.sstruc === undefined && s.model === undefined && s.chainname === undefined &&
-      s.atomindex === undefined &&
-      (s.keyword === undefined || AtomOnlyKeywords.includes(s.keyword))
-  ) { return -1 }
-
-  if (s.keyword !== undefined) {
-    if (s.keyword === kwd.HETERO && !r.isHetero()) { return false }
-    if (s.keyword === kwd.PROTEIN && !r.isProtein()) { return false }
-    if (s.keyword === kwd.NUCLEIC && !r.isNucleic()) { return false }
-    if (s.keyword === kwd.RNA && !r.isRna()) { return false }
-    if (s.keyword === kwd.DNA && !r.isDna()) { return false }
-    if (s.keyword === kwd.POLYMER && !r.isPolymer()) { return false }
-    if (s.keyword === kwd.WATER && !r.isWater()) { return false }
-    if (s.keyword === kwd.HELIX && !r.isHelix()) { return false }
-    if (s.keyword === kwd.SHEET && !r.isSheet()) { return false }
-    if (s.keyword === kwd.TURN && !r.isTurn()) { return false }
-    if (s.keyword === kwd.ION && !r.isIon()) { return false }
-    if (s.keyword === kwd.SACCHARIDE && !r.isSaccharide()) { return false }
-  }
-
-  if (s.atomindex !== undefined &&
-      rangeInSortedArray(s.atomindex, r.atomOffset, r.atomEnd) === 0
-  ) { return false }
-
-  if (s.resname !== undefined) {
-    if (Array.isArray(s.resname)) {
-      if (!s.resname.includes(r.resname)) { return false }
-    } else {
-      if (s.resname !== r.resname) { return false }
-    }
-  }
-  if (s.sstruc !== undefined && s.sstruc !== r.sstruc) { return false }
-  if (s.resno !== undefined) {
-    if (Array.isArray(s.resno) && s.resno.length === 2) {
-      if (s.resno[0] > r.resno || s.resno[1] < r.resno) { return false }
-    } else {
-      if (s.resno !== r.resno) { return false }
-    }
-  }
-  if (s.inscode !== undefined && s.inscode !== r.inscode) { return false }
-
-  if (s.chainname !== undefined && s.chainname !== r.chainname) { return false }
-  if (s.model !== undefined && s.model !== r.modelIndex) { return false }
-
-  return true
-}
-
-function chainTestFn (c, s) {
-  // returning -1 means the rule is not applicable
-  if (s.chainname === undefined && s.model === undefined && s.atomindex === undefined &&
-      (s.keyword === undefined || !ChainKeywords.includes(s.keyword) || !c.entity)
-  ) { return -1 }
-
-  if (s.keyword !== undefined) {
-    if (s.keyword === kwd.POLYMER && !c.entity.isPolymer()) { return false }
-    if (s.keyword === kwd.WATER && !c.entity.isWater()) { return false }
-  }
-
-  if (s.atomindex !== undefined &&
-      rangeInSortedArray(s.atomindex, c.atomOffset, c.atomEnd) === 0
-  ) { return false }
-
-  if (s.chainname !== undefined && s.chainname !== c.chainname) { return false }
-
-  if (s.model !== undefined && s.model !== c.modelIndex) { return false }
-
-  return true
-}
-
-function modelTestFn (m, s) {
-  // returning -1 means the rule is not applicable
-  if (s.model === undefined && s.atomindex === undefined) { return -1 }
-
-  if (s.atomindex !== undefined &&
-      rangeInSortedArray(s.atomindex, m.atomOffset, m.atomEnd) === 0
-  ) { return false }
-
-  if (s.model !== undefined && s.model !== m.index) { return false }
-
-  return true
-}
-
 /**
- * Selection
+ * @file Selection Parser
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
  */
-var Selection = function Selection (string) {
-  this.signals = {
-    stringChanged: new Signal()
-  };
 
-  this.setString(string);
-};
-
-var prototypeAccessors$1 = { type: {} };
-
-prototypeAccessors$1.type.get = function () { return 'selection' };
-
-Selection.prototype.setString = function setString (string, silent) {
-  if (string === undefined) { string = this.string || ''; }
-  if (string === this.string) { return }
-
-    //
-
-  try {
-    this.parse(string);
-  } catch (e) {
-    // Log.error( e.stack );
-    this.selection = { 'error': e.message };
-  }
-
-  this.string = string;
-
-  this.test = this.makeAtomTest();
-  this.residueTest = this.makeResidueTest();
-  this.chainTest = this.makeChainTest();
-  this.modelTest = this.makeModelTest();
-
-  this.atomOnlyTest = this.makeAtomTest(true);
-  this.residueOnlyTest = this.makeResidueTest(true);
-  this.chainOnlyTest = this.makeChainTest(true);
-  this.modelOnlyTest = this.makeModelTest(true);
-
-  if (!silent) {
-    this.signals.stringChanged.dispatch(this.string);
-  }
-};
-
-Selection.prototype.parse = function parse (string) {
-    var this$1 = this;
-
-  this.selection = {
+function parseSele (string) {
+  var retSelection = {
     operator: undefined,
     rules: []
   };
 
-  if (!string) { return }
+  if (!string) {
+    return retSelection
+  }
 
-  var selection = this.selection;
+  var selection = retSelection;
   var newSelection, oldSelection;
   var selectionStack = [];
 
@@ -47004,7 +46819,7 @@ Selection.prototype.parse = function parse (string) {
     };
     if (selection === undefined) {
       selection = newSelection;
-      this$1.selection = newSelection;
+      retSelection = newSelection;
     } else {
       selection.rules.push(newSelection);
       selectionStack.push(selection);
@@ -47410,18 +47225,169 @@ Selection.prototype.parse = function parse (string) {
   // cleanup
 
   if (
-    this.selection.operator === undefined &&
-    this.selection.rules.length === 1 &&
-    this.selection.rules[ 0 ].hasOwnProperty('operator')
+    retSelection.operator === undefined &&
+    retSelection.rules.length === 1 &&
+    retSelection.rules[ 0 ].hasOwnProperty('operator')
   ) {
-    this.selection = this.selection.rules[ 0 ];
+    retSelection = retSelection.rules[ 0 ];
   }
-};
 
-Selection.prototype._makeTest = function _makeTest (fn, selection) {
-    var this$1 = this;
+  return retSelection
+}
 
-  if (selection === undefined) { selection = this.selection; }
+/**
+ * @file Selection Test
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+function atomTestFn (a, s) {
+  // returning -1 means the rule is not applicable
+  if (s.atomname === undefined && s.element === undefined &&
+    s.altloc === undefined && s.atomindex === undefined &&
+    s.keyword === undefined && s.inscode === undefined &&
+    s.resname === undefined && s.sstruc === undefined &&
+    s.resno === undefined && s.chainname === undefined &&
+    s.model === undefined
+  ) { return -1 }
+
+  if (s.keyword !== undefined) {
+    if (s.keyword === kwd.BACKBONE && !a.isBackbone()) { return false }
+    if (s.keyword === kwd.SIDECHAIN && !a.isSidechain()) { return false }
+    if (s.keyword === kwd.BONDED && !a.isBonded()) { return false }
+    if (s.keyword === kwd.RING && !a.isRing()) { return false }
+
+    if (s.keyword === kwd.HETERO && !a.isHetero()) { return false }
+    if (s.keyword === kwd.PROTEIN && !a.isProtein()) { return false }
+    if (s.keyword === kwd.NUCLEIC && !a.isNucleic()) { return false }
+    if (s.keyword === kwd.RNA && !a.isRna()) { return false }
+    if (s.keyword === kwd.DNA && !a.isDna()) { return false }
+    if (s.keyword === kwd.POLYMER && !a.isPolymer()) { return false }
+    if (s.keyword === kwd.WATER && !a.isWater()) { return false }
+    if (s.keyword === kwd.HELIX && !a.isHelix()) { return false }
+    if (s.keyword === kwd.SHEET && !a.isSheet()) { return false }
+    if (s.keyword === kwd.TURN && !a.isTurn()) { return false }
+    if (s.keyword === kwd.ION && !a.isIon()) { return false }
+    if (s.keyword === kwd.SACCHARIDE && !a.isSaccharide()) { return false }
+  }
+
+  if (s.atomname !== undefined && s.atomname !== a.atomname) { return false }
+  if (s.element !== undefined && s.element !== a.element) { return false }
+  if (s.altloc !== undefined && s.altloc !== a.altloc) { return false }
+
+  if (s.atomindex !== undefined &&
+      binarySearchIndexOf(s.atomindex, a.index) < 0
+  ) { return false }
+
+  if (s.resname !== undefined) {
+    if (Array.isArray(s.resname)) {
+      if (!s.resname.includes(a.resname)) { return false }
+    } else {
+      if (s.resname !== a.resname) { return false }
+    }
+  }
+  if (s.sstruc !== undefined && s.sstruc !== a.sstruc) { return false }
+  if (s.resno !== undefined) {
+    if (Array.isArray(s.resno) && s.resno.length === 2) {
+      if (s.resno[0] > a.resno || s.resno[1] < a.resno) { return false }
+    } else {
+      if (s.resno !== a.resno) { return false }
+    }
+  }
+  if (s.inscode !== undefined && s.inscode !== a.inscode) { return false }
+
+  if (s.chainname !== undefined && s.chainname !== a.chainname) { return false }
+  if (s.model !== undefined && s.model !== a.modelIndex) { return false }
+
+  return true
+}
+
+function residueTestFn (r, s) {
+  // returning -1 means the rule is not applicable
+  if (s.resname === undefined && s.resno === undefined && s.inscode === undefined &&
+      s.sstruc === undefined && s.model === undefined && s.chainname === undefined &&
+      s.atomindex === undefined &&
+      (s.keyword === undefined || AtomOnlyKeywords.includes(s.keyword))
+  ) { return -1 }
+
+  if (s.keyword !== undefined) {
+    if (s.keyword === kwd.HETERO && !r.isHetero()) { return false }
+    if (s.keyword === kwd.PROTEIN && !r.isProtein()) { return false }
+    if (s.keyword === kwd.NUCLEIC && !r.isNucleic()) { return false }
+    if (s.keyword === kwd.RNA && !r.isRna()) { return false }
+    if (s.keyword === kwd.DNA && !r.isDna()) { return false }
+    if (s.keyword === kwd.POLYMER && !r.isPolymer()) { return false }
+    if (s.keyword === kwd.WATER && !r.isWater()) { return false }
+    if (s.keyword === kwd.HELIX && !r.isHelix()) { return false }
+    if (s.keyword === kwd.SHEET && !r.isSheet()) { return false }
+    if (s.keyword === kwd.TURN && !r.isTurn()) { return false }
+    if (s.keyword === kwd.ION && !r.isIon()) { return false }
+    if (s.keyword === kwd.SACCHARIDE && !r.isSaccharide()) { return false }
+  }
+
+  if (s.atomindex !== undefined &&
+      rangeInSortedArray(s.atomindex, r.atomOffset, r.atomEnd) === 0
+  ) { return false }
+
+  if (s.resname !== undefined) {
+    if (Array.isArray(s.resname)) {
+      if (!s.resname.includes(r.resname)) { return false }
+    } else {
+      if (s.resname !== r.resname) { return false }
+    }
+  }
+  if (s.sstruc !== undefined && s.sstruc !== r.sstruc) { return false }
+  if (s.resno !== undefined) {
+    if (Array.isArray(s.resno) && s.resno.length === 2) {
+      if (s.resno[0] > r.resno || s.resno[1] < r.resno) { return false }
+    } else {
+      if (s.resno !== r.resno) { return false }
+    }
+  }
+  if (s.inscode !== undefined && s.inscode !== r.inscode) { return false }
+
+  if (s.chainname !== undefined && s.chainname !== r.chainname) { return false }
+  if (s.model !== undefined && s.model !== r.modelIndex) { return false }
+
+  return true
+}
+
+function chainTestFn (c, s) {
+  // returning -1 means the rule is not applicable
+  if (s.chainname === undefined && s.model === undefined && s.atomindex === undefined &&
+      (s.keyword === undefined || !ChainKeywords.includes(s.keyword) || !c.entity)
+  ) { return -1 }
+
+  if (s.keyword !== undefined) {
+    if (s.keyword === kwd.POLYMER && !c.entity.isPolymer()) { return false }
+    if (s.keyword === kwd.WATER && !c.entity.isWater()) { return false }
+  }
+
+  if (s.atomindex !== undefined &&
+      rangeInSortedArray(s.atomindex, c.atomOffset, c.atomEnd) === 0
+  ) { return false }
+
+  if (s.chainname !== undefined && s.chainname !== c.chainname) { return false }
+
+  if (s.model !== undefined && s.model !== c.modelIndex) { return false }
+
+  return true
+}
+
+function modelTestFn (m, s) {
+  // returning -1 means the rule is not applicable
+  if (s.model === undefined && s.atomindex === undefined) { return -1 }
+
+  if (s.atomindex !== undefined &&
+      rangeInSortedArray(s.atomindex, m.atomOffset, m.atomEnd) === 0
+  ) { return false }
+
+  if (s.model !== undefined && s.model !== m.index) { return false }
+
+  return true
+}
+
+function makeTest (selection, fn) {
   if (selection === null) { return false }
   if (selection.error) { return false }
 
@@ -47435,7 +47401,7 @@ Selection.prototype._makeTest = function _makeTest (fn, selection) {
   for (var i = 0; i < n; ++i) {
     var s = selection.rules[ i ];
     if (s.hasOwnProperty('operator')) {
-      subTests[ i ] = this$1._makeTest(fn, s);
+      subTests[ i ] = makeTest(s, fn);
     }
   }
 
@@ -47492,12 +47458,9 @@ Selection.prototype._makeTest = function _makeTest (fn, selection) {
       if (and) { return t } else { return f }
     }
   }
-};
+}
 
-Selection.prototype._filter = function _filter (fn, selection) {
-    var this$1 = this;
-
-  if (selection === undefined) { selection = this.selection; }
+function filter (selection, fn) {
   if (selection.error) { return selection }
 
   var n = selection.rules.length;
@@ -47514,7 +47477,7 @@ Selection.prototype._filter = function _filter (fn, selection) {
   for (var i = 0; i < n; ++i) {
     var s = selection.rules[ i ];
     if (s.hasOwnProperty('operator')) {
-      var fs = this$1._filter(fn, s);
+      var fs = filter(s, fn);
       if (fs !== null) { filtered.rules.push(fs); }
     } else if (!fn(s)) {
       filtered.rules.push(s);
@@ -47531,15 +47494,11 @@ Selection.prototype._filter = function _filter (fn, selection) {
   } else {
     return null
   }
-};
+}
 
-Selection.prototype.makeAtomTest = function makeAtomTest (atomOnly) {
-  var selection;
-
+function makeAtomTest (selection, atomOnly) {
   if (atomOnly) {
-    // console.log( this.selection )
-
-    selection = this._filter(function (s) {
+    selection = filter(selection, function (s) {
       if (s.keyword !== undefined && !AtomOnlyKeywords.includes(s.keyword)) { return true }
       if (s.model !== undefined) { return true }
       if (s.chainname !== undefined) { return true }
@@ -47548,20 +47507,13 @@ Selection.prototype.makeAtomTest = function makeAtomTest (atomOnly) {
       if (s.sstruc !== undefined) { return true }
       return false
     });
-  } else {
-    selection = this.selection;
   }
+  return makeTest(selection, atomTestFn)
+}
 
-  return this._makeTest(atomTestFn, selection)
-};
-
-Selection.prototype.makeResidueTest = function makeResidueTest (residueOnly) {
-  var selection;
-
+function makeResidueTest (selection, residueOnly) {
   if (residueOnly) {
-    // console.log( this.selection )
-
-    selection = this._filter(function (s) {
+    selection = filter(selection, function (s) {
       if (s.keyword !== undefined && AtomOnlyKeywords.includes(s.keyword)) { return true }
       if (s.model !== undefined) { return true }
       if (s.chainname !== undefined) { return true }
@@ -47569,21 +47521,14 @@ Selection.prototype.makeResidueTest = function makeResidueTest (residueOnly) {
       if (s.element !== undefined) { return true }
       if (s.altloc !== undefined) { return true }
       return false
-    });
-  } else {
-    selection = this.selection;
+    }, selection);
   }
+  return makeTest(selection, residueTestFn)
+}
 
-  return this._makeTest(residueTestFn, selection)
-};
-
-Selection.prototype.makeChainTest = function makeChainTest (chainOnly) {
-  var selection;
-
+function makeChainTest (selection, chainOnly) {
   if (chainOnly) {
-    // console.log( this.selection )
-
-    selection = this._filter(function (s) {
+    selection = filter(selection, function (s) {
       if (s.keyword !== undefined && !ChainKeywords.includes(s.keyword)) { return true }
       // if( s.model!==undefined ) return true;
       if (s.resname !== undefined) { return true }
@@ -47595,20 +47540,13 @@ Selection.prototype.makeChainTest = function makeChainTest (chainOnly) {
       if (s.inscode !== undefined) { return true }
       return false
     });
-  } else {
-    selection = this.selection;
   }
+  return makeTest(selection, chainTestFn)
+}
 
-  return this._makeTest(chainTestFn, selection)
-};
-
-Selection.prototype.makeModelTest = function makeModelTest (modelOnly) {
-  var selection;
-
+function makeModelTest (selection, modelOnly) {
   if (modelOnly) {
-    // console.log( this.selection )
-
-    selection = this._filter(function (s) {
+    selection = filter(selection, function (s) {
       if (s.keyword !== undefined) { return true }
       if (s.chainname !== undefined) { return true }
       if (s.resname !== undefined) { return true }
@@ -47620,11 +47558,58 @@ Selection.prototype.makeModelTest = function makeModelTest (modelOnly) {
       if (s.inscode !== undefined) { return true }
       return false
     });
-  } else {
-    selection = this.selection;
   }
+  return makeTest(selection, modelTestFn)
+}
 
-  return this._makeTest(modelTestFn, selection)
+/**
+ * @file Selection
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Selection
+ */
+var Selection = function Selection (string) {
+  this.signals = {
+    stringChanged: new Signal()
+  };
+
+  this.setString(string);
+};
+
+var prototypeAccessors$1 = { type: {} };
+
+prototypeAccessors$1.type.get = function () { return 'selection' };
+
+Selection.prototype.setString = function setString (string, silent) {
+  if (string === undefined) { string = this.string || ''; }
+  if (string === this.string) { return }
+
+  try {
+    this.selection = parseSele(string);
+  } catch (e) {
+    // Log.error( e.stack );
+    this.selection = { 'error': e.message };
+  }
+  var selection = this.selection;
+
+  this.string = string;
+
+  this.test = makeAtomTest(selection);
+  this.residueTest = makeResidueTest(selection);
+  this.chainTest = makeChainTest(selection);
+  this.modelTest = makeModelTest(selection);
+
+  this.atomOnlyTest = makeAtomTest(selection, true);
+  this.residueOnlyTest = makeResidueTest(selection, true);
+  this.chainOnlyTest = makeChainTest(selection, true);
+  this.modelOnlyTest = makeModelTest(selection, true);
+
+  if (!silent) {
+    this.signals.stringChanged.dispatch(this.string);
+  }
 };
 
 Object.defineProperties( Selection.prototype, prototypeAccessors$1 );
@@ -48161,6 +48146,12 @@ function setDebug (value) {
 
 var WebglErrorMessage = '<div style="display:flex;align-items:center;justify-content:center;height:100%;"><p style="padding:15px;text-align:center;">Your browser/graphics card does not seem to support <a target="_blank" href="https://en.wikipedia.org/wiki/WebGL">WebGL</a>.<br/><br/>Find out how to get it <a target="_blank" href="http://get.webgl.org/">here</a>.</p></div>';
 
+/**
+ * List of file extensions to be recognized as scripts
+ * @type {String[]}
+ */
+var ScriptExtensions = [ 'ngl', 'js' ];
+
 var WorkerRegistry = new WorkerRegistry$1();
 /**
  * Global instance of {@link src/color/colormaker-registry.js~ColormakerRegistry}
@@ -48173,6 +48164,8 @@ var ParserRegistry = new ParserRegistry$1();
 var ShaderRegistry = new Registry('shader');
 var DecompressorRegistry = new Registry('decompressor');
 var ComponentRegistry = new Registry('component');
+var BufferRegistry = new Registry('buffer');
+var PickerRegistry = new Registry('picker');
 
 /**
  * @file Streamer
@@ -48775,8 +48768,8 @@ var ScriptLoader = (function (Loader) {
 
     return this.streamer.read().then(function () {
       return new Script(
-                this$1.streamer.asText(), this$1.name, this$1.path
-            )
+        this$1.streamer.asText(), this$1.name, this$1.path
+      )
     })
   };
 
@@ -48818,10 +48811,10 @@ var PluginLoader = (function (Loader) {
 
       manifest.files.map(function (name) {
         promiseList.push(
-                    autoLoad(basePath + name, {
-                      ext: 'text', useWorker: false
-                    })
-                );
+          autoLoad(basePath + name, {
+            ext: 'text', useWorker: false
+          })
+        );
       });
 
       return Promise.all(promiseList).then(function (dataList) {
@@ -48887,7 +48880,7 @@ function autoLoad (file, params) {
   var LoaderClass;
   if (ParserRegistry.names.includes(p.ext)) {
     LoaderClass = ParserLoader;
-  } else if ([ 'ngl', 'js' ].includes(p.ext)) {
+  } else if (ScriptExtensions.includes(p.ext)) {
     LoaderClass = ScriptLoader;
   } else if (p.ext === 'plugin') {
     LoaderClass = PluginLoader;
@@ -49297,6 +49290,543 @@ var PdbWriter = (function (Writer$$1) {
 }(Writer));
 
 /**
+ * @file IO Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ *
+ * Adapted from https://github.com/image-js/iobuffer
+ * MIT License, Copyright (c) 2015 Michaël Zasso
+ */
+
+var defaultByteLength = 1024 * 8;
+var charArray = [];
+
+/**
+ * Class for writing and reading binary data
+ */
+var IOBuffer = function IOBuffer (data, params) {
+  var p = params || {};
+  var dataIsGiven = false;
+  if (data === undefined) {
+    data = defaultByteLength;
+  }
+  if (typeof data === 'number') {
+    data = new ArrayBuffer(data);
+  } else {
+    dataIsGiven = true;
+    this._lastWrittenByte = data.byteLength;
+  }
+
+  var offset = p.offset ? p.offset >>> 0 : 0;
+  var byteLength = data.byteLength - offset;
+  var dvOffset = offset;
+  if (data.buffer) {
+    if (data.byteLength !== data.buffer.byteLength) {
+      dvOffset = data.byteOffset + offset;
+    }
+    data = data.buffer;
+  }
+  if (dataIsGiven) {
+    this._lastWrittenByte = byteLength;
+  } else {
+    this._lastWrittenByte = 0;
+  }
+
+  /**
+   * Reference to the internal ArrayBuffer object
+   * @type {ArrayBuffer}
+   */
+  this.buffer = data;
+  /**
+   * Byte length of the internal ArrayBuffer
+   * @type {Number}
+   */
+  this.length = byteLength;
+  /**
+   * Byte length of the internal ArrayBuffer
+   * @type {Number}
+   */
+  this.byteLength = byteLength;
+  /**
+   * Byte offset of the internal ArrayBuffer
+   * @type {Number}
+   */
+  this.byteOffset = dvOffset;
+  /**
+   * The current offset of the buffer's pointer
+   * @type {Number}
+   */
+  this.offset = 0;
+
+  this.littleEndian = true;
+  this._data = new DataView(this.buffer, dvOffset, byteLength);
+  this._mark = 0;
+  this._marks = [];
+};
+
+/**
+ * Checks if the memory allocated to the buffer is sufficient to store more bytes after the offset
+ * @param {number} [byteLength=1] The needed memory in bytes
+ * @return {boolean} Returns true if there is sufficient space and false otherwise
+ */
+IOBuffer.prototype.available = function available (byteLength) {
+  if (byteLength === undefined) { byteLength = 1; }
+  return (this.offset + byteLength) <= this.length
+};
+
+/**
+ * Check if little-endian mode is used for reading and writing multi-byte values
+ * @return {boolean} Returns true if little-endian mode is used, false otherwise
+ */
+IOBuffer.prototype.isLittleEndian = function isLittleEndian () {
+  return this.littleEndian
+};
+
+/**
+ * Set little-endian mode for reading and writing multi-byte values
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.setLittleEndian = function setLittleEndian () {
+  this.littleEndian = true;
+  return this
+};
+
+/**
+ * Check if big-endian mode is used for reading and writing multi-byte values
+ * @return {boolean} Returns true if big-endian mode is used, false otherwise
+ */
+IOBuffer.prototype.isBigEndian = function isBigEndian () {
+  return !this.littleEndian
+};
+
+/**
+ * Switches to big-endian mode for reading and writing multi-byte values
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.setBigEndian = function setBigEndian () {
+  this.littleEndian = false;
+  return this
+};
+
+/**
+ * Move the pointer n bytes forward
+ * @param {number} n
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.skip = function skip (n) {
+  if (n === undefined) { n = 1; }
+  this.offset += n;
+  return this
+};
+
+/**
+ * Move the pointer to the given offset
+ * @param {number} offset
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.seek = function seek (offset) {
+  this.offset = offset;
+  return this
+};
+
+/**
+ * Store the current pointer offset.
+ * @see {@link IOBuffer#reset}
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.mark = function mark () {
+  this._mark = this.offset;
+  return this
+};
+
+/**
+ * Move the pointer back to the last pointer offset set by mark
+ * @see {@link IOBuffer#mark}
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.reset = function reset () {
+  this.offset = this._mark;
+  return this
+};
+
+/**
+ * Push the current pointer offset to the mark stack
+ * @see {@link IOBuffer#popMark}
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.pushMark = function pushMark () {
+  this._marks.push(this.offset);
+  return this
+};
+
+/**
+ * Pop the last pointer offset from the mark stack, and set the current pointer offset to the popped value
+ * @see {@link IOBuffer#pushMark}
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.popMark = function popMark () {
+  var offset = this._marks.pop();
+  if (offset === undefined) { throw new Error('Mark stack empty') }
+  this.seek(offset);
+  return this
+};
+
+/**
+ * Move the pointer offset back to 0
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.rewind = function rewind () {
+  this.offset = 0;
+  return this
+};
+
+/**
+ * Make sure the buffer has sufficient memory to write a given byteLength at the current pointer offset
+ * If the buffer's memory is insufficient, this method will create a new buffer (a copy) with a length
+ * that is twice (byteLength + current offset)
+ * @param {number} [byteLength = 1]
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.ensureAvailable = function ensureAvailable (byteLength) {
+  if (byteLength === undefined) { byteLength = 1; }
+  if (!this.available(byteLength)) {
+    var lengthNeeded = this.offset + byteLength;
+    var newLength = lengthNeeded * 2;
+    var newArray = new Uint8Array(newLength);
+    newArray.set(new Uint8Array(this.buffer));
+    this.buffer = newArray.buffer;
+    this.length = this.byteLength = newLength;
+    this._data = new DataView(this.buffer);
+  }
+  return this
+};
+
+/**
+ * Read a byte and return false if the byte's value is 0, or true otherwise
+ * Moves pointer forward
+ * @return {boolean}
+ */
+IOBuffer.prototype.readBoolean = function readBoolean () {
+  return this.readUint8() !== 0
+};
+
+/**
+ * Read a signed 8-bit integer and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readInt8 = function readInt8 () {
+  return this._data.getInt8(this.offset++)
+};
+
+/**
+ * Read an unsigned 8-bit integer and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readUint8 = function readUint8 () {
+  return this._data.getUint8(this.offset++)
+};
+
+/**
+ * Alias for {@link IOBuffer#readUint8}
+ * @return {number}
+ */
+IOBuffer.prototype.readByte = function readByte () {
+  return this.readUint8()
+};
+
+/**
+ * Read n bytes and move pointer forward.
+ * @param {number} n
+ * @return {Uint8Array}
+ */
+IOBuffer.prototype.readBytes = function readBytes (n) {
+    var this$1 = this;
+
+  if (n === undefined) { n = 1; }
+  var bytes = new Uint8Array(n);
+  for (var i = 0; i < n; i++) {
+    bytes[i] = this$1.readByte();
+  }
+  return bytes
+};
+
+/**
+ * Read a 16-bit signed integer and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readInt16 = function readInt16 () {
+  var value = this._data.getInt16(this.offset, this.littleEndian);
+  this.offset += 2;
+  return value
+};
+
+/**
+ * Read a 16-bit unsigned integer and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readUint16 = function readUint16 () {
+  var value = this._data.getUint16(this.offset, this.littleEndian);
+  this.offset += 2;
+  return value
+};
+
+/**
+ * Read a 32-bit signed integer and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readInt32 = function readInt32 () {
+  var value = this._data.getInt32(this.offset, this.littleEndian);
+  this.offset += 4;
+  return value
+};
+
+/**
+ * Read a 32-bit unsigned integer and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readUint32 = function readUint32 () {
+  var value = this._data.getUint32(this.offset, this.littleEndian);
+  this.offset += 4;
+  return value
+};
+
+/**
+ * Read a 32-bit floating number and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readFloat32 = function readFloat32 () {
+  var value = this._data.getFloat32(this.offset, this.littleEndian);
+  this.offset += 4;
+  return value
+};
+
+/**
+ * Read a 64-bit floating number and move pointer forward
+ * @return {number}
+ */
+IOBuffer.prototype.readFloat64 = function readFloat64 () {
+  var value = this._data.getFloat64(this.offset, this.littleEndian);
+  this.offset += 8;
+  return value
+};
+
+/**
+ * Read 1-byte ascii character and move pointer forward
+ * @return {string}
+ */
+IOBuffer.prototype.readChar = function readChar () {
+  return String.fromCharCode(this.readInt8())
+};
+
+/**
+ * Read n 1-byte ascii characters and move pointer forward
+ * @param {number} n
+ * @return {string}
+ */
+IOBuffer.prototype.readChars = function readChars (n) {
+    var this$1 = this;
+
+  if (n === undefined) { n = 1; }
+  charArray.length = n;
+  for (var i = 0; i < n; i++) {
+    charArray[i] = this$1.readChar();
+  }
+  return charArray.join('')
+};
+
+/**
+ * Write 0xff if the passed value is truthy, 0x00 otherwise
+ * @param {any} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeBoolean = function writeBoolean (value) {
+  this.writeUint8(value ? 0xff : 0x00);
+  return this
+};
+
+/**
+ * Write value as an 8-bit signed integer
+ * @param {number} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeInt8 = function writeInt8 (value) {
+  this.ensureAvailable(1);
+  this._data.setInt8(this.offset++, value);
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write value as a 8-bit unsigned integer
+ * @param {number} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeUint8 = function writeUint8 (value) {
+  this.ensureAvailable(1);
+  this._data.setUint8(this.offset++, value);
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * An alias for {@link IOBuffer#writeUint8}
+ * @param {number} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeByte = function writeByte (value) {
+  return this.writeUint8(value)
+};
+
+/**
+ * Write bytes
+ * @param {Array|Uint8Array} bytes
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeBytes = function writeBytes (bytes) {
+    var this$1 = this;
+
+  this.ensureAvailable(bytes.length);
+  for (var i = 0; i < bytes.length; i++) {
+    this$1._data.setUint8(this$1.offset++, bytes[i]);
+  }
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write value as an 16-bit signed integer
+ * @param {number} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeInt16 = function writeInt16 (value) {
+  this.ensureAvailable(2);
+  this._data.setInt16(this.offset, value, this.littleEndian);
+  this.offset += 2;
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write value as a 16-bit unsigned integer
+ * @param {number} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeUint16 = function writeUint16 (value) {
+  this.ensureAvailable(2);
+  this._data.setUint16(this.offset, value, this.littleEndian);
+  this.offset += 2;
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write a 32-bit signed integer at the current pointer offset
+ * @param {number} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeInt32 = function writeInt32 (value) {
+  this.ensureAvailable(4);
+  this._data.setInt32(this.offset, value, this.littleEndian);
+  this.offset += 4;
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write a 32-bit unsigned integer at the current pointer offset
+ * @param {number} value - The value to set
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeUint32 = function writeUint32 (value) {
+  this.ensureAvailable(4);
+  this._data.setUint32(this.offset, value, this.littleEndian);
+  this.offset += 4;
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write a 32-bit floating number at the current pointer offset
+ * @param {number} value - The value to set
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeFloat32 = function writeFloat32 (value) {
+  this.ensureAvailable(4);
+  this._data.setFloat32(this.offset, value, this.littleEndian);
+  this.offset += 4;
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write a 64-bit floating number at the current pointer offset
+ * @param {number} value
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeFloat64 = function writeFloat64 (value) {
+  this.ensureAvailable(8);
+  this._data.setFloat64(this.offset, value, this.littleEndian);
+  this.offset += 8;
+  this._updateLastWrittenByte();
+  return this
+};
+
+/**
+ * Write the charCode of the passed string's first character to the current pointer offset
+ * @param {string} str - The character to set
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeChar = function writeChar (str) {
+  return this.writeUint8(str.charCodeAt(0))
+};
+
+/**
+ * Write the charCodes of the passed string's characters to the current pointer offset
+ * @param {string} str
+ * @return {IOBuffer}
+ */
+IOBuffer.prototype.writeChars = function writeChars (str) {
+    var this$1 = this;
+
+  for (var i = 0; i < str.length; i++) {
+    this$1.writeUint8(str.charCodeAt(i));
+  }
+  return this
+};
+
+/**
+ * Export a Uint8Array view of the internal buffer.
+ * The view starts at the byte offset and its length
+ * is calculated to stop at the last written byte or the original length.
+ * @return {Uint8Array}
+ */
+IOBuffer.prototype.toArray = function toArray () {
+  return new Uint8Array(this.buffer, this.byteOffset, this._lastWrittenByte)
+};
+
+/**
+ * Same as {@link IOBuffer#toArray} but returns a Buffer if possible. Otherwise returns a Uint8Array.
+ * @return {Buffer|Uint8Array}
+ */
+IOBuffer.prototype.getBuffer = function getBuffer () {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(this.toArray())
+  } else {
+    return this.toArray()
+  }
+};
+
+/**
+ * Update the last written byte offset
+ * @private
+ */
+IOBuffer.prototype._updateLastWrittenByte = function _updateLastWrittenByte () {
+  if (this.offset > this._lastWrittenByte) {
+    this._lastWrittenByte = this.offset;
+  }
+};
+
+/**
  * @file STL Writer
  * @author Paul Pillot <paul.pillot@cimf.ca>
  * @private
@@ -49308,11 +49838,10 @@ var PdbWriter = (function (Writer$$1) {
  * Create an STL File from a surface Object (e.g. for 3D printing)
  *
  * @example
- * molsurf = new NGL.MolecularSurface(structure)
- * surf = molsurf.getSurface({type: ‘av’, probeRadius: 1.4})
- * stl = new NGL.StlWriter(surf)
- * stl.download(‘my_file_name’)
- * @class StlWriter
+ * molsurf = new MolecularSurface(structure)
+ * surf = molsurf.getSurface({type: 'av', probeRadius: 1.4})
+ * stl = new StlWriter(surf)
+ * stl.download('myFileName')
  */
 var StlWriter = (function (Writer$$1) {
   function StlWriter (surface) {
@@ -49328,64 +49857,63 @@ var StlWriter = (function (Writer$$1) {
 
   var prototypeAccessors = { mimeType: {},defaultName: {},defaultExt: {} };
 
-  prototypeAccessors.mimeType.get = function () { return 'text/plain' };
+  prototypeAccessors.mimeType.get = function () { return 'application/vnd.ms-pki.stl' };
   prototypeAccessors.defaultName.get = function () { return 'surface' };
   prototypeAccessors.defaultExt.get = function () { return 'stl' };
 
-  StlWriter.prototype._writeRecords = function _writeRecords () {
-    this._records.length = 0;
-
-    this._writeHeader();
-    this._writeFacets();
-    this._writeFooter();
-  };
-
-  StlWriter.prototype._avgNormal = function _avgNormal (normals, vertIndices) {
-    var v = [];
-    for (var i = 0; i < 3; i++) {
-      v[i] = (normals[vertIndices[0] * 3 + i] + normals[vertIndices[1] * 3 + i] + normals[vertIndices[2] * 3 + i]) / 3;
-    }
-    return v
-  };
-
-  StlWriter.prototype._writeHeader = function _writeHeader () {
-    this._records.push('solid surface');
-  };
-
-  StlWriter.prototype._writeFooter = function _writeFooter () {
-    this._records.push('endsolid surface');
-  };
-
-  StlWriter.prototype._writeLoop = function _writeLoop (vertices) {
-    var this$1 = this;
-
-    this._records.push('outer loop');
-    for (var i = 0; i < 3; i++) {
-      this$1._records.push(("    vertex " + (this$1.surface.position[vertices[i] * 3]) + " " + (this$1.surface.position[vertices[i] * 3 + 1]) + " " + (this$1.surface.position[vertices[i] * 3 + 2])));
-    }
-    this._records.push('outer loop');
-  };
-
-  StlWriter.prototype._writeFacets = function _writeFacets () {
-    var this$1 = this;
-
-    for (var i = 0; i < this.surface.index.length / 3; i++) {
-      var vert1Index = this$1.surface.index[i * 3];
-      var vert2Index = this$1.surface.index[i * 3 + 1];
-      var vert3Index = this$1.surface.index[i * 3 + 2];
-
-      var facetNormal = this$1._avgNormal(this$1.surface.normal, [vert1Index, vert2Index, vert3Index]);
-      this$1._records.push(("facet normal " + (facetNormal[0]) + " " + (facetNormal[1]) + " " + (facetNormal[2])));
-
-      this$1._writeLoop([vert1Index, vert2Index, vert3Index]);
-
-      this$1._records.push('endfacet');
-    }
-  };
-
+  /*
+   * Get STL Binary data
+   *
+   * Adapted from: https://github.com/mrdoob/three.js/blob/master/examples/js/exporters/STLBinaryExporter.js
+   * see https://en.wikipedia.org/wiki/STL_(file_format)#Binary_STL for the file format description
+   *
+   * @return {DataView} the data
+   */
   StlWriter.prototype.getData = function getData () {
-    this._writeRecords();
-    return this._records.join('\n')
+    var this$1 = this;
+
+    var triangles = this.surface.index.length / 3;
+    var bufferLength = triangles * 2 + triangles * 3 * 4 * 4 + 80 + 4;
+    var output = new IOBuffer(bufferLength);
+
+    output.skip(80);  // skip header
+    output.writeUint32(triangles);
+
+    var vector = new Vector3();
+    var vectorNorm1 = new Vector3();
+    var vectorNorm2 = new Vector3();
+    var vectorNorm3 = new Vector3();
+
+    // traversing vertices
+    for (var i = 0; i < triangles; i++) {
+      var indices = [
+        this$1.surface.index[i * 3],
+        this$1.surface.index[i * 3 + 1],
+        this$1.surface.index[i * 3 + 2]
+      ];
+
+      vectorNorm1.fromArray(this$1.surface.normal, indices[0] * 3);
+      vectorNorm2.fromArray(this$1.surface.normal, indices[1] * 3);
+      vectorNorm3.fromArray(this$1.surface.normal, indices[2] * 3);
+
+      vector.addVectors(vectorNorm1, vectorNorm2).add(vectorNorm3).normalize();
+
+      output.writeFloat32(vector.x);
+      output.writeFloat32(vector.y);
+      output.writeFloat32(vector.z);
+
+      for (var j = 0; j < 3; j++) {
+        vector.fromArray(this$1.surface.position, indices[j] * 3);
+
+        output.writeFloat32(vector.x);  // vertices
+        output.writeFloat32(vector.y);
+        output.writeFloat32(vector.z);
+      }
+
+      output.writeUint16(0);  // attribute byte count
+    }
+
+    return new DataView(output.buffer)
   };
 
   Object.defineProperties( StlWriter.prototype, prototypeAccessors );
@@ -50176,7 +50704,8 @@ function _trimCanvas (canvas, r, g, b, a) {
     for (x = 0; x < canvasWidth; x++) {
       off = (y * canvasWidth + x) * 4;
       if (pixels[ off ] !== r || pixels[ off + 1 ] !== g ||
-                    pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a) {
+          pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a
+      ) {
         doBreak = true;
         break
       }
@@ -50192,7 +50721,8 @@ function _trimCanvas (canvas, r, g, b, a) {
     for (y = 0; y < canvasHeight; y++) {
       off = (y * canvasWidth + x) * 4;
       if (pixels[ off ] !== r || pixels[ off + 1 ] !== g ||
-                    pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a) {
+          pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a
+      ) {
         doBreak = true;
         break
       }
@@ -50208,7 +50738,8 @@ function _trimCanvas (canvas, r, g, b, a) {
     for (x = canvasWidth - 1; x >= 0; x--) {
       off = (y * canvasWidth + x) * 4;
       if (pixels[ off ] !== r || pixels[ off + 1 ] !== g ||
-                    pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a) {
+          pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a
+      ) {
         doBreak = true;
         break
       }
@@ -50224,7 +50755,8 @@ function _trimCanvas (canvas, r, g, b, a) {
     for (y = canvasHeight - 1; y >= 0; y--) {
       off = (y * canvasWidth + x) * 4;
       if (pixels[ off ] !== r || pixels[ off + 1 ] !== g ||
-                    pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a) {
+          pixels[ off + 2 ] !== b || pixels[ off + 3 ] !== a
+      ) {
         doBreak = true;
         break
       }
@@ -50241,12 +50773,12 @@ function _trimCanvas (canvas, r, g, b, a) {
 
   var trimedCtx = trimedCanvas.getContext('2d');
   trimedCtx.drawImage(
-        canvas,
-        topX, topY,
-        trimedCanvas.width, trimedCanvas.height,
-        0, 0,
-        trimedCanvas.width, trimedCanvas.height
-    );
+    canvas,
+    topX, topY,
+    trimedCanvas.width, trimedCanvas.height,
+    0, 0,
+    trimedCanvas.width, trimedCanvas.height
+  );
 
   return trimedCanvas
 }
@@ -50325,14 +50857,14 @@ function makeImage (viewer, params) {
 
   return new Promise(function (resolve) {
     var tiledRenderer = new TiledRenderer(
-            renderer, camera, viewer,
+      renderer, camera, viewer,
       {
         factor: factor,
         antialias: antialias,
         onProgress: onProgress,
         onFinish: onFinish
       }
-        );
+    );
 
     renderer.setClearAlpha(transparent ? 0 : 1);
     setLineWidthAndPixelSize();
@@ -50341,15 +50873,15 @@ function makeImage (viewer, params) {
     function onFinish (i, n) {
       var canvas = trimCanvas(tiledRenderer.canvas);
       canvas.toBlob(
-                function (blob) {
-                  renderer.setClearAlpha(originalClearAlpha);
-                  setLineWidthAndPixelSize(true);
-                  viewer.requestRender();
-                  onProgress(n, n, true);
-                  resolve(blob);
-                },
-                'image/png'
-            );
+        function (blob) {
+          renderer.setClearAlpha(originalClearAlpha);
+          setLineWidthAndPixelSize(true);
+          viewer.requestRender();
+          onProgress(n, n, true);
+          resolve(blob);
+        },
+        'image/png'
+      );
     }
   })
 }
@@ -50359,7 +50891,7 @@ var matrix = new Matrix4();
 var modelViewProjectionMatrix = new Matrix4();
 
 function sortProjectedPosition (scene, camera) {
-    // console.time( "sort" );
+  // console.time( "sort" );
 
   scene.traverseVisible(function (o) {
     if (!(o instanceof Points) || !o.sortParticles) {
@@ -50372,11 +50904,11 @@ function sortProjectedPosition (scene, camera) {
     if (n === 0) { return }
 
     matrix.multiplyMatrices(
-            camera.matrixWorldInverse, o.matrixWorld
-        );
+      camera.matrixWorldInverse, o.matrixWorld
+    );
     modelViewProjectionMatrix.multiplyMatrices(
-            camera.projectionMatrix, matrix
-        );
+      camera.projectionMatrix, matrix
+    );
 
     var sortData, sortArray, zArray, cmpFn;
 
@@ -50409,7 +50941,7 @@ function sortProjectedPosition (scene, camera) {
       vertex.fromArray(attributes.position.array, i * 3);
       vertex.applyMatrix4(modelViewProjectionMatrix);
 
-            // negate, so that sorting order is reversed
+      // negate, so that sorting order is reversed
       zArray[ i ] = -vertex.z;
       sortArray[ i ] = i;
     }
@@ -50424,9 +50956,7 @@ function sortProjectedPosition (scene, camera) {
       var itemSize = attr.itemSize;
 
       if (!sortData[ name ]) {
-        sortData[ name ] = new Float32Array(
-                    itemSize * n
-                );
+        sortData[ name ] = new Float32Array(itemSize * n);
       }
 
       tmpTab = sortData[ name ];
@@ -50484,14 +51014,14 @@ function updateMaterialUniforms (group, camera, renderer, cDist, bRadius) {
 
     if (u.projectionMatrixInverse) {
       u.projectionMatrixInverse.value.copy(
-                projectionMatrixInverse
-            );
+        projectionMatrixInverse
+      );
     }
 
     if (u.projectionMatrixTranspose) {
       u.projectionMatrixTranspose.value.copy(
-                projectionMatrixTranspose
-            );
+        projectionMatrixTranspose
+      );
     }
 
     if (u.ortho) {
@@ -50521,8 +51051,8 @@ function onBeforeRender (renderer, scene, camera, geometry, material/*, group */
   }
 
   if (u.modelViewMatrixInverse || u.modelViewMatrixInverseTranspose ||
-        u.modelViewProjectionMatrix || u.modelViewProjectionMatrixInverse
-    ) {
+      u.modelViewProjectionMatrix || u.modelViewProjectionMatrixInverse
+  ) {
     this.modelViewMatrix.multiplyMatrices(camera.matrixWorldInverse, this.matrixWorld);
   }
 
@@ -50534,12 +51064,12 @@ function onBeforeRender (renderer, scene, camera, geometry, material/*, group */
   if (u.modelViewMatrixInverseTranspose) {
     if (u.modelViewMatrixInverse) {
       u.modelViewMatrixInverseTranspose.value.copy(
-                u.modelViewMatrixInverse.value
-            ).transpose();
+        u.modelViewMatrixInverse.value
+      ).transpose();
     } else {
       u.modelViewMatrixInverseTranspose.value
-                .getInverse(this.modelViewMatrix)
-                .transpose();
+        .getInverse(this.modelViewMatrix)
+        .transpose();
     }
     updateList.push('modelViewMatrixInverseTranspose');
   }
@@ -50547,27 +51077,27 @@ function onBeforeRender (renderer, scene, camera, geometry, material/*, group */
   if (u.modelViewProjectionMatrix) {
     camera.updateProjectionMatrix();
     u.modelViewProjectionMatrix.value.multiplyMatrices(
-            camera.projectionMatrix, this.modelViewMatrix
-        );
+      camera.projectionMatrix, this.modelViewMatrix
+    );
     updateList.push('modelViewProjectionMatrix');
   }
 
   if (u.modelViewProjectionMatrixInverse) {
     if (u.modelViewProjectionMatrix) {
       tmpMatrix.copy(
-                u.modelViewProjectionMatrix.value
-            );
+        u.modelViewProjectionMatrix.value
+      );
       u.modelViewProjectionMatrixInverse.value.getInverse(
-                tmpMatrix
-            );
+        tmpMatrix
+      );
     } else {
       camera.updateProjectionMatrix();
       tmpMatrix.multiplyMatrices(
-                camera.projectionMatrix, this.modelViewMatrix
-            );
+        camera.projectionMatrix, this.modelViewMatrix
+      );
       u.modelViewProjectionMatrixInverse.value.getInverse(
-                tmpMatrix
-            );
+        tmpMatrix
+      );
     }
     updateList.push('modelViewProjectionMatrixInverse');
   }
@@ -50699,15 +51229,14 @@ function Viewer (idOrElement) {
     var lookAt = new Vector3(0, 0, 0);
 
     perspectiveCamera = new PerspectiveCamera(
-            parameters.cameraFov, width / height
-        );
+      parameters.cameraFov, width / height
+    );
     perspectiveCamera.position.z = parameters.cameraZ;
     perspectiveCamera.lookAt(lookAt);
 
     orthographicCamera = new OrthographicCamera(
-            width / -2, width / 2,
-            height / 2, height / -2
-        );
+      width / -2, width / 2, height / 2, height / -2
+    );
     orthographicCamera.position.z = parameters.cameraZ;
     orthographicCamera.lookAt(lookAt);
 
@@ -50737,33 +51266,33 @@ function Viewer (idOrElement) {
     renderer.autoClear = false;
     renderer.sortObjects = true;
 
-        // var gl = renderer.getContext();
-        // console.log( gl.getContextAttributes().antialias );
-        // console.log( gl.getParameter(gl.SAMPLES) );
+    // var gl = renderer.getContext();
+    // console.log( gl.getContextAttributes().antialias );
+    // console.log( gl.getParameter(gl.SAMPLES) );
 
     setExtensionFragDepth(renderer.extensions.get('EXT_frag_depth'));
     renderer.extensions.get('OES_element_index_uint');
 
     setSupportsReadPixelsFloat(
-            (renderer.extensions.get('OES_texture_float') &&
-                renderer.extensions.get('WEBGL_color_buffer_float')) ||
-            (Browser === 'Chrome' &&
-                renderer.extensions.get('OES_texture_float'))
-        );
+      (renderer.extensions.get('OES_texture_float') &&
+        renderer.extensions.get('WEBGL_color_buffer_float')) ||
+      (Browser === 'Chrome' &&
+        renderer.extensions.get('OES_texture_float'))
+    );
 
     container.appendChild(renderer.domElement);
 
     var dprWidth = width * dpr;
     var dprHeight = height * dpr;
 
-        // picking texture
+    // picking texture
 
     renderer.extensions.get('OES_texture_float');
     supportsHalfFloat = renderer.extensions.get('OES_texture_half_float');
     renderer.extensions.get('WEBGL_color_buffer_float');
 
     pickingTarget = new WebGLRenderTarget(
-            dprWidth, dprHeight,
+      dprWidth, dprHeight,
       {
         minFilter: NearestFilter,
         magFilter: NearestFilter,
@@ -50771,35 +51300,34 @@ function Viewer (idOrElement) {
         format: RGBAFormat,
         type: SupportsReadPixelsFloat ? FloatType : UnsignedByteType
       }
-        );
+    );
     pickingTarget.texture.generateMipmaps = false;
 
-        // ssaa textures
+    // ssaa textures
 
     sampleTarget = new WebGLRenderTarget(
-            dprWidth, dprHeight,
+      dprWidth, dprHeight,
       {
         minFilter: LinearFilter,
         magFilter: LinearFilter,
         format: RGBAFormat
       }
-        );
+    );
 
     holdTarget = new WebGLRenderTarget(
-            dprWidth, dprHeight,
+      dprWidth, dprHeight,
       {
         minFilter: NearestFilter,
         magFilter: NearestFilter,
         format: RGBAFormat,
-                // problems on mobile so use UnsignedByteType there
-                // see https://github.com/arose/ngl/issues/191
+        // problems on mobile so use UnsignedByteType there
+        // see https://github.com/arose/ngl/issues/191
         type: Mobile ? UnsignedByteType : (
-                    supportsHalfFloat ? HalfFloatType
-                        : (SupportsReadPixelsFloat ? FloatType : UnsignedByteType)
-                )
-
+          supportsHalfFloat ? HalfFloatType
+            : (SupportsReadPixelsFloat ? FloatType : UnsignedByteType)
+        )
       }
-        );
+    );
 
     compositeUniforms = {
       'tForeground': { type: 't', value: null },
@@ -50819,8 +51347,8 @@ function Viewer (idOrElement) {
 
     compositeCamera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
     compositeScene = new Scene().add(new Mesh(
-            new PlaneGeometry(2, 2), compositeMaterial
-        ));
+      new PlaneGeometry(2, 2), compositeMaterial
+    ));
   }
 
   function initScene () {
@@ -50859,13 +51387,13 @@ function Viewer (idOrElement) {
         // light
 
     pointLight = new SpotLight(
-            parameters.lightColor, parameters.lightIntensity
-        );
+      parameters.lightColor, parameters.lightIntensity
+    );
     scene.add(pointLight);
 
     ambientLight = new AmbientLight(
-            parameters.ambientLight, parameters.ambientIntensity
-        );
+      parameters.ambientLight, parameters.ambientIntensity
+    );
     scene.add(ambientLight);
   }
 
@@ -50918,7 +51446,7 @@ function Viewer (idOrElement) {
   }
 
   function add (buffer, instanceList) {
-        // Log.time( "Viewer.add" );
+    // Log.time( "Viewer.add" );
 
     if (instanceList) {
       instanceList.forEach(function (instance) {
@@ -50942,11 +51470,11 @@ function Viewer (idOrElement) {
 
     if (Debug) { updateHelper(); }
 
-        // Log.timeEnd( "Viewer.add" );
+    // Log.timeEnd( "Viewer.add" );
   }
 
   function addBuffer (buffer, instance) {
-        // Log.time( "Viewer.addBuffer" );
+    // Log.time( "Viewer.addBuffer" );
 
     function setUserData (object) {
       if (object instanceof Group) {
@@ -50967,7 +51495,7 @@ function Viewer (idOrElement) {
 
     var wireframeMesh = buffer.getWireframeMesh();
     if (instance) {
-            // wireframeMesh.applyMatrix( instance.matrix );
+      // wireframeMesh.applyMatrix( instance.matrix );
       wireframeMesh.matrix.copy(mesh.matrix);
       wireframeMesh.position.copy(mesh.position);
       wireframeMesh.quaternion.copy(mesh.quaternion);
@@ -50979,7 +51507,7 @@ function Viewer (idOrElement) {
     if (buffer.pickable) {
       var pickingMesh = buffer.getPickingMesh();
       if (instance) {
-                // pickingMesh.applyMatrix( instance.matrix );
+        // pickingMesh.applyMatrix( instance.matrix );
         pickingMesh.matrix.copy(mesh.matrix);
         pickingMesh.position.copy(mesh.position);
         pickingMesh.quaternion.copy(mesh.quaternion);
@@ -50995,7 +51523,7 @@ function Viewer (idOrElement) {
       updateBoundingBox(buffer.geometry, buffer.matrix);
     }
 
-        // Log.timeEnd( "Viewer.addBuffer" );
+    // Log.timeEnd( "Viewer.addBuffer" );
   }
 
   function remove (buffer) {
@@ -51011,7 +51539,7 @@ function Viewer (idOrElement) {
     updateBoundingBox();
     if (Debug) { updateHelper(); }
 
-        // requestRender();
+    // requestRender();
   }
 
   function updateBoundingBox (geometry, matrix, instanceMatrix) {
@@ -51030,8 +51558,8 @@ function Viewer (idOrElement) {
       }
 
       if (geoBoundingBox.min.equals(geoBoundingBox.max)) {
-                // mainly to give a single impostor geometry some volume
-                // as it is only expanded in the shader on the GPU
+        // mainly to give a single impostor geometry some volume
+        // as it is only expanded in the shader on the GPU
         geoBoundingBox.expandByScalar(5);
       }
 
@@ -51069,8 +51597,8 @@ function Viewer (idOrElement) {
 
     render(true);
     renderer.readRenderTargetPixels(
-            pickingTarget, 0, 0, width, height, imgBuffer
-        );
+      pickingTarget, 0, 0, width, height, imgBuffer
+    );
 
     return imgBuffer
   }
@@ -51276,19 +51804,19 @@ function Viewer (idOrElement) {
 
     render(true);
     renderer.readRenderTargetPixels(
-            pickingTarget, x, y, 1, 1, pixelBuffer
-        );
+      pickingTarget, x, y, 1, 1, pixelBuffer
+    );
 
     if (SupportsReadPixelsFloat) {
       pid =
-                ((Math.round(pixelBuffer[0] * 255) << 16) & 0xFF0000) |
-                ((Math.round(pixelBuffer[1] * 255) << 8) & 0x00FF00) |
-                ((Math.round(pixelBuffer[2] * 255)) & 0x0000FF);
+        ((Math.round(pixelBuffer[0] * 255) << 16) & 0xFF0000) |
+        ((Math.round(pixelBuffer[1] * 255) << 8) & 0x00FF00) |
+        ((Math.round(pixelBuffer[2] * 255)) & 0x0000FF);
     } else {
       pid =
-                (pixelBuffer[0] << 16) |
-                (pixelBuffer[1] << 8) |
-                (pixelBuffer[2]);
+        (pixelBuffer[0] << 16) |
+        (pixelBuffer[1] << 8) |
+        (pixelBuffer[2]);
     }
 
     var oid = Math.round(pixelBuffer[ 3 ]);
@@ -51298,20 +51826,20 @@ function Viewer (idOrElement) {
       picker = object.userData.buffer.picking;
     }
 
-        // if( Debug ){
-        //     const rgba = Array.apply( [], pixelBuffer );
-        //     Log.log( pixelBuffer );
-        //     Log.log(
-        //         "picked color",
-        //         rgba.map( c => { return c.toPrecision( 2 ) } )
-        //     );
-        //     Log.log( "picked pid", pid );
-        //     Log.log( "picked oid", oid );
-        //     Log.log( "picked object", object );
-        //     Log.log( "picked instance", instance );
-        //     Log.log( "picked position", x, y );
-        //     Log.log( "devicePixelRatio", window.devicePixelRatio );
-        // }
+    // if( Debug ){
+    //   const rgba = Array.apply( [], pixelBuffer );
+    //   Log.log( pixelBuffer );
+    //   Log.log(
+    //     "picked color",
+    //     rgba.map( c => { return c.toPrecision( 2 ) } )
+    //   );
+    //   Log.log( "picked pid", pid );
+    //   Log.log( "picked oid", oid );
+    //   Log.log( "picked object", object );
+    //   Log.log( "picked instance", instance );
+    //   Log.log( "picked position", x, y );
+    //   Log.log( "devicePixelRatio", window.devicePixelRatio );
+    // }
 
     return {
       'pid': pid,
@@ -51322,11 +51850,11 @@ function Viewer (idOrElement) {
 
   function requestRender () {
     if (renderPending) {
-            // Log.info( "there is still a 'render' call pending" );
+      // Log.info( "there is still a 'render' call pending" );
       return
     }
 
-        // start gathering stats anew after inactivity
+    // start gathering stats anew after inactivity
     if (window.performance.now() - stats.startTime > 22) {
       stats.begin();
       isStill = false;
@@ -51349,23 +51877,23 @@ function Viewer (idOrElement) {
   function __updateClipping () {
     var p = parameters;
 
-        // clipping
+    // clipping
 
-        // cDist = distVector.copy( camera.position )
-        //             .sub( controls.target ).length();
+    // cDist = distVector.copy( camera.position )
+    //           .sub( controls.target ).length();
     cDist = distVector.copy(camera.position).length();
-        // console.log( "cDist", cDist )
+    // console.log( "cDist", cDist )
     if (!cDist) {
-            // recover from a broken (NaN) camera position
+      // recover from a broken (NaN) camera position
       camera.position.set(0, 0, p.cameraZ);
       cDist = Math.abs(p.cameraZ);
     }
 
     bRadius = Math.max(10, boundingBoxLength * 0.5);
     bRadius += boundingBox.getCenter(distVector).length();
-        // console.log( "bRadius", bRadius )
+    // console.log( "bRadius", bRadius )
     if (bRadius === Infinity || bRadius === -Infinity || isNaN(bRadius)) {
-            // console.warn( "something wrong with bRadius" );
+      // console.warn( "something wrong with bRadius" );
       bRadius = 50;
     }
 
@@ -51374,7 +51902,7 @@ function Viewer (idOrElement) {
     camera.near = cDist - (bRadius * nearFactor);
     camera.far = cDist + (bRadius * farFactor);
 
-        // fog
+    // fog
 
     var fogNearFactor = (50 - p.fogNear) / 50;
     var fogFarFactor = -(50 - p.fogFar) / 50;
@@ -51413,8 +51941,8 @@ function Viewer (idOrElement) {
   }
 
   function __updateLights () {
-        // distVector.copy( camera.position ).sub( controls.target )
-        //     .setLength( boundingBoxLength * 100 );
+    // distVector.copy( camera.position ).sub( controls.target )
+    //   .setLength( boundingBoxLength * 100 );
     distVector.copy(camera.position).setLength(boundingBoxLength * 100);
 
     pointLight.position.copy(camera.position).add(distVector);
@@ -51432,12 +51960,12 @@ function Viewer (idOrElement) {
     updateInfo();
     renderer.setRenderTarget(null);  // back to standard render target
 
-        // if( Debug ){
-        //     __setVisibility( false, true, false, true );
+    // if( Debug ){
+    //   __setVisibility( false, true, false, true );
 
-        //     renderer.clear();
-        //     renderer.render( scene, camera );
-        // }
+    //   renderer.clear();
+    //   renderer.render( scene, camera );
+    // }
   }
 
   function __renderModelGroup (renderTarget) {
@@ -51462,12 +51990,12 @@ function Viewer (idOrElement) {
   }
 
   function __renderSuperSample () {
-        // based on the Supersample Anti-Aliasing Render Pass
-        // contributed to three.js by bhouston / http://clara.io/
-        //
-        // This manual approach to SSAA re-renders the scene ones for
-        // each sample with camera jitter and accumulates the results.
-        // References: https://en.wikipedia.org/wiki/Supersampling
+    // based on the Supersample Anti-Aliasing Render Pass
+    // contributed to three.js by bhouston / http://clara.io/
+    //
+    // This manual approach to SSAA re-renders the scene ones for
+    // each sample with camera jitter and accumulates the results.
+    // References: https://en.wikipedia.org/wiki/Supersampling
 
     var offsetList = JitterVectors[ Math.max(0, Math.min(sampleLevel, 5)) ];
 
@@ -51479,29 +52007,29 @@ function Viewer (idOrElement) {
     var _width = sampleTarget.width;
     var _height = sampleTarget.height;
 
-        // render the scene multiple times, each slightly jitter offset
-        // from the last and accumulate the results.
+    // render the scene multiple times, each slightly jitter offset
+    // from the last and accumulate the results.
     for (var i = 0; i < offsetList.length; ++i) {
       var offset = offsetList[ i ];
       camera.setViewOffset(
-                _width, _height, offset[ 0 ], offset[ 1 ], _width, _height
-            );
+        _width, _height, offset[ 0 ], offset[ 1 ], _width, _height
+      );
       __updateCamera();
 
       var sampleWeight = baseSampleWeight;
-            // the theory is that equal weights for each sample lead to an
-            // accumulation of rounding errors.
-            // The following equation varies the sampleWeight per sample
-            // so that it is uniformly distributed across a range of values
-            // whose rounding errors cancel each other out.
+      // the theory is that equal weights for each sample lead to an
+      // accumulation of rounding errors.
+      // The following equation varies the sampleWeight per sample
+      // so that it is uniformly distributed across a range of values
+      // whose rounding errors cancel each other out.
       var uniformCenteredDistribution = (-0.5 + (i + 0.5) / offsetList.length);
       sampleWeight += roundingRange * uniformCenteredDistribution;
       compositeUniforms.scale.value = sampleWeight;
 
       __renderModelGroup(sampleTarget);
       renderer.render(
-                compositeScene, compositeCamera, holdTarget, (i === 0)
-            );
+        compositeScene, compositeCamera, holdTarget, (i === 0)
+      );
     }
 
     compositeUniforms.scale.value = 1.0;
@@ -51518,7 +52046,7 @@ function Viewer (idOrElement) {
       return
     }
 
-        // Log.time( "Viewer.render" );
+    // Log.time( "Viewer.render" );
 
     rendering = true;
 
@@ -51526,7 +52054,7 @@ function Viewer (idOrElement) {
     __updateCamera();
     __updateLights();
 
-        // render
+    // render
 
     updateInfo(true);
 
@@ -51542,8 +52070,8 @@ function Viewer (idOrElement) {
     rendering = false;
     renderPending = false;
 
-        // Log.timeEnd( "Viewer.render" );
-        // Log.log( info.memory, info.render );
+    // Log.timeEnd( "Viewer.render" );
+    // Log.log( info.memory, info.render );
   }
 
   function clear () {
@@ -51553,7 +52081,7 @@ function Viewer (idOrElement) {
     renderer.clear();
   }
 
-    // API
+  // API
 
   this.container = container;
   this.stats = stats;
@@ -51683,111 +52211,117 @@ function getMouseButtons (event) {
  * mouseObserver.signals.dragged.add( function( deltaX, deltaY ){ ... } );
  *
  * @example
- * // listen to clicking (and touch-clicking) events
+ * // listen to clicking (and tapping) events
  * mouseObserver.signals.clicked.add( function(){ ... } );
+ *
+ * @example
+ * // listen to double clicking (and double tapping) events
+ * mouseObserver.signals.doubleClicked.add( function(){ ... } );
  *
  * @example
  * // listen to hovering events
  * mouseObserver.signals.hovered.add( function(){ ... } );
  */
 var MouseObserver = function MouseObserver (domElement, params) {
-      /**
-       * Events emitted by the mouse observer
-       * @type {MouseSignals}
-       */
+  /**
+   * Events emitted by the mouse observer
+   * @type {MouseSignals}
+   */
   this.signals = {
     moved: new Signal(),
     scrolled: new Signal(),
     dragged: new Signal(),
     dropped: new Signal(),
     clicked: new Signal(),
-    hovered: new Signal()
+    hovered: new Signal(),
+    doubleClicked: new Signal()
   };
 
   var p = Object.assign({}, params);
 
   this.hoverTimeout = defaults(p.hoverTimeout, 50);
   this.handleScroll = defaults(p.handleScroll, true);
+  this.doubleClickSpeed = defaults(p.doubleClickSpeed, 200);
 
   this.domElement = domElement;
 
-      /**
-       * Position on page
-       * @type {Vector2}
-       */
+  /**
+   * Position on page
+   * @type {Vector2}
+   */
   this.position = new Vector2();
-      /**
-       * Previous position on page
-       * @type {Vector2}
-       */
+  /**
+   * Previous position on page
+   * @type {Vector2}
+   */
   this.prevPosition = new Vector2();
-      /**
-       * Position on page when clicked
-       * @type {Vector2}
-       */
+  /**
+   * Position on page when clicked
+   * @type {Vector2}
+   */
   this.down = new Vector2();
-      /**
-       * Position on dom element
-       * @type {Vector2}
-       */
+  /**
+   * Position on dom element
+   * @type {Vector2}
+   */
   this.canvasPosition = new Vector2();
-      /**
-       * Flag indicating if the mouse is moving
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if the mouse is moving
+   * @type {Boolean}
+   */
   this.moving = false;
-      /**
-       * Flag indicating if the mouse is hovering
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if the mouse is hovering
+   * @type {Boolean}
+   */
   this.hovering = true;
-      /**
-       * Flag indicating if there was a scolling event
-       * since the last mouse move
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if there was a scolling event
+   * since the last mouse move
+   * @type {Boolean}
+   */
   this.scrolled = false;
-      /**
-       * Timestamp of last mouse move
-       * @type {Number}
-       */
+  /**
+   * Timestamp of last mouse move
+   * @type {Number}
+   */
   this.lastMoved = Infinity;
-      /**
-       * Indicates which mouse button was pressed:
-       * 0: No button; 1: Left button; 2: Middle button; 3: Right button
-       * @type {Integer}
-       */
+  /**
+   * Indicates which mouse button was pressed:
+   * 0: No button; 1: Left button; 2: Middle button; 3: Right button
+   * @type {Integer}
+   */
   this.which = undefined;
-      /**
-       * Indicates which mouse buttons were pressed:
-       * 0: No button; 1: Left button; 2: Right button; 4: Middle button
-       * @type {Integer}
-       */
+  /**
+   * Indicates which mouse buttons were pressed:
+   * 0: No button; 1: Left button; 2: Right button; 4: Middle button
+   * @type {Integer}
+   */
   this.buttons = undefined;
-      /**
-       * Flag indicating if the mouse is pressed down
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if the mouse is pressed down
+   * @type {Boolean}
+   */
   this.pressed = undefined;
-      /**
-       * Flag indicating if the alt key is pressed
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if the alt key is pressed
+   * @type {Boolean}
+   */
   this.altKey = undefined;
-      /**
-       * Flag indicating if the ctrl key is pressed
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if the ctrl key is pressed
+   * @type {Boolean}
+   */
   this.ctrlKey = undefined;
-      /**
-       * Flag indicating if the meta key is pressed
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if the meta key is pressed
+   * @type {Boolean}
+   */
   this.metaKey = undefined;
-      /**
-       * Flag indicating if the shift key is pressed
-       * @type {Boolean}
-       */
+  /**
+   * Flag indicating if the shift key is pressed
+   * @type {Boolean}
+   */
   this.shiftKey = undefined;
 
   this._listen = this._listen.bind(this);
@@ -51812,6 +52346,8 @@ var MouseObserver = function MouseObserver (domElement, params) {
   document.addEventListener('touchstart', this._onTouchstart);
   document.addEventListener('touchend', this._onTouchend);
   document.addEventListener('touchmove', this._onTouchmove);
+
+  this.prevClickCP = new Vector2();
 };
 
 var prototypeAccessors$5 = { key: {} };
@@ -51830,32 +52366,41 @@ MouseObserver.prototype.setParameters = function setParameters (params) {
   this.hoverTimeout = defaults(p.hoverTimeout, this.hoverTimeout);
 };
 
-  /**
-   * listen to mouse actions
-   * @emits {MouseSignals.hovered} when hovered
-   * @return {undefined}
-   */
+/**
+ * listen to mouse actions
+ * @emits {MouseSignals.clicked} when clicked
+ * @emits {MouseSignals.hovered} when hovered
+ * @return {undefined}
+ */
 MouseObserver.prototype._listen = function _listen () {
-  if (window.performance.now() - this.lastMoved > this.hoverTimeout) {
+  var now = window.performance.now();
+  var cp = this.canvasPosition;
+  if (this.clickPending && now - this.lastClicked > this.doubleClickSpeed) {
+    this.signals.clicked.dispatch(cp.x, cp.y);
+    this.clickPending = false;
+    this.which = undefined;
+    this.buttons = undefined;
+    this.pressed = undefined;
+  }
+  if (now - this.lastMoved > this.hoverTimeout) {
     this.moving = false;
   }
   if (this.scrolled || (!this.moving && !this.hovering)) {
     this.scrolled = false;
     if (this.hoverTimeout !== -1 && this.overElement) {
       this.hovering = true;
-      var cp = this.canvasPosition;
       this.signals.hovered.dispatch(cp.x, cp.y);
     }
   }
   window.requestAnimationFrame(this._listen);
 };
 
-  /**
-   * handle mouse scroll
-   * @emits {MouseSignals.scrolled} when scrolled
-   * @param{Event} event - mouse event
-   * @return {undefined}
-   */
+/**
+ * handle mouse scroll
+ * @emits {MouseSignals.scrolled} when scrolled
+ * @param{Event} event - mouse event
+ * @return {undefined}
+ */
 MouseObserver.prototype._onMousewheel = function _onMousewheel (event) {
     var this$1 = this;
 
@@ -51867,13 +52412,13 @@ MouseObserver.prototype._onMousewheel = function _onMousewheel (event) {
 
   var delta = 0;
   if (event.wheelDelta) {
-          // WebKit / Opera / Explorer 9
+    // WebKit / Opera / Explorer 9
     delta = event.wheelDelta / 40;
   } else if (event.detail) {
-          // Firefox
+    // Firefox
     delta = -event.detail / 3;
   } else {
-          // Firefox or IE 11
+    // Firefox or IE 11
     delta = -event.deltaY / (event.deltaMode ? 0.33 : 30);
   }
   this.signals.scrolled.dispatch(delta);
@@ -51883,13 +52428,13 @@ MouseObserver.prototype._onMousewheel = function _onMousewheel (event) {
   }, this.hoverTimeout);
 };
 
-  /**
-   * handle mouse move
-   * @emits {MouseSignals.moved} when moved
-   * @emits {MouseSignals.dragged} when dragged
-   * @param{Event} event - mouse event
-   * @return {undefined}
-   */
+/**
+ * handle mouse move
+ * @emits {MouseSignals.moved} when moved
+ * @emits {MouseSignals.dragged} when dragged
+ * @param{Event} event - mouse event
+ * @return {undefined}
+ */
 MouseObserver.prototype._onMousemove = function _onMousemove (event) {
   if (event.target === this.domElement) {
     event.preventDefault();
@@ -51928,26 +52473,39 @@ MouseObserver.prototype._onMousedown = function _onMousedown (event) {
   this._setCanvasPosition(event);
 };
 
-  /**
-   * handle mouse up
-   * @emits {MouseSignals.clicked} when clicked
-   * @emits {MouseSignals.dropped} when dropped
-   * @param{Event} event - mouse event
-   * @return {undefined}
-   */
+/**
+ * handle mouse up
+ * @emits {MouseSignals.doubleClicked} when double clicked
+ * @emits {MouseSignals.dropped} when dropped
+ * @param{Event} event - mouse event
+ * @return {undefined}
+ */
 MouseObserver.prototype._onMouseup = function _onMouseup (event) {
   if (event.target === this.domElement) {
     event.preventDefault();
   }
   this._setKeys(event);
   var cp = this.canvasPosition;
-  this.signals.clicked.dispatch(cp.x, cp.y);
-      // if( this.distance() > 3 || event.which === RightMouseButton ){
-      //   this.signals.dropped.dispatch();
-      // }
-  this.which = undefined;
-  this.buttons = undefined;
-  this.pressed = undefined;
+  if (this._distance() < 4) {
+    this.lastClicked = window.performance.now();
+    if (this.clickPending && this.prevClickCP.distanceTo(cp) < 4) {
+      this.signals.doubleClicked.dispatch(cp.x, cp.y);
+      this.clickPending = false;
+      this.which = undefined;
+      this.buttons = undefined;
+      this.pressed = undefined;
+    } else {
+      this.clickPending = true;
+    }
+    this.prevClickCP.copy(cp);
+  } else {
+    this.which = undefined;
+    this.buttons = undefined;
+    this.pressed = undefined;
+  }
+  // if (this._distance() > 3 || event.which === RightMouseButton) {
+  // this.signals.dropped.dispatch();
+  // }
 };
 
 MouseObserver.prototype._onContextmenu = function _onContextmenu (event) {
@@ -51967,26 +52525,26 @@ MouseObserver.prototype._onTouchstart = function _onTouchstart (event) {
       this.moving = false;
       this.hovering = false;
       this.down.set(
-                  event.touches[ 0 ].pageX,
-                  event.touches[ 0 ].pageY
-              );
+        event.touches[ 0 ].pageX,
+        event.touches[ 0 ].pageY
+      );
       this.position.set(
-                  event.touches[ 0 ].pageX,
-                  event.touches[ 0 ].pageY
-              );
+        event.touches[ 0 ].pageX,
+        event.touches[ 0 ].pageY
+      );
       this._setCanvasPosition(event.touches[ 0 ]);
       break
     }
 
     case 2: {
       this.down.set(
-                  (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
-                  (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
-              );
+        (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
+        (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
+      );
       this.position.set(
-                  (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
-                  (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
-              );
+        (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
+        (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
+      );
       this.lastTouchDistance = getTouchDistance(event);
     }
   }
@@ -51996,7 +52554,9 @@ MouseObserver.prototype._onTouchend = function _onTouchend (event) {
   if (event.target === this.domElement) {
     event.preventDefault();
   }
-  this.pressed = false;
+  this.which = undefined;
+  this.buttons = undefined;
+  this.pressed = undefined;
 };
 
 MouseObserver.prototype._onTouchmove = function _onTouchmove (event) {
@@ -52009,16 +52569,16 @@ MouseObserver.prototype._onTouchmove = function _onTouchmove (event) {
   switch (event.touches.length) {
     case 1: {
       this._setKeys(event);
-      this.which = undefined;
-      this.buttons = undefined;
+      this.which = LeftMouseButton;
+      this.buttons = 1;
       this.moving = true;
       this.hovering = false;
       this.lastMoved = window.performance.now();
       this.prevPosition.copy(this.position);
       this.position.set(
-                  event.touches[ 0 ].pageX,
-                  event.touches[ 0 ].pageY
-              );
+        event.touches[ 0 ].pageX,
+        event.touches[ 0 ].pageY
+      );
       this._setCanvasPosition(event.touches[ 0 ]);
       var dx = this.prevPosition.x - this.position.x;
       var dy = this.prevPosition.y - this.position.y;
@@ -52030,19 +52590,23 @@ MouseObserver.prototype._onTouchmove = function _onTouchmove (event) {
     }
 
     case 2: {
-      this.which = RightMouseButton;
-      this.buttons = 2;
       var touchDistance = getTouchDistance(event);
       var delta = touchDistance - this.lastTouchDistance;
       this.lastTouchDistance = touchDistance;
-      if (Math.abs(delta) > 1) {
+      this.prevPosition.copy(this.position);
+      this.position.set(
+        (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
+        (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
+      );
+      if (Math.abs(delta) > 2 && this.handleScroll &&
+          this.position.distanceTo(this.prevPosition) < 2
+      ) {
+        this.which = 0;
+        this.buttons = 0;
         this.signals.scrolled.dispatch(delta / 2);
       } else {
-        this.prevPosition.copy(this.position);
-        this.position.set(
-                      (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
-                      (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
-                  );
+        this.which = RightMouseButton;
+        this.buttons = 2;
         var dx$1 = this.prevPosition.x - this.position.x;
         var dy$1 = this.prevPosition.y - this.position.y;
         this.signals.moved.dispatch(dx$1, dy$1);
@@ -52106,6 +52670,7 @@ var tmpRotateVector = new Vector3();
 var tmpRotateQuaternion = new Quaternion();
 var tmpPanMatrix = new Matrix4();
 var tmpPanVector = new Vector3();
+var tmpAtomVector = new Vector3();
 
 /**
  * Trackball controls
@@ -52123,21 +52688,28 @@ var TrackballControls = function TrackballControls (stage, params) {
   this.controls = stage.viewerControls;
 };
 
-var prototypeAccessors$6 = { component: {} };
+var prototypeAccessors$6 = { component: {},atom: {} };
 
 prototypeAccessors$6.component.get = function () {
   return this.stage.transformComponent
 };
 
-TrackballControls.prototype._setPanVector = function _setPanVector (x, y) {
+prototypeAccessors$6.atom.get = function () {
+  return this.stage.transformAtom
+};
+
+TrackballControls.prototype._setPanVector = function _setPanVector (x, y, z) {
   var scaleFactor;
   var camera = this.viewer.camera;
+
+  z = -z || 0;
+  z += camera.position.z;
 
   if (camera.type === 'OrthographicCamera') {
     scaleFactor = 1 / camera.zoom;
   } else {
     var fov = degToRad(camera.fov);
-    var unitHeight = -2.0 * camera.position.z * Math.tan(fov / 2);
+    var unitHeight = -2.0 * z * Math.tan(fov / 2);
     scaleFactor = unitHeight / this.viewer.height;
   }
 
@@ -52150,6 +52722,13 @@ TrackballControls.prototype._getRotateXY = function _getRotateXY (x, y) {
     this.rotateSpeed * -x * 0.01,
     this.rotateSpeed * y * 0.01
   ]
+};
+
+TrackballControls.prototype._transformPanVector = function _transformPanVector () {
+  tmpPanMatrix.extractRotation(this.component.transform);
+  tmpPanMatrix.premultiply(this.viewer.rotationGroup.matrix);
+  tmpPanMatrix.getInverse(tmpPanMatrix);
+  tmpPanVector.applyMatrix4(tmpPanMatrix);
 };
 
 TrackballControls.prototype.zoom = function zoom (delta) {
@@ -52168,13 +52747,24 @@ TrackballControls.prototype.panComponent = function panComponent (x, y) {
   if (!this.component) { return }
 
   this._setPanVector(x, y);
+  this._transformPanVector();
 
-  tmpPanMatrix.extractRotation(this.component.transform);
-  tmpPanMatrix.premultiply(this.viewer.rotationGroup.matrix);
-  tmpPanMatrix.getInverse(tmpPanMatrix);
-  tmpPanVector.applyMatrix4(tmpPanMatrix);
   this.component.position.add(tmpPanVector);
   this.component.updateMatrix();
+};
+
+TrackballControls.prototype.panAtom = function panAtom (x, y) {
+  if (!this.atom || !this.component) { return }
+
+  this.atom.positionToVector3(tmpAtomVector);
+  tmpAtomVector.add(this.viewer.translationGroup.position);
+  tmpAtomVector.applyMatrix4(this.viewer.rotationGroup.matrix);
+
+  this._setPanVector(x, y, tmpAtomVector.z);
+  this._transformPanVector();
+
+  this.atom.positionAdd(tmpPanVector);
+  this.component.updateRepresentations({ 'position': true });
 };
 
 TrackballControls.prototype.rotate = function rotate (x, y) {
@@ -52259,7 +52849,7 @@ var PickingProxy = function PickingProxy (pickingData, stage) {
   this.mouse = stage.mouseObserver;
 };
 
-var prototypeAccessors$7 = { type: {},altKey: {},ctrlKey: {},metaKey: {},shiftKey: {},canvasPosition: {},component: {},object: {},position: {},closestBondAtom: {},arrow: {},atom: {},axes: {},bond: {},cone: {},clash: {},contact: {},cylinder: {},distance: {},ellipsoid: {},mesh: {},slice: {},sphere: {},surface: {},unitcell: {},unknown: {},volume: {} };
+var prototypeAccessors$7 = { type: {},altKey: {},ctrlKey: {},metaKey: {},shiftKey: {},canvasPosition: {},component: {},object: {},position: {},closestBondAtom: {},arrow: {},atom: {},axes: {},bond: {},box: {},cone: {},clash: {},contact: {},cylinder: {},distance: {},ellipsoid: {},mesh: {},slice: {},sphere: {},surface: {},unitcell: {},unknown: {},volume: {} };
 
 /**
  * Kind of the picked data
@@ -52354,6 +52944,10 @@ prototypeAccessors$7.bond.get = function () { return this._objectIfType('bond') 
 /**
  * @type {Object}
  */
+prototypeAccessors$7.box.get = function () { return this._objectIfType('box') };
+/**
+ * @type {Object}
+ */
 prototypeAccessors$7.cone.get = function () { return this._objectIfType('cone') };
 /**
  * @type {Object}
@@ -52422,6 +53016,8 @@ PickingProxy.prototype.getLabel = function getLabel () {
     msg = 'bond: ' +
             this.bond.atom1.qualifiedName() + ' - ' + this.bond.atom2.qualifiedName() +
             ' (' + this.bond.structure.name + ')';
+  } else if (this.box) {
+    msg = 'box: ' + (this.box.name || this.pid) + ' (' + this.box.shape.name + ')';
   } else if (this.cone) {
     msg = 'cone: ' + (this.cone.name || this.pid) + ' (' + this.cone.shape.name + ')';
   } else if (this.clash) {
@@ -52478,19 +53074,19 @@ var PickingControls = function PickingControls (stage/*, params */) {
   this.viewer = stage.viewer;
 };
 
-  /**
-   * get picking data
-   * @param {Number} x - canvas x coordinate
-   * @param {Number} y - canvas y coordinate
-   * @return {PickingProxy|undefined} picking proxy
-   */
+/**
+ * get picking data
+ * @param {Number} x - canvas x coordinate
+ * @param {Number} y - canvas y coordinate
+ * @return {PickingProxy|undefined} picking proxy
+ */
 PickingControls.prototype.pick = function pick (x, y) {
   var pickingData = this.viewer.pick(x, y);
 
   if (pickingData.picker &&
-          pickingData.picker.type !== 'ignore' &&
-          pickingData.pid !== undefined
-      ) {
+      pickingData.picker.type !== 'ignore' &&
+      pickingData.pid !== undefined
+  ) {
     var pickerArray = pickingData.picker.array;
     if (pickerArray && pickingData.pid >= pickerArray.length) {
       console.error('pid >= picker.array.length');
@@ -53432,23 +54028,23 @@ MouseActions.zoomScroll = function zoomScroll (stage, delta) {
   stage.trackballControls.zoom(delta);
 };
 
-  /**
-   * Move near clipping plane based on scroll-delta
-   * @param {Stage} stage - the stage
-   * @param {Number} delta - amount to move clipping plane
-   * @return {undefined}
-   */
+/**
+ * Move near clipping plane based on scroll-delta
+ * @param {Stage} stage - the stage
+ * @param {Number} delta - amount to move clipping plane
+ * @return {undefined}
+ */
 MouseActions.clipNearScroll = function clipNearScroll (stage, delta) {
   var sp = stage.getParameters();
   stage.setParameters({ clipNear: sp.clipNear + delta / 10 });
 };
 
-  /**
-   * Move focus planes based on scroll-delta
-   * @param {Stage} stage - the stage
-   * @param {Number} delta - amount to move focus planes
-   * @return {undefined}
-   */
+/**
+ * Move focus planes based on scroll-delta
+ * @param {Stage} stage - the stage
+ * @param {Number} delta - amount to move focus planes
+ * @return {undefined}
+ */
 MouseActions.focusScroll = function focusScroll (stage, delta) {
   var sp = stage.getParameters();
   var focus = sp.clipNear * 2;
@@ -53457,12 +54053,12 @@ MouseActions.focusScroll = function focusScroll (stage, delta) {
   stage.setFocus(focus + step);
 };
 
-  /**
-   * Change isolevel of volume surfaces based on scroll-delta
-   * @param {Stage} stage - the stage
-   * @param {Number} delta - amount to change isolevel
-   * @return {undefined}
-   */
+/**
+ * Change isolevel of volume surfaces based on scroll-delta
+ * @param {Stage} stage - the stage
+ * @param {Number} delta - amount to change isolevel
+ * @return {undefined}
+ */
 MouseActions.isolevelScroll = function isolevelScroll (stage, delta) {
   var d = Math.sign(delta) / 5;
   stage.eachRepresentation(function (reprComp) {
@@ -53472,145 +54068,156 @@ MouseActions.isolevelScroll = function isolevelScroll (stage, delta) {
   }, 'volume');
 };
 
-  /**
-   * Pan scene based on mouse coordinate changes
-   * @param {Stage} stage - the stage
-   * @param {Number} dx - amount to pan in x direction
-   * @param {Number} dy - amount to pan in y direction
-   * @return {undefined}
-   */
+/**
+ * Pan scene based on mouse coordinate changes
+ * @param {Stage} stage - the stage
+ * @param {Number} dx - amount to pan in x direction
+ * @param {Number} dy - amount to pan in y direction
+ * @return {undefined}
+ */
 MouseActions.panDrag = function panDrag (stage, dx, dy) {
   stage.trackballControls.pan(dx, dy);
 };
 
-  /**
-   * Rotate scene based on mouse coordinate changes
-   * @param {Stage} stage - the stage
-   * @param {Number} dx - amount to rotate in x direction
-   * @param {Number} dy - amount to rotate in y direction
-   * @return {undefined}
-   */
+/**
+ * Rotate scene based on mouse coordinate changes
+ * @param {Stage} stage - the stage
+ * @param {Number} dx - amount to rotate in x direction
+ * @param {Number} dy - amount to rotate in y direction
+ * @return {undefined}
+ */
 MouseActions.rotateDrag = function rotateDrag (stage, dx, dy) {
   stage.trackballControls.rotate(dx, dy);
 };
 
-  /**
-   * Zoom scene based on mouse coordinate changes
-   * @param {Stage} stage - the stage
-   * @param {Number} dx - amount to zoom
-   * @param {Number} dy - amount to zoom
-   * @return {undefined}
-   */
+/**
+ * Zoom scene based on mouse coordinate changes
+ * @param {Stage} stage - the stage
+ * @param {Number} dx - amount to zoom
+ * @param {Number} dy - amount to zoom
+ * @return {undefined}
+ */
 MouseActions.zoomDrag = function zoomDrag (stage, dx, dy) {
   stage.trackballControls.zoom((dx + dy) / -2);
 };
 
-  /**
-   * Zoom scene based on mouse coordinate changes and
-   * move focus planes based on camera position (zoom)
-   * @param {Stage} stage - the stage
-   * @param {Number} dx - amount to zoom
-   * @param {Number} dy - amount to zoom
-   * @return {undefined}
-   */
+/**
+ * Zoom scene based on mouse coordinate changes and
+ * move focus planes based on camera position (zoom)
+ * @param {Stage} stage - the stage
+ * @param {Number} dx - amount to zoom
+ * @param {Number} dy - amount to zoom
+ * @return {undefined}
+ */
 MouseActions.zoomFocusDrag = function zoomFocusDrag (stage, dx, dy) {
   stage.trackballControls.zoom((dx + dy) / -2);
   var z = stage.viewer.camera.position.z;
   stage.setFocus(100 - Math.abs(z / 8));
 };
 
-  /**
-   * Pan picked component based on mouse coordinate changes
-   * @param {Stage} stage - the stage
-   * @param {Number} dx - amount to pan in x direction
-   * @param {Number} dy - amount to pan in y direction
-   * @return {undefined}
-   */
+/**
+ * Pan picked component based on mouse coordinate changes
+ * @param {Stage} stage - the stage
+ * @param {Number} dx - amount to pan in x direction
+ * @param {Number} dy - amount to pan in y direction
+ * @return {undefined}
+ */
 MouseActions.panComponentDrag = function panComponentDrag (stage, dx, dy) {
   stage.trackballControls.panComponent(dx, dy);
 };
 
-  /**
-   * Rotate picked component based on mouse coordinate changes
-   * @param {Stage} stage - the stage
-   * @param {Number} dx - amount to rotate in x direction
-   * @param {Number} dy - amount to rotate in y direction
-   * @return {undefined}
-   */
+/**
+ * Pan picked atom based on mouse coordinate changes
+ * @param {Stage} stage - the stage
+ * @param {Number} dx - amount to pan in x direction
+ * @param {Number} dy - amount to pan in y direction
+ * @return {undefined}
+ */
+MouseActions.panAtomDrag = function panAtomDrag (stage, dx, dy) {
+  stage.trackballControls.panAtom(dx, dy);
+};
+
+/**
+ * Rotate picked component based on mouse coordinate changes
+ * @param {Stage} stage - the stage
+ * @param {Number} dx - amount to rotate in x direction
+ * @param {Number} dy - amount to rotate in y direction
+ * @return {undefined}
+ */
 MouseActions.rotateComponentDrag = function rotateComponentDrag (stage, dx, dy) {
   stage.trackballControls.rotateComponent(dx, dy);
 };
 
-  /**
-   * Move picked element to the center of the screen
-   * @param {Stage} stage - the stage
-   * @param {PickingProxy} pickingProxy - the picking data object
-   * @return {undefined}
-   */
+/**
+ * Move picked element to the center of the screen
+ * @param {Stage} stage - the stage
+ * @param {PickingProxy} pickingProxy - the picking data object
+ * @return {undefined}
+ */
 MouseActions.movePick = function movePick (stage, pickingProxy) {
   if (pickingProxy) {
     stage.animationControls.move(pickingProxy.position.clone());
   }
 };
 
-  /**
-   * Show tooltip with information of picked element
-   * @param {Stage} stage - the stage
-   * @param {PickingProxy} pickingProxy - the picking data object
-   * @return {undefined}
-   */
+/**
+ * Show tooltip with information of picked element
+ * @param {Stage} stage - the stage
+ * @param {PickingProxy} pickingProxy - the picking data object
+ * @return {undefined}
+ */
 MouseActions.tooltipPick = function tooltipPick (stage, pickingProxy) {
   var tt = stage.tooltip;
   var sp = stage.getParameters();
   if (sp.tooltip && pickingProxy) {
     var mp = pickingProxy.mouse.position;
     tt.innerText = pickingProxy.getLabel();
-    tt.style.bottom = window.innerHeight - mp.y + 3 + 'px';
-    tt.style.left = mp.x + 3 + 'px';
+    tt.style.bottom = (window.innerHeight - mp.y + 3) + 'px';
+    tt.style.left = (mp.x + 3) + 'px';
     tt.style.display = 'block';
   } else {
     tt.style.display = 'none';
   }
 };
 
-var ActionPresets = {
+var MouseActionPresets = {
   default: [
-        [ 'scroll', MouseActions.zoomScroll ],
-        [ 'scroll-ctrl', MouseActions.clipNearScroll ],
-        [ 'scroll-shift', MouseActions.focusScroll ],
-        [ 'scroll-alt', MouseActions.isolevelScroll ],
+    [ 'scroll', MouseActions.zoomScroll ],
+    [ 'scroll-ctrl', MouseActions.clipNearScroll ],
+    [ 'scroll-shift', MouseActions.focusScroll ],
+    [ 'scroll-alt', MouseActions.isolevelScroll ],
 
-        [ 'drag-right', MouseActions.panDrag ],
-        [ 'drag-left', MouseActions.rotateDrag ],
-        [ 'drag-middle', MouseActions.zoomDrag ],
-        [ 'drag-shift-right', MouseActions.zoomDrag ],
-        [ 'drag-left+right', MouseActions.zoomDrag ],
-        [ 'drag-ctrl-right', MouseActions.panComponentDrag ],
-        [ 'drag-ctrl-left', MouseActions.rotateComponentDrag ],
+    [ 'drag-right', MouseActions.panDrag ],
+    [ 'drag-left', MouseActions.rotateDrag ],
+    [ 'drag-middle', MouseActions.zoomDrag ],
+    [ 'drag-shift-right', MouseActions.zoomDrag ],
+    [ 'drag-left+right', MouseActions.zoomDrag ],
+    [ 'drag-ctrl-right', MouseActions.panComponentDrag ],
+    [ 'drag-ctrl-left', MouseActions.rotateComponentDrag ],
 
-        [ 'clickPick-middle', MouseActions.movePick ],
-        [ 'hoverPick', MouseActions.tooltipPick ]
+    [ 'clickPick-middle', MouseActions.movePick ],
+    [ 'hoverPick', MouseActions.tooltipPick ]
   ],
   pymol: [
-        [ 'drag-left', MouseActions.rotateDrag ],
-        [ 'drag-middle', MouseActions.panDrag ],
-        [ 'drag-right', MouseActions.zoomDrag ],
-        [ 'drag-shift-right', MouseActions.focusScroll ],
+    [ 'drag-left', MouseActions.rotateDrag ],
+    [ 'drag-middle', MouseActions.panDrag ],
+    [ 'drag-right', MouseActions.zoomDrag ],
+    [ 'drag-shift-right', MouseActions.focusScroll ],
 
-        [ 'clickPick-ctrl+shift-middle', MouseActions.movePick ],
-        [ 'hoverPick', MouseActions.tooltipPick ]
+    [ 'clickPick-ctrl+shift-middle', MouseActions.movePick ],
+    [ 'hoverPick', MouseActions.tooltipPick ]
   ],
   coot: [
-        [ 'scroll', MouseActions.isolevelScroll ],
+    [ 'scroll', MouseActions.isolevelScroll ],
 
-        [ 'drag-left', MouseActions.rotateDrag ],
-        [ 'drag-middle', MouseActions.panDrag ],
-        [ 'drag-ctrl-left', MouseActions.panDrag ],
-        [ 'drag-right', MouseActions.zoomFocusDrag ],
-        [ 'drag-ctrl-right', MouseActions.focusScroll ],
+    [ 'drag-left', MouseActions.rotateDrag ],
+    [ 'drag-middle', MouseActions.panDrag ],
+    [ 'drag-ctrl-left', MouseActions.panDrag ],
+    [ 'drag-right', MouseActions.zoomFocusDrag ],
+    [ 'drag-ctrl-right', MouseActions.focusScroll ],
 
-        [ 'clickPick-middle', MouseActions.movePick ],
-        [ 'hoverPick', MouseActions.tooltipPick ]
+    [ 'clickPick-middle', MouseActions.movePick ],
+    [ 'hoverPick', MouseActions.tooltipPick ]
   ]
 };
 
@@ -53622,11 +54229,12 @@ var ActionPresets = {
 
 /**
  * Strings to describe mouse events (including optional keyboard modifiers).
- * Must contain an event type: "scroll", "drag", "click", "hover", "clickPick"
- * or "hoverPick". Optionally contain one or more (seperated by plus signs)
- * keyboard modifiers: "alt", "ctrl", "meta" or "shift". Can contain the mouse
- * button performing the event: "left", "middle" or "right". The type, key and
- * button parts must be seperated by dashes.
+ * Must contain an event type: "scroll", "drag", "click", "doubleClick",
+ * "hover", "clickPick" or "hoverPick". Optionally contain one or more
+ * (seperated by plus signs) keyboard modifiers: "alt", "ctrl", "meta" or
+ * "shift". Can contain the mouse button performing the event: "left",
+ * "middle" or "right". The type, key and button parts must be seperated by
+ * dashes.
  *
  * @example
  * // triggered on scroll event (no key or button)
@@ -53660,6 +54268,7 @@ function triggerFromString (str) {
   if (tokens.includes('scroll')) { type = 'scroll'; }
   if (tokens.includes('drag')) { type = 'drag'; }
   if (tokens.includes('click')) { type = 'click'; }
+  if (tokens.includes('doubleClick')) { type = 'doubleClick'; }
   if (tokens.includes('hover')) { type = 'hover'; }
   if (tokens.includes('clickPick')) { type = 'clickPick'; }
   if (tokens.includes('hoverPick')) { type = 'hoverPick'; }
@@ -53686,8 +54295,13 @@ var MouseControls = function MouseControls (stage, params) {
 
   this.stage = stage;
   this.mouse = stage.mouseObserver;
-
   this.actionList = [];
+
+  /**
+   * Flag to disable all actions
+   * @type {Boolean}
+   */
+  this.disabled = p.disabled || false;
 
   this.preset(p.preset || 'default');
 };
@@ -53696,6 +54310,8 @@ MouseControls.prototype.run = function run (type) {
     var this$1 = this;
     var args = [], len = arguments.length - 1;
     while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+
+  if (this.disabled) { return }
 
   var key = this.mouse.key || 0;
   var button = this.mouse.buttons || 0;
@@ -53707,28 +54323,28 @@ MouseControls.prototype.run = function run (type) {
   });
 };
 
-  /**
-   * Add a new mouse action triggered by an event, key and button combination.
-   * The {@link MouseActions} class provides a number of static methods for
-   * use as callback functions.
-   *
-   * @example
-   * // change ambient light intensity on mouse scroll
-   * // while the ctrl and shift keys are pressed
-   * stage.mouseControls.add( "scroll-ctrl+shift", function( stage, delta ){
-   *   var ai = stage.getParameters().ambientIntensity;
-   *   stage.setParameters( { ambientIntensity: Math.max( 0, ai + delta / 50 ) } );
-   * } );
-   *
-   * @example
-   * // Call the MouseActions.zoomDrag method on mouse drag events
-   * // with left and right mouse buttons simultaneous
-   * stage.mouseControls.add( "drag-left+right", MouseActions.zoomDrag );
-   *
-   * @param {TriggerString} triggerStr - the trigger for the action
-   * @param {function(stage: Stage, ...args: Any)} callback - the callback function for the action
-   * @return {undefined}
-   */
+/**
+ * Add a new mouse action triggered by an event, key and button combination.
+ * The {@link MouseActions} class provides a number of static methods for
+ * use as callback functions.
+ *
+ * @example
+ * // change ambient light intensity on mouse scroll
+ * // while the ctrl and shift keys are pressed
+ * stage.mouseControls.add( "scroll-ctrl+shift", function( stage, delta ){
+ *   var ai = stage.getParameters().ambientIntensity;
+ *   stage.setParameters( { ambientIntensity: Math.max( 0, ai + delta / 50 ) } );
+ * } );
+ *
+ * @example
+ * // Call the MouseActions.zoomDrag method on mouse drag events
+ * // with left and right mouse buttons simultaneous
+ * stage.mouseControls.add( "drag-left+right", MouseActions.zoomDrag );
+ *
+ * @param {TriggerString} triggerStr - the trigger for the action
+ * @param {function(stage: Stage, ...args: Any)} callback - the callback function for the action
+ * @return {undefined}
+ */
 MouseControls.prototype.add = function add (triggerStr, callback) {
   var ref = triggerFromString(triggerStr);
     var type = ref[0];
@@ -53738,29 +54354,29 @@ MouseControls.prototype.add = function add (triggerStr, callback) {
   this.actionList.push({ type: type, key: key, button: button, callback: callback });
 };
 
-  /**
-   * Remove a mouse action. The trigger string can contain an asterix (*)
-   * as a wildcard for any key or mouse button. When the callback function
-   * is given, only actions that call that function are removed.
-   *
-   * @example
-   * // remove actions triggered solely by a scroll event
-   * stage.mouseControls.remove( "scroll" );
-   *
-   * @example
-   * // remove actions triggered by a scroll event, including
-   * // those requiring a key pressed or mouse button used
-   * stage.mouseControls.remove( "scroll-*" );
-   *
-   * @example
-   * // remove actions triggered by a scroll event
-   * // while the shift key is pressed
-   * stage.mouseControls.remove( "scroll-shift" );
-   *
-   * @param {TriggerString} triggerStr - the trigger for the action
-   * @param {Function} [callback] - the callback function for the action
-   * @return {undefined}
-   */
+/**
+ * Remove a mouse action. The trigger string can contain an asterix (*)
+ * as a wildcard for any key or mouse button. When the callback function
+ * is given, only actions that call that function are removed.
+ *
+ * @example
+ * // remove actions triggered solely by a scroll event
+ * stage.mouseControls.remove( "scroll" );
+ *
+ * @example
+ * // remove actions triggered by a scroll event, including
+ * // those requiring a key pressed or mouse button used
+ * stage.mouseControls.remove( "scroll-*" );
+ *
+ * @example
+ * // remove actions triggered by a scroll event
+ * // while the shift key is pressed
+ * stage.mouseControls.remove( "scroll-shift" );
+ *
+ * @param {TriggerString} triggerStr - the trigger for the action
+ * @param {Function} [callback] - the callback function for the action
+ * @return {undefined}
+ */
 MouseControls.prototype.remove = function remove (triggerStr, callback) {
   var wildcard = triggerStr.includes('*');
   var ref = triggerFromString(triggerStr);
@@ -53770,39 +54386,186 @@ MouseControls.prototype.remove = function remove (triggerStr, callback) {
 
   var actionList = this.actionList.filter(function (a) {
     return !(
-              (a.type === type || (wildcard && type === '')) &&
-              (a.key === key || (wildcard && key === 0)) &&
-              (a.button === button || (wildcard && button === 0)) &&
-              (a.callback === callback || callback === undefined)
-          )
+      (a.type === type || (wildcard && type === '')) &&
+      (a.key === key || (wildcard && key === 0)) &&
+      (a.button === button || (wildcard && button === 0)) &&
+      (a.callback === callback || callback === undefined)
+    )
   });
 
   this.actionList = actionList;
 };
 
-  /**
-   * Set mouse action preset
-   * @param{String} name - one of "default", "pymol", "coot"
-   * @return {undefined}
-   */
+/**
+ * Set mouse action preset
+ * @param{String} name - one of "default", "pymol", "coot"
+ * @return {undefined}
+ */
 MouseControls.prototype.preset = function preset (name) {
     var this$1 = this;
 
   this.clear();
 
-  var list = ActionPresets[ name ] || [];
+  var list = MouseActionPresets[ name ] || [];
 
-  list.forEach(function (action) {
-    (ref = this$1).add.apply(ref, action);
-      var ref;
+  list.forEach(function (action) { return (ref = this$1).add.apply(ref, action)
+      var ref; });
+};
+
+/**
+ * Remove all mouse actions
+ * @return {undefined}
+ */
+MouseControls.prototype.clear = function clear () {
+  this.actionList.length = 0;
+};
+
+/**
+ * @file Key Actions
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Key actions provided as static methods
+ */
+var KeyActions = function KeyActions () {};
+
+KeyActions.toggleSpin = function toggleSpin (stage) {
+  stage.toggleSpin();
+};
+
+/**
+ * Toggle stage rocking
+ * @param {Stage} stage - the stage
+ * @return {undefined}
+ */
+KeyActions.toggleRock = function toggleRock (stage) {
+  stage.toggleRock();
+};
+
+/**
+ * Toggle stage animations
+ * @param {Stage} stage - the stage
+ * @return {undefined}
+ */
+KeyActions.toggleAnimations = function toggleAnimations (stage) {
+  stage.animationControls.toggle();
+};
+
+var KeyActionPresets = {
+  default: [
+    [ 'i', KeyActions.toggleSpin ],
+    [ 'k', KeyActions.toggleRock ],
+    [ 'p', KeyActions.toggleAnimations ]
+  ]
+};
+
+/**
+ * @file Key Controls
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Mouse controls
+ */
+var KeyControls = function KeyControls (stage, params) {
+  var p = params || {};
+
+  this.stage = stage;
+  this.actionList = [];
+
+  /**
+   * Flag to disable all actions
+   * @type {Boolean}
+   */
+  this.disabled = p.disabled || false;
+
+  this.preset(p.preset || 'default');
+};
+
+KeyControls.prototype.run = function run (keyCode) {
+    var this$1 = this;
+
+  if (this.disabled) { return }
+
+  this.actionList.forEach(function (a) {
+    if (a.keyCode === keyCode) {
+      a.callback(this$1.stage);
+    }
   });
 };
 
-  /**
-   * Remove all mouse actions
-   * @return {undefined}
-   */
-MouseControls.prototype.clear = function clear () {
+/**
+ * Add a key action triggered by pressing the given character.
+ * The {@link KeyActions} class provides a number of static methods for
+ * use as callback functions.
+ *
+ * @example
+ * // call KeyActions.toggleRock when "k" is pressed
+ * stage.keyControls.remove( "k", KeyActions.toggleRock );
+ *
+ * @param {Char} char - the key/character
+ * @param {Function} callback - the callback function for the action
+ * @return {undefined}
+ */
+KeyControls.prototype.add = function add (char, callback) {
+  var keyCode = char.charCodeAt(0);
+
+  this.actionList.push({ keyCode: keyCode, callback: callback });
+};
+
+/**
+ * Remove a key action. When the callback function
+ * is given, only actions that call that function are removed.
+ *
+ * @example
+ * // remove all actions triggered by pressing "k"
+ * stage.keyControls.remove( "k" );
+ *
+ * @example
+ * // remove action `toggleRock` triggered by pressing "k"
+ * stage.keyControls.remove( "k", toggleRock );
+ *
+ * @param {Char} char - the key/character
+ * @param {Function} [callback] - the callback function for the action
+ * @return {undefined}
+ */
+KeyControls.prototype.remove = function remove (char, callback) {
+  var keyCode = char.charCodeAt(0);
+
+  var actionList = this.actionList.filter(function (a) {
+    return !(
+      (a.keyCode === keyCode) &&
+      (a.callback === callback || callback === undefined)
+    )
+  });
+
+  this.actionList = actionList;
+};
+
+/**
+ * Set key action preset
+ * @param{String} name - one of "default"
+ * @return {undefined}
+ */
+KeyControls.prototype.preset = function preset (name) {
+    var this$1 = this;
+
+  this.clear();
+
+  var list = KeyActionPresets[ name ] || [];
+
+  list.forEach(function (action) { return (ref = this$1).add.apply(ref, action)
+      var ref; });
+};
+
+/**
+ * Remove all key actions
+ * @return {undefined}
+ */
+KeyControls.prototype.clear = function clear () {
   this.actionList.length = 0;
 };
 
@@ -53831,6 +54594,7 @@ PickingBehavior.prototype._onHover = function _onHover (x, y) {
   var pickingProxy = this.stage.pickingControls.pick(x, y);
   if (pickingProxy && this.mouse.down.equals(this.mouse.position)) {
     this.stage.transformComponent = pickingProxy.component;
+    this.stage.transformAtom = pickingProxy.atom;
   }
   this.stage.signals.hovered.dispatch(pickingProxy);
   this.controls.run('hoverPick', pickingProxy);
@@ -53857,6 +54621,7 @@ var MouseBehavior = function MouseBehavior (stage/*, params */) {
   this.mouse.signals.dragged.add(this._onDrag, this);
   this.mouse.signals.clicked.add(this._onClick, this);
   this.mouse.signals.hovered.add(this._onHover, this);
+  this.mouse.signals.doubleClicked.add(this._onDblclick, this);
 };
 
 MouseBehavior.prototype._onMove = function _onMove (/* x, y */) {
@@ -53873,6 +54638,10 @@ MouseBehavior.prototype._onDrag = function _onDrag (dx, dy) {
 
 MouseBehavior.prototype._onClick = function _onClick (x, y) {
   this.controls.run('click', x, y);
+};
+
+MouseBehavior.prototype._onDblclick = function _onDblclick (x, y) {
+  this.controls.run('doubleClick', x, y);
 };
 
 MouseBehavior.prototype._onHover = function _onHover (x, y) {
@@ -53916,6 +54685,7 @@ AnimationBehavior.prototype.dispose = function dispose () {
 
 var KeyBehavior = function KeyBehavior (stage) {
   this.stage = stage;
+  this.controls = stage.keyControls;
   this.domElement = stage.viewer.renderer.domElement;
 
   // ensure the domElement is focusable
@@ -53942,9 +54712,7 @@ var KeyBehavior = function KeyBehavior (stage) {
  * @return {undefined}
  */
 KeyBehavior.prototype._onKeydown = function _onKeydown (/* event */) {
-
   // console.log( "down", event.keyCode, String.fromCharCode( event.keyCode ) );
-
 };
 
 /**
@@ -53953,9 +54721,7 @@ KeyBehavior.prototype._onKeydown = function _onKeydown (/* event */) {
  * @return {undefined}
  */
 KeyBehavior.prototype._onKeyup = function _onKeyup (/* event */) {
-
   // console.log( "up", event.keyCode, String.fromCharCode( event.keyCode ) );
-
 };
 
 /**
@@ -53965,18 +54731,7 @@ KeyBehavior.prototype._onKeyup = function _onKeyup (/* event */) {
  */
 KeyBehavior.prototype._onKeypress = function _onKeypress (event) {
   // console.log( "press", event.keyCode, String.fromCharCode( event.keyCode ) );
-
-  switch (event.keyCode) {
-    case 73: case 105:// I i
-      this.stage.toggleSpin();
-      break
-    case 75: case 107:// K k
-      this.stage.toggleRock();
-      break
-    case 80: case 112:// P p
-      this.stage.animationControls.toggle();
-      break
-  }
+  this.controls.run(event.keyCode);
 };
 
 KeyBehavior.prototype._focusDomElement = function _focusDomElement () {
@@ -54147,9 +54902,9 @@ var ComponentControls = function ComponentControls (component) {
   this.stage = component.stage;
   this.viewer = component.stage.viewer;
 
-      /**
-       * @type {{changed: Signal}}
-       */
+  /**
+   * @type {{changed: Signal}}
+   */
   this.signals = {
     changed: new Signal()
   };
@@ -54157,43 +54912,43 @@ var ComponentControls = function ComponentControls (component) {
 
 var prototypeAccessors$12 = { position: {},rotation: {} };
 
-  /**
-   * component center position
-   * @type {Vector3}
-   */
+/**
+ * component center position
+ * @type {Vector3}
+ */
 prototypeAccessors$12.position.get = function () {
   return this.component.position
 };
 
-  /**
-   * component rotation
-   * @type {Quaternion}
-   */
+/**
+ * component rotation
+ * @type {Quaternion}
+ */
 prototypeAccessors$12.rotation.get = function () {
   return this.component.quaternion
 };
 
-  /**
-   * Trigger render and emit changed event
-   * @emits {ComponentControls.signals.changed}
-   * @return {undefined}
-   */
+/**
+ * Trigger render and emit changed event
+ * @emits {ComponentControls.signals.changed}
+ * @return {undefined}
+ */
 ComponentControls.prototype.changed = function changed () {
   this.component.updateMatrix();
   this.viewer.requestRender();
   this.signals.changed.dispatch();
 };
 
-  /**
-   * spin component on axis
-   * @param{Vector3|Array} axis - rotation axis
-   * @param{Number} angle - amount to spin
-   * @return {undefined}
-   */
+/**
+ * spin component on axis
+ * @param{Vector3|Array} axis - rotation axis
+ * @param{Number} angle - amount to spin
+ * @return {undefined}
+ */
 ComponentControls.prototype.spin = function spin (axis, angle) {
   tmpRotateMatrix$2.getInverse(this.viewer.rotationGroup.matrix);
   tmpRotateVector$2
-          .copy(ensureVector3(axis)).applyMatrix4(tmpRotateMatrix$2);
+    .copy(ensureVector3(axis)).applyMatrix4(tmpRotateMatrix$2);
 
   tmpRotateMatrix$2.extractRotation(this.component.transform);
   tmpRotateMatrix$2.premultiply(this.viewer.rotationGroup.matrix);
@@ -54381,6 +55136,339 @@ function v3negate (out, a) {
 }
 
 /**
+ * @file Primitive
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+function addElement (elm, array) {
+  if (elm.toArray !== undefined) {
+    elm = elm.toArray();
+  } else if (elm.x !== undefined) {
+    elm = [ elm.x, elm.y, elm.z ];
+  } else if (elm.r !== undefined) {
+    elm = [ elm.r, elm.g, elm.b ];
+  }
+  array.push.apply(array, elm);
+}
+
+var tmpVec = new Vector3();
+
+/**
+ * Base class for geometry primitives
+ * @interface
+ */
+var Primitive = function Primitive () {};
+
+var staticAccessors = { Picker: {},Buffer: {} };
+
+staticAccessors.Picker.get = function () { return PickerRegistry.get(this.type) };
+staticAccessors.Buffer.get = function () { return BufferRegistry.get(this.type) };
+
+Primitive.getShapeKey = function getShapeKey (name) {
+  return this.type + name[0].toUpperCase() + name.substr(1)
+};
+
+Primitive.valueToShape = function valueToShape (shape, name, value) {
+  var data = shape[this.getShapeKey(name)];
+  var type = this.fields[name];
+
+  switch (type) {
+    case 'v3':
+    case 'c':
+      addElement(value, data);
+      break
+    default:
+      data.push(value);
+  }
+};
+
+Primitive.objectToShape = function objectToShape (shape, data) {
+    var this$1 = this;
+
+  Object.keys(this.fields).forEach(function (name) {
+    this$1.valueToShape(shape, name, data[name]);
+  });
+  this.valueToShape(shape, 'name', data.name);
+  this.expandBoundingBox(shape.boundingBox, data);
+};
+
+Primitive.valueFromShape = function valueFromShape (shape, pid, name) {
+  var data = shape[this.getShapeKey(name)];
+  var type = this.fields[name];
+
+  switch (type) {
+    case 'v3':
+      return new Vector3().fromArray(data, 3 * pid)
+    case 'c':
+      return new Color().fromArray(data, 3 * pid)
+    default:
+      return data[pid]
+  }
+};
+
+Primitive.objectFromShape = function objectFromShape (shape, pid) {
+    var this$1 = this;
+
+  var o = {
+    shape: shape,
+    name: this.valueFromShape(shape, pid, 'name')
+  };
+
+  Object.keys(this.fields).forEach(function (name) {
+    o[name] = this$1.valueFromShape(shape, pid, name);
+  });
+
+  return o
+};
+
+Primitive.arrayFromShape = function arrayFromShape (shape, name) {
+  var data = shape[this.getShapeKey(name)];
+  var type = this.fields[name];
+
+  switch (type) {
+    case 's':
+      return data
+    default:
+      return new Float32Array(data)
+  }
+};
+
+Primitive.dataFromShape = function dataFromShape (shape) {
+    var this$1 = this;
+
+  var data = {};
+
+  if (this.Picker) {
+    data.picking = new this.Picker(shape);
+  }
+
+  Object.keys(this.fields).forEach(function (name) {
+    data[name] = this$1.arrayFromShape(shape, name);
+  });
+
+  return data
+};
+
+Primitive.bufferFromShape = function bufferFromShape (shape, params) {
+  return new this.Buffer(this.dataFromShape(shape), params)
+};
+
+Object.defineProperties( Primitive, staticAccessors );
+
+/**
+ * Sphere geometry primitive
+ */
+var SpherePrimitive = (function (Primitive) {
+  function SpherePrimitive () {
+    Primitive.apply(this, arguments);
+  }
+
+  if ( Primitive ) SpherePrimitive.__proto__ = Primitive;
+  SpherePrimitive.prototype = Object.create( Primitive && Primitive.prototype );
+  SpherePrimitive.prototype.constructor = SpherePrimitive;
+
+  var staticAccessors$1 = { type: {},fields: {} };
+
+  staticAccessors$1.type.get = function () { return 'sphere' };
+
+  staticAccessors$1.fields.get = function () {
+    return {
+      position: 'v3',
+      color: 'c',
+      radius: 'f'
+    }
+  };
+
+  SpherePrimitive.positionFromShape = function positionFromShape (shape, pid) {
+    return this.valueFromShape(shape, pid, 'position')
+  };
+
+  SpherePrimitive.expandBoundingBox = function expandBoundingBox (box, data) {
+    box.expandByPoint(tmpVec.fromArray(data.position));
+  };
+
+  Object.defineProperties( SpherePrimitive, staticAccessors$1 );
+
+  return SpherePrimitive;
+}(Primitive));
+
+/**
+ * Box geometry primitive
+ */
+var BoxPrimitive = (function (SpherePrimitive) {
+  function BoxPrimitive () {
+    SpherePrimitive.apply(this, arguments);
+  }
+
+  if ( SpherePrimitive ) BoxPrimitive.__proto__ = SpherePrimitive;
+  BoxPrimitive.prototype = Object.create( SpherePrimitive && SpherePrimitive.prototype );
+  BoxPrimitive.prototype.constructor = BoxPrimitive;
+
+  var staticAccessors$2 = { type: {},fields: {} };
+
+  staticAccessors$2.type.get = function () { return 'box' };
+
+  staticAccessors$2.fields.get = function () {
+    return {
+      position: 'v3',
+      color: 'c',
+      size: 'f',
+      heightAxis: 'v3',
+      depthAxis: 'v3'
+    }
+  };
+
+  Object.defineProperties( BoxPrimitive, staticAccessors$2 );
+
+  return BoxPrimitive;
+}(SpherePrimitive));
+
+/**
+ * Cylinder geometry primitive
+ */
+var CylinderPrimitive = (function (Primitive) {
+  function CylinderPrimitive () {
+    Primitive.apply(this, arguments);
+  }
+
+  if ( Primitive ) CylinderPrimitive.__proto__ = Primitive;
+  CylinderPrimitive.prototype = Object.create( Primitive && Primitive.prototype );
+  CylinderPrimitive.prototype.constructor = CylinderPrimitive;
+
+  var staticAccessors$3 = { type: {},fields: {} };
+
+  staticAccessors$3.type.get = function () { return 'cylinder' };
+
+  staticAccessors$3.fields.get = function () {
+    return {
+      position1: 'v3',
+      position2: 'v3',
+      color: 'c',
+      radius: 'f'
+    }
+  };
+
+  CylinderPrimitive.positionFromShape = function positionFromShape (shape, pid) {
+    var p1 = this.valueFromShape(shape, pid, 'position1');
+    var p2 = this.valueFromShape(shape, pid, 'position2');
+    return p1.add(p2).multiplyScalar(0.5)
+  };
+
+  CylinderPrimitive.expandBoundingBox = function expandBoundingBox (box, data) {
+    box.expandByPoint(tmpVec.fromArray(data.position1));
+    box.expandByPoint(tmpVec.fromArray(data.position2));
+  };
+
+  Object.defineProperties( CylinderPrimitive, staticAccessors$3 );
+
+  return CylinderPrimitive;
+}(Primitive));
+
+/**
+ * Arrow geometry primitive
+ */
+var ArrowPrimitive = (function (CylinderPrimitive) {
+  function ArrowPrimitive () {
+    CylinderPrimitive.apply(this, arguments);
+  }
+
+  if ( CylinderPrimitive ) ArrowPrimitive.__proto__ = CylinderPrimitive;
+  ArrowPrimitive.prototype = Object.create( CylinderPrimitive && CylinderPrimitive.prototype );
+  ArrowPrimitive.prototype.constructor = ArrowPrimitive;
+
+  var staticAccessors$4 = { type: {} };
+
+  staticAccessors$4.type.get = function () { return 'arrow' };
+
+  Object.defineProperties( ArrowPrimitive, staticAccessors$4 );
+
+  return ArrowPrimitive;
+}(CylinderPrimitive));
+
+/**
+ * Cone geometry primitive
+ */
+var ConePrimitive = (function (CylinderPrimitive) {
+  function ConePrimitive () {
+    CylinderPrimitive.apply(this, arguments);
+  }
+
+  if ( CylinderPrimitive ) ConePrimitive.__proto__ = CylinderPrimitive;
+  ConePrimitive.prototype = Object.create( CylinderPrimitive && CylinderPrimitive.prototype );
+  ConePrimitive.prototype.constructor = ConePrimitive;
+
+  var staticAccessors$5 = { type: {} };
+
+  staticAccessors$5.type.get = function () { return 'cone' };
+
+  Object.defineProperties( ConePrimitive, staticAccessors$5 );
+
+  return ConePrimitive;
+}(CylinderPrimitive));
+
+/**
+ * Ellipsoid geometry primitive
+ */
+var EllipsoidPrimitive = (function (SpherePrimitive) {
+  function EllipsoidPrimitive () {
+    SpherePrimitive.apply(this, arguments);
+  }
+
+  if ( SpherePrimitive ) EllipsoidPrimitive.__proto__ = SpherePrimitive;
+  EllipsoidPrimitive.prototype = Object.create( SpherePrimitive && SpherePrimitive.prototype );
+  EllipsoidPrimitive.prototype.constructor = EllipsoidPrimitive;
+
+  var staticAccessors$6 = { type: {},fields: {} };
+
+  staticAccessors$6.type.get = function () { return 'ellipsoid' };
+
+  staticAccessors$6.fields.get = function () {
+    return {
+      position: 'v3',
+      color: 'c',
+      radius: 'f',
+      majorAxis: 'v3',
+      minorAxis: 'v3'
+    }
+  };
+
+  Object.defineProperties( EllipsoidPrimitive, staticAccessors$6 );
+
+  return EllipsoidPrimitive;
+}(SpherePrimitive));
+
+/**
+ * Text geometry primitive
+ */
+var TextPrimitive = (function (SpherePrimitive) {
+  function TextPrimitive () {
+    SpherePrimitive.apply(this, arguments);
+  }
+
+  if ( SpherePrimitive ) TextPrimitive.__proto__ = SpherePrimitive;
+  TextPrimitive.prototype = Object.create( SpherePrimitive && SpherePrimitive.prototype );
+  TextPrimitive.prototype.constructor = TextPrimitive;
+
+  var staticAccessors$7 = { type: {},fields: {} };
+
+  staticAccessors$7.type.get = function () { return 'text' };
+
+  staticAccessors$7.fields.get = function () {
+    return {
+      position: 'v3',
+      color: 'c',
+      size: 'f',
+      text: 's'
+    }
+  };
+
+  Object.defineProperties( TextPrimitive, staticAccessors$7 );
+
+  return TextPrimitive;
+}(SpherePrimitive));
+
+/**
  * @file Picker
  * @author Alexander Rose <alexander.rose@weirdbyte.de>
  * @private
@@ -54394,21 +55482,21 @@ var Picker = function Picker (array) {
   this.array = array;
 };
 
-  /**
-   * Get the index for the given picking id
-   * @param{Integer} pid - the picking id
-   * @return {Integer} the index
-   */
+/**
+ * Get the index for the given picking id
+ * @param{Integer} pid - the picking id
+ * @return {Integer} the index
+ */
 Picker.prototype.getIndex = function getIndex (pid) {
   return this.array ? this.array[ pid ] : pid
 };
 
-  /**
-   * Get object data
-   * @abstract
-   * @param{Integer} pid - the picking id
-   * @return {Object} the object data
-   */
+/**
+ * Get object data
+ * @abstract
+ * @param{Integer} pid - the picking id
+ * @return {Object} the object data
+ */
 Picker.prototype.getObject = function getObject (/* pid */) {
   return {}
 };
@@ -54423,27 +55511,27 @@ Picker.prototype._applyTransformations = function _applyTransformations (vector,
   return vector
 };
 
-  /**
-   * Get object position
-   * @abstract
-   * @param{Integer} pid - the picking id
-   * @return {Vector3} the object position
-   */
+/**
+ * Get object position
+ * @abstract
+ * @param{Integer} pid - the picking id
+ * @return {Vector3} the object position
+ */
 Picker.prototype._getPosition = function _getPosition (/* pid */) {
   return new Vector3()
 };
 
-  /**
-   * Get position for the given picking id
-   * @param{Integer} pid - the picking id
-   * @param{Object} instance - the instance that should be applied
-   * @param{Component} component - the component of the picked object
-   * @return {Vector3} the position
-   */
+/**
+ * Get position for the given picking id
+ * @param{Integer} pid - the picking id
+ * @param{Object} instance - the instance that should be applied
+ * @param{Component} component - the component of the picked object
+ * @return {Vector3} the position
+ */
 Picker.prototype.getPosition = function getPosition (pid, instance, component) {
   return this._applyTransformations(
-          this._getPosition(pid), instance, component
-      )
+    this._getPosition(pid), instance, component
+  )
 };
 
 /**
@@ -54460,9 +55548,20 @@ var ShapePicker = (function (Picker) {
   ShapePicker.prototype = Object.create( Picker && Picker.prototype );
   ShapePicker.prototype.constructor = ShapePicker;
 
-  var prototypeAccessors = { data: {} };
+  var prototypeAccessors = { primitive: {},data: {},type: {} };
+
+  prototypeAccessors.primitive.get = function () {};
 
   prototypeAccessors.data.get = function () { return this.shape };
+  prototypeAccessors.type.get = function () { return this.primitive.type };
+
+  ShapePicker.prototype.getObject = function getObject (pid) {
+    return this.primitive.objectFromShape(this.shape, pid)
+  };
+
+  ShapePicker.prototype._getPosition = function _getPosition (pid) {
+    return this.primitive.positionFromShape(this.shape, pid)
+  };
 
   Object.defineProperties( ShapePicker.prototype, prototypeAccessors );
 
@@ -54480,28 +55579,9 @@ var CylinderPicker = (function (ShapePicker) {
   CylinderPicker.prototype = Object.create( ShapePicker && ShapePicker.prototype );
   CylinderPicker.prototype.constructor = CylinderPicker;
 
-  var prototypeAccessors$1 = { type: {} };
+  var prototypeAccessors$1 = { primitive: {} };
 
-  prototypeAccessors$1.type.get = function () { return 'cylinder' };
-
-  CylinderPicker.prototype.getObject = function getObject (pid) {
-    var s = this.shape;
-    return {
-      shape: s,
-      color: new Color().fromArray(s.cylinderColor, 3 * pid),
-      radius: s.cylinderRadius[ pid ],
-      position1: new Vector3().fromArray(s.cylinderPosition1, 3 * pid),
-      position2: new Vector3().fromArray(s.cylinderPosition2, 3 * pid),
-      name: s.cylinderName[ pid ]
-    }
-  };
-
-  CylinderPicker.prototype._getPosition = function _getPosition (pid) {
-    var s = this.shape;
-    var p1 = new Vector3().fromArray(s.cylinderPosition1, 3 * pid);
-    var p2 = new Vector3().fromArray(s.cylinderPosition2, 3 * pid);
-    return p1.add(p2).multiplyScalar(0.5)
-  };
+  prototypeAccessors$1.primitive.get = function () { return CylinderPrimitive };
 
   Object.defineProperties( CylinderPicker.prototype, prototypeAccessors$1 );
 
@@ -54517,29 +55597,9 @@ var ArrowPicker = (function (ShapePicker) {
   ArrowPicker.prototype = Object.create( ShapePicker && ShapePicker.prototype );
   ArrowPicker.prototype.constructor = ArrowPicker;
 
-  var prototypeAccessors$2 = { type: {} };
+  var prototypeAccessors$2 = { primitive: {} };
 
-  prototypeAccessors$2.type.get = function () { return 'arrow' };
-
-  ArrowPicker.prototype.getObject = function getObject (pid) {
-    var s = this.shape;
-    return {
-      shape: s,
-      position: this._getPosition(pid),
-      position1: new Vector3().fromArray(s.arrowPosition1, 3 * pid),
-      position2: new Vector3().fromArray(s.arrowPosition2, 3 * pid),
-      color: new Color().fromArray(s.arrowColor, 3 * pid),
-      radius: s.arrowRadius[ pid ],
-      name: s.arrowName[ pid ]
-    }
-  };
-
-  ArrowPicker.prototype._getPosition = function _getPosition (pid) {
-    var s = this.shape;
-    var p1 = new Vector3().fromArray(s.arrowPosition1, 3 * pid);
-    var p2 = new Vector3().fromArray(s.arrowPosition2, 3 * pid);
-    return p1.add(p2).multiplyScalar(0.5)
-  };
+  prototypeAccessors$2.primitive.get = function () { return ArrowPrimitive };
 
   Object.defineProperties( ArrowPicker.prototype, prototypeAccessors$2 );
 
@@ -54666,29 +55726,9 @@ var ConePicker = (function (ShapePicker) {
   ConePicker.prototype = Object.create( ShapePicker && ShapePicker.prototype );
   ConePicker.prototype.constructor = ConePicker;
 
-  var prototypeAccessors$7 = { type: {} };
+  var prototypeAccessors$7 = { primitive: {} };
 
-  prototypeAccessors$7.type.get = function () { return 'cone' };
-
-  ConePicker.prototype.getObject = function getObject (pid) {
-    var s = this.shape;
-    return {
-      shape: s,
-      position: this._getPosition(pid),
-      position1: new Vector3().fromArray(s.conePosition1, 3 * pid),
-      position2: new Vector3().fromArray(s.conePosition2, 3 * pid),
-      color: new Color().fromArray(s.coneColor, 3 * pid),
-      radius: s.coneRadius[ pid ],
-      name: s.coneName[ pid ]
-    }
-  };
-
-  ConePicker.prototype._getPosition = function _getPosition (pid) {
-    var s = this.shape;
-    var p1 = new Vector3().fromArray(s.conePosition1, 3 * pid);
-    var p2 = new Vector3().fromArray(s.conePosition2, 3 * pid);
-    return p1.add(p2).multiplyScalar(0.5)
-  };
+  prototypeAccessors$7.primitive.get = function () { return ConePrimitive };
 
   Object.defineProperties( ConePicker.prototype, prototypeAccessors$7 );
 
@@ -54766,30 +55806,31 @@ var EllipsoidPicker = (function (ShapePicker) {
   EllipsoidPicker.prototype = Object.create( ShapePicker && ShapePicker.prototype );
   EllipsoidPicker.prototype.constructor = EllipsoidPicker;
 
-  var prototypeAccessors$10 = { type: {} };
+  var prototypeAccessors$10 = { primitive: {} };
 
-  prototypeAccessors$10.type.get = function () { return 'ellipsoid' };
-
-  EllipsoidPicker.prototype.getObject = function getObject (pid) {
-    var s = this.shape;
-    return {
-      shape: s,
-      position: this._getPosition(pid),
-      color: new Color().fromArray(s.ellipsoidColor, 3 * pid),
-      radius: s.ellipsoidRadius[ pid ],
-      majorAxis: new Vector3().fromArray(s.ellipsoidMajorAxis, 3 * pid),
-      minorAxis: new Vector3().fromArray(s.ellipsoidMinorAxis, 3 * pid),
-      name: s.ellipsoidName[ pid ]
-    }
-  };
-
-  EllipsoidPicker.prototype._getPosition = function _getPosition (pid) {
-    return new Vector3().fromArray(this.shape.ellipsoidPosition, 3 * pid)
-  };
+  prototypeAccessors$10.primitive.get = function () { return EllipsoidPrimitive };
 
   Object.defineProperties( EllipsoidPicker.prototype, prototypeAccessors$10 );
 
   return EllipsoidPicker;
+}(ShapePicker));
+
+var BoxPicker = (function (ShapePicker) {
+  function BoxPicker () {
+    ShapePicker.apply(this, arguments);
+  }
+
+  if ( ShapePicker ) BoxPicker.__proto__ = ShapePicker;
+  BoxPicker.prototype = Object.create( ShapePicker && ShapePicker.prototype );
+  BoxPicker.prototype.constructor = BoxPicker;
+
+  var prototypeAccessors$11 = { primitive: {} };
+
+  prototypeAccessors$11.primitive.get = function () { return BoxPrimitive };
+
+  Object.defineProperties( BoxPicker.prototype, prototypeAccessors$11 );
+
+  return BoxPicker;
 }(ShapePicker));
 
 var IgnorePicker = (function (Picker) {
@@ -54801,11 +55842,11 @@ var IgnorePicker = (function (Picker) {
   IgnorePicker.prototype = Object.create( Picker && Picker.prototype );
   IgnorePicker.prototype.constructor = IgnorePicker;
 
-  var prototypeAccessors$11 = { type: {} };
+  var prototypeAccessors$12 = { type: {} };
 
-  prototypeAccessors$11.type.get = function () { return 'ignore' };
+  prototypeAccessors$12.type.get = function () { return 'ignore' };
 
-  Object.defineProperties( IgnorePicker.prototype, prototypeAccessors$11 );
+  Object.defineProperties( IgnorePicker.prototype, prototypeAccessors$12 );
 
   return IgnorePicker;
 }(Picker));
@@ -54820,9 +55861,9 @@ var MeshPicker = (function (ShapePicker) {
   MeshPicker.prototype = Object.create( ShapePicker && ShapePicker.prototype );
   MeshPicker.prototype.constructor = MeshPicker;
 
-  var prototypeAccessors$12 = { type: {} };
+  var prototypeAccessors$13 = { type: {} };
 
-  prototypeAccessors$12.type.get = function () { return 'mesh' };
+  prototypeAccessors$13.type.get = function () { return 'mesh' };
 
   MeshPicker.prototype.getObject = function getObject (/* pid */) {
     var m = this.mesh;
@@ -54840,7 +55881,7 @@ var MeshPicker = (function (ShapePicker) {
     return this.__position
   };
 
-  Object.defineProperties( MeshPicker.prototype, prototypeAccessors$12 );
+  Object.defineProperties( MeshPicker.prototype, prototypeAccessors$13 );
 
   return MeshPicker;
 }(ShapePicker));
@@ -54854,26 +55895,11 @@ var SpherePicker = (function (ShapePicker) {
   SpherePicker.prototype = Object.create( ShapePicker && ShapePicker.prototype );
   SpherePicker.prototype.constructor = SpherePicker;
 
-  var prototypeAccessors$13 = { type: {} };
+  var prototypeAccessors$14 = { primitive: {} };
 
-  prototypeAccessors$13.type.get = function () { return 'sphere' };
+  prototypeAccessors$14.primitive.get = function () { return SpherePrimitive };
 
-  SpherePicker.prototype.getObject = function getObject (pid) {
-    var s = this.shape;
-    return {
-      shape: s,
-      position: this._getPosition(pid),
-      color: new Color().fromArray(s.sphereColor, 3 * pid),
-      radius: s.sphereRadius[ pid ],
-      name: s.sphereName[ pid ]
-    }
-  };
-
-  SpherePicker.prototype._getPosition = function _getPosition (pid) {
-    return new Vector3().fromArray(this.shape.spherePosition, 3 * pid)
-  };
-
-  Object.defineProperties( SpherePicker.prototype, prototypeAccessors$13 );
+  Object.defineProperties( SpherePicker.prototype, prototypeAccessors$14 );
 
   return SpherePicker;
 }(ShapePicker));
@@ -54888,10 +55914,10 @@ var SurfacePicker = (function (Picker) {
   SurfacePicker.prototype = Object.create( Picker && Picker.prototype );
   SurfacePicker.prototype.constructor = SurfacePicker;
 
-  var prototypeAccessors$14 = { type: {},data: {} };
+  var prototypeAccessors$15 = { type: {},data: {} };
 
-  prototypeAccessors$14.type.get = function () { return 'surface' };
-  prototypeAccessors$14.data.get = function () { return this.surface };
+  prototypeAccessors$15.type.get = function () { return 'surface' };
+  prototypeAccessors$15.data.get = function () { return this.surface };
 
   SurfacePicker.prototype.getObject = function getObject (pid) {
     return {
@@ -54904,7 +55930,7 @@ var SurfacePicker = (function (Picker) {
     return this.surface.center.clone()
   };
 
-  Object.defineProperties( SurfacePicker.prototype, prototypeAccessors$14 );
+  Object.defineProperties( SurfacePicker.prototype, prototypeAccessors$15 );
 
   return SurfacePicker;
 }(Picker));
@@ -54920,10 +55946,10 @@ var UnitcellPicker = (function (Picker) {
   UnitcellPicker.prototype = Object.create( Picker && Picker.prototype );
   UnitcellPicker.prototype.constructor = UnitcellPicker;
 
-  var prototypeAccessors$15 = { type: {},data: {} };
+  var prototypeAccessors$16 = { type: {},data: {} };
 
-  prototypeAccessors$15.type.get = function () { return 'unitcell' };
-  prototypeAccessors$15.data.get = function () { return this.unitcell };
+  prototypeAccessors$16.type.get = function () { return 'unitcell' };
+  prototypeAccessors$16.data.get = function () { return this.unitcell };
 
   UnitcellPicker.prototype.getObject = function getObject (/* pid */) {
     return {
@@ -54936,7 +55962,7 @@ var UnitcellPicker = (function (Picker) {
     return this.unitcell.getCenter(this.structure)
   };
 
-  Object.defineProperties( UnitcellPicker.prototype, prototypeAccessors$15 );
+  Object.defineProperties( UnitcellPicker.prototype, prototypeAccessors$16 );
 
   return UnitcellPicker;
 }(Picker));
@@ -54950,11 +55976,11 @@ var UnknownPicker = (function (Picker) {
   UnknownPicker.prototype = Object.create( Picker && Picker.prototype );
   UnknownPicker.prototype.constructor = UnknownPicker;
 
-  var prototypeAccessors$16 = { type: {} };
+  var prototypeAccessors$17 = { type: {} };
 
-  prototypeAccessors$16.type.get = function () { return 'unknown' };
+  prototypeAccessors$17.type.get = function () { return 'unknown' };
 
-  Object.defineProperties( UnknownPicker.prototype, prototypeAccessors$16 );
+  Object.defineProperties( UnknownPicker.prototype, prototypeAccessors$17 );
 
   return UnknownPicker;
 }(Picker));
@@ -54969,10 +55995,10 @@ var VolumePicker = (function (Picker) {
   VolumePicker.prototype = Object.create( Picker && Picker.prototype );
   VolumePicker.prototype.constructor = VolumePicker;
 
-  var prototypeAccessors$17 = { type: {},data: {} };
+  var prototypeAccessors$18 = { type: {},data: {} };
 
-  prototypeAccessors$17.type.get = function () { return 'volume' };
-  prototypeAccessors$17.data.get = function () { return this.volume };
+  prototypeAccessors$18.type.get = function () { return 'volume' };
+  prototypeAccessors$18.data.get = function () { return this.volume };
 
   VolumePicker.prototype.getObject = function getObject (pid) {
     var vol = this.volume;
@@ -54988,13 +56014,13 @@ var VolumePicker = (function (Picker) {
     var dp = this.volume.position;
     var idx = this.getIndex(pid);
     return new Vector3(
-            dp[ idx * 3 ],
-            dp[ idx * 3 + 1 ],
-            dp[ idx * 3 + 2 ]
-        )
+      dp[ idx * 3 ],
+      dp[ idx * 3 + 1 ],
+      dp[ idx * 3 + 2 ]
+    )
   };
 
-  Object.defineProperties( VolumePicker.prototype, prototypeAccessors$17 );
+  Object.defineProperties( VolumePicker.prototype, prototypeAccessors$18 );
 
   return VolumePicker;
 }(Picker));
@@ -55008,14 +56034,21 @@ var SlicePicker = (function (VolumePicker) {
   SlicePicker.prototype = Object.create( VolumePicker && VolumePicker.prototype );
   SlicePicker.prototype.constructor = SlicePicker;
 
-  var prototypeAccessors$18 = { type: {} };
+  var prototypeAccessors$19 = { type: {} };
 
-  prototypeAccessors$18.type.get = function () { return 'slice' };
+  prototypeAccessors$19.type.get = function () { return 'slice' };
 
-  Object.defineProperties( SlicePicker.prototype, prototypeAccessors$18 );
+  Object.defineProperties( SlicePicker.prototype, prototypeAccessors$19 );
 
   return SlicePicker;
 }(VolumePicker));
+
+PickerRegistry.add('arrow', ArrowPicker);
+PickerRegistry.add('box', BoxPicker);
+PickerRegistry.add('cone', ConePicker);
+PickerRegistry.add('cylinder', CylinderPicker);
+PickerRegistry.add('ellipsoid', EllipsoidPicker);
+PickerRegistry.add('sphere', SpherePicker);
 
 /**
  * @file Bit array
@@ -63076,17 +64109,17 @@ ResidueMap.prototype.get = function get (id) {
  * Bond proxy
  */
 var BondProxy = function BondProxy (structure, index) {
-      /**
-       * @type {Structure}
-       */
+  /**
+   * @type {Structure}
+   */
   this.structure = structure;
-      /**
-       * @type {BondStore}
-       */
+  /**
+   * @type {BondStore}
+   */
   this.bondStore = structure.bondStore;
-      /**
-       * @type {Integer}
-       */
+  /**
+   * @type {Integer}
+   */
   this.index = index;
 
   this._v12 = new Vector3();
@@ -63098,23 +64131,23 @@ var BondProxy = function BondProxy (structure, index) {
 
 var prototypeAccessors$18 = { atom1: {},atom2: {},atomIndex1: {},atomIndex2: {},bondOrder: {} };
 
-  /**
-   * @type {AtomProxy}
-   */
+/**
+ * @type {AtomProxy}
+ */
 prototypeAccessors$18.atom1.get = function () {
   return this.structure.getAtomProxy(this.atomIndex1)
 };
 
-  /**
-   * @type {AtomProxy}
-   */
+/**
+ * @type {AtomProxy}
+ */
 prototypeAccessors$18.atom2.get = function () {
   return this.structure.getAtomProxy(this.atomIndex2)
 };
 
-  /**
-   * @type {Integer}
-   */
+/**
+ * @type {Integer}
+ */
 prototypeAccessors$18.atomIndex1.get = function () {
   return this.bondStore.atomIndex1[ this.index ]
 };
@@ -63122,9 +64155,9 @@ prototypeAccessors$18.atomIndex1.set = function (value) {
   this.bondStore.atomIndex1[ this.index ] = value;
 };
 
-  /**
-   * @type {Integer}
-   */
+/**
+ * @type {Integer}
+ */
 prototypeAccessors$18.atomIndex2.get = function () {
   return this.bondStore.atomIndex2[ this.index ]
 };
@@ -63132,9 +64165,9 @@ prototypeAccessors$18.atomIndex2.set = function (value) {
   this.bondStore.atomIndex2[ this.index ] = value;
 };
 
-  /**
-   * @type {Integer}
-   */
+/**
+ * @type {Integer}
+ */
 prototypeAccessors$18.bondOrder.get = function () {
   return this.bondStore.bondOrder[ this.index ]
 };
@@ -63142,10 +64175,10 @@ prototypeAccessors$18.bondOrder.set = function (value) {
   this.bondStore.bondOrder[ this.index ] = value;
 };
 
-  /**
-   * Get reference atom index for the bond
-   * @return {Integer|undefined} atom index, or `undefined` if unavailable
-   */
+/**
+ * Get reference atom index for the bond
+ * @return {Integer|undefined} atom index, or `undefined` if unavailable
+ */
 BondProxy.prototype.getReferenceAtomIndex = function getReferenceAtomIndex () {
   var ap1 = this._ap1;
   var ap2 = this._ap2;
@@ -63165,11 +64198,11 @@ BondProxy.prototype.getReferenceAtomIndex = function getReferenceAtomIndex () {
   }
 };
 
-  /**
-   * calculate shift direction for displaying double/triple bonds
-   * @param{Vector3} [v] pre-allocated output vector
-   * @return {Vector3} the shift direction vector
-   */
+/**
+ * calculate shift direction for displaying double/triple bonds
+ * @param{Vector3} [v] pre-allocated output vector
+ * @return {Vector3} the shift direction vector
+ */
 BondProxy.prototype.calculateShiftDir = function calculateShiftDir (v) {
   if (!v) { v = new Vector3(); }
 
@@ -63192,7 +64225,7 @@ BondProxy.prototype.calculateShiftDir = function calculateShiftDir (v) {
   }
   v13.normalize();
 
-      // make sure v13 and v12 are not colinear
+  // make sure v13 and v12 are not colinear
   var dp = v12.dot(v13);
   if (1 - Math.abs(dp) < 1e-5) {
     v13.set(1, 0, 0);
@@ -63210,10 +64243,10 @@ BondProxy.prototype.qualifiedName = function qualifiedName () {
   return this.atomIndex1 + '=' + this.atomIndex2
 };
 
-  /**
-   * Clone object
-   * @return {BondProxy} cloned bond
-   */
+/**
+ * Clone object
+ * @return {BondProxy} cloned bond
+ */
 BondProxy.prototype.clone = function clone () {
   return new this.constructor(this.structure, this.index)
 };
@@ -63840,6 +64873,32 @@ AtomProxy.prototype.positionFromVector3 = function positionFromVector3 (v) {
 };
 
 /**
+ * Add vector to atom position
+ * @param{Vector3} v - input vector
+ * @return {AtomProxy} this object
+ */
+AtomProxy.prototype.positionAdd = function positionAdd (v) {
+  this.x += v.x;
+  this.y += v.y;
+  this.z += v.z;
+
+  return this
+};
+
+/**
+ * Subtract vector from atom position
+ * @param{Vector3} v - input vector
+ * @return {AtomProxy} this object
+ */
+AtomProxy.prototype.positionSub = function positionSub (v) {
+  this.x -= v.x;
+  this.y -= v.y;
+  this.z -= v.z;
+
+  return this
+};
+
+/**
  * Get intra group/residue bonds
  * @param{Boolean} firstOnly - immediately return the first connected atomIndex
  * @return {Integer[]|Integer|undefined} connected atomIndices
@@ -63931,52 +64990,52 @@ Object.defineProperties( AtomProxy.prototype, prototypeAccessors$19 );
  * Residue proxy
  */
 var ResidueProxy = function ResidueProxy (structure, index) {
-      /**
-       * @type {Structure}
-       */
+  /**
+   * @type {Structure}
+   */
   this.structure = structure;
-      /**
-       * @type {ChainStore}
-       */
+  /**
+   * @type {ChainStore}
+   */
   this.chainStore = structure.chainStore;
-      /**
-       * @type {ResidueStore}
-       */
+  /**
+   * @type {ResidueStore}
+   */
   this.residueStore = structure.residueStore;
-      /**
-       * @type {AtomStore}
-       */
+  /**
+   * @type {AtomStore}
+   */
   this.atomStore = structure.atomStore;
-      /**
-       * @type {ResidueMap}
-       */
+  /**
+   * @type {ResidueMap}
+   */
   this.residueMap = structure.residueMap;
-      /**
-       * @type {AtomMap}
-       */
+  /**
+   * @type {AtomMap}
+   */
   this.atomMap = structure.atomMap;
-      /**
-       * @type {Integer}
-       */
+  /**
+   * @type {Integer}
+   */
   this.index = index;
 };
 
 var prototypeAccessors$20 = { entity: {},entityIndex: {},chain: {},chainIndex: {},atomOffset: {},atomCount: {},atomEnd: {},modelIndex: {},chainname: {},chainid: {},resno: {},sstruc: {},inscode: {},residueType: {},resname: {},hetero: {},moleculeType: {},backboneType: {},backboneStartType: {},backboneEndType: {},traceAtomIndex: {},direction1AtomIndex: {},direction2AtomIndex: {},backboneStartAtomIndex: {},backboneEndAtomIndex: {},rungEndAtomIndex: {} };
 
-  /**
-   * Entity
-   * @type {Entity}
-   */
+/**
+ * Entity
+ * @type {Entity}
+ */
 prototypeAccessors$20.entity.get = function () {
   return this.structure.entityList[ this.entityIndex ]
 };
 prototypeAccessors$20.entityIndex.get = function () {
   return this.chainStore.entityIndex[ this.chainIndex ]
 };
-  /**
-   * Chain
-   * @type {ChainProxy}
-   */
+/**
+ * Chain
+ * @type {ChainProxy}
+ */
 prototypeAccessors$20.chain.get = function () {
   return this.structure.getChainProxy(this.chainIndex)
 };
@@ -63995,10 +65054,10 @@ prototypeAccessors$20.atomOffset.set = function (value) {
   this.residueStore.atomOffset[ this.index ] = value;
 };
 
-  /**
-   * Atom count
-   * @type {Integer}
-   */
+/**
+ * Atom count
+ * @type {Integer}
+ */
 prototypeAccessors$20.atomCount.get = function () {
   return this.residueStore.atomCount[ this.index ]
 };
@@ -64010,32 +65069,32 @@ prototypeAccessors$20.atomEnd.get = function () {
   return this.atomOffset + this.atomCount - 1
 };
 
-  //
+//
 
 prototypeAccessors$20.modelIndex.get = function () {
   return this.chainStore.modelIndex[ this.chainIndex ]
 };
-  /**
-   * Chain name
-   * @type {String}
-   */
+/**
+ * Chain name
+ * @type {String}
+ */
 prototypeAccessors$20.chainname.get = function () {
   return this.chainStore.getChainname(this.chainIndex)
 };
-  /**
-   * Chain id
-   * @type {String}
-   */
+/**
+ * Chain id
+ * @type {String}
+ */
 prototypeAccessors$20.chainid.get = function () {
   return this.chainStore.getChainid(this.chainIndex)
 };
 
-  //
+//
 
-  /**
-   * Residue number/label
-   * @type {Integer}
-   */
+/**
+ * Residue number/label
+ * @type {Integer}
+ */
 prototypeAccessors$20.resno.get = function () {
   return this.residueStore.resno[ this.index ]
 };
@@ -64043,10 +65102,10 @@ prototypeAccessors$20.resno.set = function (value) {
   this.residueStore.resno[ this.index ] = value;
 };
 
-  /**
-   * Secondary structure code
-   * @type {String}
-   */
+/**
+ * Secondary structure code
+ * @type {String}
+ */
 prototypeAccessors$20.sstruc.get = function () {
   return this.residueStore.getSstruc(this.index)
 };
@@ -64054,10 +65113,10 @@ prototypeAccessors$20.sstruc.set = function (value) {
   this.residueStore.setSstruc(this.index, value);
 };
 
-  /**
-   * Insertion code
-   * @type {String}
-   */
+/**
+ * Insertion code
+ * @type {String}
+ */
 prototypeAccessors$20.inscode.get = function () {
   return this.residueStore.getInscode(this.index)
 };
@@ -64065,23 +65124,23 @@ prototypeAccessors$20.inscode.set = function (value) {
   this.residueStore.getInscode(this.index, value);
 };
 
-  //
+//
 
 prototypeAccessors$20.residueType.get = function () {
   return this.residueMap.get(this.residueStore.residueTypeId[ this.index ])
 };
 
-  /**
-   * Residue name
-   * @type {String}
-   */
+/**
+ * Residue name
+ * @type {String}
+ */
 prototypeAccessors$20.resname.get = function () {
   return this.residueType.resname
 };
-  /**
-   * Hetero flag
-   * @type {Boolean}
-   */
+/**
+ * Hetero flag
+ * @type {Boolean}
+ */
 prototypeAccessors$20.hetero.get = function () {
   return this.residueType.hetero
 };
@@ -64116,14 +65175,14 @@ prototypeAccessors$20.rungEndAtomIndex.get = function () {
   return this.residueType.rungEndAtomIndex + this.atomOffset
 };
 
-  //
+//
 
-  /**
-   * Atom iterator
-   * @param{function(atom: AtomProxy)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Atom iterator
+ * @param{function(atom: AtomProxy)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ResidueProxy.prototype.eachAtom = function eachAtom (callback, selection) {
   var i;
   var count = this.atomCount;
@@ -64145,20 +65204,20 @@ ResidueProxy.prototype.eachAtom = function eachAtom (callback, selection) {
   }
 };
 
-  //
+//
 
-  /**
-   * If residue is from a protein
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is from a protein
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isProtein = function isProtein () {
   return this.residueType.moleculeType === ProteinType
 };
 
-  /**
-   * If residue is nucleic
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is nucleic
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isNucleic = function isNucleic () {
   var moleculeType = this.residueType.moleculeType;
   return (
@@ -64167,104 +65226,104 @@ ResidueProxy.prototype.isNucleic = function isNucleic () {
   )
 };
 
-  /**
-   * If residue is rna
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is rna
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isRna = function isRna () {
   return this.residueType.moleculeType === RnaType
 };
 
-  /**
-   * If residue is dna
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is dna
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isDna = function isDna () {
   return this.residueType.moleculeType === DnaType
 };
 
-  /**
-   * If residue is coarse-grain
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is coarse-grain
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isCg = function isCg () {
   var backboneType = this.residueType.backboneType;
   return (
-          backboneType === CgProteinBackboneType ||
-          backboneType === CgRnaBackboneType ||
-          backboneType === CgDnaBackboneType
+    backboneType === CgProteinBackboneType ||
+    backboneType === CgRnaBackboneType ||
+    backboneType === CgDnaBackboneType
   )
 };
 
-  /**
-   * If residue is from a polymer
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is from a polymer
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isPolymer = function isPolymer () {
   if (this.structure.entityList.length > 0) {
     return this.entity.isPolymer()
   } else {
     var moleculeType = this.residueType.moleculeType;
     return (
-              moleculeType === ProteinType ||
-              moleculeType === RnaType ||
-              moleculeType === DnaType
+      moleculeType === ProteinType ||
+      moleculeType === RnaType ||
+      moleculeType === DnaType
     )
   }
 };
 
-  /**
-   * If residue is hetero
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is hetero
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isHetero = function isHetero () {
   return this.residueType.hetero === 1
 };
 
-  /**
-   * If residue is a water molecule
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is a water molecule
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isWater = function isWater () {
   return this.residueType.moleculeType === WaterType
 };
 
-  /**
-   * If residue is an ion
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is an ion
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isIon = function isIon () {
   return this.residueType.moleculeType === IonType
 };
 
-  /**
-   * If residue is a saccharide
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is a saccharide
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isSaccharide = function isSaccharide () {
   return this.residueType.moleculeType === SaccharideType
 };
 
-  /**
-   * If residue is part of a helix
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is part of a helix
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isHelix = function isHelix () {
   return SecStrucHelix.includes(this.sstruc)
 };
 
-  /**
-   * If residue is part of a sheet
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is part of a sheet
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isSheet = function isSheet () {
   return SecStrucSheet.includes(this.sstruc)
 };
 
-  /**
-   * If residue is part of a turn
-   * @return {Boolean} flag
-   */
+/**
+ * If residue is part of a turn
+ * @return {Boolean} flag
+ */
 ResidueProxy.prototype.isTurn = function isTurn () {
   return SecStrucTurn.includes(this.sstruc) && this.isProtein()
 };
@@ -64274,7 +65333,7 @@ ResidueProxy.prototype.getAtomType = function getAtomType (index) {
 };
 
 ResidueProxy.prototype.getResname1 = function getResname1 () {
-      // FIXME nucleic support
+  // FIXME nucleic support
   return AA1[ this.resname.toUpperCase() ] || 'X'
 };
 
@@ -64319,11 +65378,11 @@ ResidueProxy.prototype.getAtomnameList = function getAtomnameList () {
   return list
 };
 
-  /**
-   * If residue is connected to another
-   * @param{ResidueProxy} rNext - the other residue
-   * @return {Boolean} - flag
-   */
+/**
+ * If residue is connected to another
+ * @param{ResidueProxy} rNext - the other residue
+ * @return {Boolean} - flag
+ */
 ResidueProxy.prototype.connectedTo = function connectedTo (rNext) {
   var bbAtomEnd = this.structure.getAtomProxy(this.backboneEndAtomIndex);
   var bbAtomStart = this.structure.getAtomProxy(rNext.backboneStartAtomIndex);
@@ -64388,10 +65447,10 @@ ResidueProxy.prototype.qualifiedName = function qualifiedName (noResname) {
   return name
 };
 
-  /**
-   * Clone object
-   * @return {ResidueProxy} cloned residue
-   */
+/**
+ * Clone object
+ * @return {ResidueProxy} cloned residue
+ */
 ResidueProxy.prototype.clone = function clone () {
   return new this.constructor(this.structure, this.index)
 };
@@ -64421,34 +65480,34 @@ Object.defineProperties( ResidueProxy.prototype, prototypeAccessors$20 );
  * Polymer
  */
 var Polymer = function Polymer (structure, residueIndexStart, residueIndexEnd) {
-      /**
-       * @type {Structure}
-       */
+  /**
+   * @type {Structure}
+   */
   this.structure = structure;
-      /**
-       * @type {ChainStore}
-       */
+  /**
+   * @type {ChainStore}
+   */
   this.chainStore = structure.chainStore;
-      /**
-       * @type {ResidueStore}
-       */
+  /**
+   * @type {ResidueStore}
+   */
   this.residueStore = structure.residueStore;
-      /**
-       * @type {AtomStore}
-       */
+  /**
+   * @type {AtomStore}
+   */
   this.atomStore = structure.atomStore;
 
-      /**
-       * @type {Integer}
-       */
+  /**
+   * @type {Integer}
+   */
   this.residueIndexStart = residueIndexStart;
-      /**
-       * @type {Integer}
-       */
+  /**
+   * @type {Integer}
+   */
   this.residueIndexEnd = residueIndexEnd;
-      /**
-       * @type {Integer}
-       */
+  /**
+   * @type {Integer}
+   */
   this.residueCount = residueIndexEnd - residueIndexStart + 1;
 
   var rpStart = this.structure.getResidueProxy(this.residueIndexStart);
@@ -64461,7 +65520,7 @@ var Polymer = function Polymer (structure, residueIndexStart, residueIndexEnd) {
 
   this.__residueProxy = this.structure.getResidueProxy();
 
-      // console.log( this.qualifiedName(), this );
+  // console.log( this.qualifiedName(), this );
 };
 
 var prototypeAccessors$22 = { chainIndex: {},modelIndex: {},chainname: {} };
@@ -64473,37 +65532,37 @@ prototypeAccessors$22.modelIndex.get = function () {
   return this.chainStore.modelIndex[ this.chainIndex ]
 };
 
-  /**
-   * @type {String}
-   */
+/**
+ * @type {String}
+ */
 prototypeAccessors$22.chainname.get = function () {
   return this.chainStore.getChainname(this.chainIndex)
 };
 
-  //
+//
 
-  /**
-   * If first residue is from aprotein
-   * @return {Boolean} flag
-   */
+/**
+ * If first residue is from aprotein
+ * @return {Boolean} flag
+ */
 Polymer.prototype.isProtein = function isProtein () {
   this.__residueProxy.index = this.residueIndexStart;
   return this.__residueProxy.isProtein()
 };
 
-  /**
-   * If atom is part of a coarse-grain group
-   * @return {Boolean} flag
-   */
+/**
+ * If atom is part of a coarse-grain group
+ * @return {Boolean} flag
+ */
 Polymer.prototype.isCg = function isCg () {
   this.__residueProxy.index = this.residueIndexStart;
   return this.__residueProxy.isCg()
 };
 
-  /**
-   * If atom is part of a nucleic molecule
-   * @return {Boolean} flag
-   */
+/**
+ * If atom is part of a nucleic molecule
+ * @return {Boolean} flag
+ */
 Polymer.prototype.isNucleic = function isNucleic () {
   this.__residueProxy.index = this.residueIndexStart;
   return this.__residueProxy.isNucleic()
@@ -64520,7 +65579,7 @@ Polymer.prototype.getBackboneType = function getBackboneType (position) {
 };
 
 Polymer.prototype.getAtomIndexByType = function getAtomIndexByType (index, type) {
-      // TODO pre-calculate, add to residueStore???
+  // TODO pre-calculate, add to residueStore???
 
   if (this.isCyclic) {
     if (index === -1) {
@@ -64531,7 +65590,7 @@ Polymer.prototype.getAtomIndexByType = function getAtomIndexByType (index, type)
   } else {
     if (index === -1 && !this.isPrevConnected) { index += 1; }
     if (index === this.residueCount && !this.isNextNextConnected) { index -= 1; }
-          // if( index === this.residueCount - 1 && !this.isNextConnected ) index -= 1;
+    // if( index === this.residueCount - 1 && !this.isNextConnected ) index -= 1;
   }
 
   var rp = this.__residueProxy;
@@ -64553,24 +65612,24 @@ Polymer.prototype.getAtomIndexByType = function getAtomIndexByType (index, type)
       aIndex = ap ? ap.index : undefined;
   }
 
-      // if( !ap ){
-      //   console.log( this, type, rp.residueType )
-      //   // console.log( rp.qualifiedName(), rp.index, index, this.residueCount - 1 )
-      //   // rp.index = this.residueIndexStart;
-      //   // console.log( rp.qualifiedName(), this.residueIndexStart )
-      //   // rp.index = this.residueIndexEnd;
-      //   // console.log( rp.qualifiedName(), this.residueIndexEnd )
-      // }
+  // if( !ap ){
+  //   console.log( this, type, rp.residueType )
+  //   // console.log( rp.qualifiedName(), rp.index, index, this.residueCount - 1 )
+  //   // rp.index = this.residueIndexStart;
+  //   // console.log( rp.qualifiedName(), this.residueIndexStart )
+  //   // rp.index = this.residueIndexEnd;
+  //   // console.log( rp.qualifiedName(), this.residueIndexEnd )
+  // }
 
   return aIndex
 };
 
-  /**
-   * Atom iterator
-   * @param{function(atom: AtomProxy)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Atom iterator
+ * @param{function(atom: AtomProxy)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 Polymer.prototype.eachAtom = function eachAtom (callback, selection) {
   this.eachResidue(function (rp) {
     rp.eachAtom(callback, selection);
@@ -64601,7 +65660,7 @@ Polymer.prototype.eachAtomN = function eachAtomN (n, callback, type) {
 Polymer.prototype.eachAtomN2 = function eachAtomN2 (n, callback, type) {
     var this$1 = this;
 
-      // console.log(this.residueOffset,this.residueCount)
+  // console.log(this.residueOffset,this.residueCount)
 
   var offset = this.atomOffset;
   var count = this.atomCount;
@@ -64612,7 +65671,7 @@ Polymer.prototype.eachAtomN2 = function eachAtomN2 (n, callback, type) {
   for (var i = 0; i < n; ++i) {
     array[ i ] = this$1.structure.getAtomProxy();
   }
-      // console.log( array, offset, end, count )
+  // console.log( array, offset, end, count )
 
   var atomSet = this.structure.atomSetCache[ '__' + type ];
   if (atomSet === undefined) {
@@ -64639,11 +65698,11 @@ Polymer.prototype.eachAtomN2 = function eachAtomN2 (n, callback, type) {
   });
 };
 
-  /**
-   * Residue iterator
-   * @param{function(residue: ResidueProxy)} callback - the callback
-   * @return {undefined}
-   */
+/**
+ * Residue iterator
+ * @param{function(residue: ResidueProxy)} callback - the callback
+ * @return {undefined}
+ */
 Polymer.prototype.eachResidue = function eachResidue (callback) {
   var rp = this.structure.getResidueProxy();
   var n = this.residueCount;
@@ -64673,37 +65732,37 @@ Object.defineProperties( Polymer.prototype, prototypeAccessors$22 );
  * Chain proxy
  */
 var ChainProxy = function ChainProxy (structure, index) {
-      /**
-       * @type {Structure}
-       */
+  /**
+   * @type {Structure}
+   */
   this.structure = structure;
-      /**
-       * @type {ChainStore}
-       */
+  /**
+   * @type {ChainStore}
+   */
   this.chainStore = structure.chainStore;
-      /**
-       * @type {ResidueStore}
-       */
+  /**
+   * @type {ResidueStore}
+   */
   this.residueStore = structure.residueStore;
-      /**
-       * @type {Integer}
-       */
+  /**
+   * @type {Integer}
+   */
   this.index = index;
 };
 
 var prototypeAccessors$21 = { entity: {},model: {},entityIndex: {},modelIndex: {},residueOffset: {},residueCount: {},residueEnd: {},atomOffset: {},atomEnd: {},atomCount: {},chainname: {},chainid: {} };
 
-  /**
-   * Entity
-   * @type {Entity}
-   */
+/**
+ * Entity
+ * @type {Entity}
+ */
 prototypeAccessors$21.entity.get = function () {
   return this.structure.entityList[ this.entityIndex ]
 };
-  /**
-   * Model
-   * @type {ModelProxy}
-   */
+/**
+ * Model
+ * @type {ModelProxy}
+ */
 prototypeAccessors$21.model.get = function () {
   return this.structure.getModelProxy(this.modelIndex)
 };
@@ -64729,10 +65788,10 @@ prototypeAccessors$21.residueOffset.set = function (value) {
   this.chainStore.residueOffset[ this.index ] = value;
 };
 
-  /**
-   * Residue count
-   * @type {Integer}
-   */
+/**
+ * Residue count
+ * @type {Integer}
+ */
 prototypeAccessors$21.residueCount.get = function () {
   return this.chainStore.residueCount[ this.index ]
 };
@@ -64749,14 +65808,14 @@ prototypeAccessors$21.atomOffset.get = function () {
 };
 prototypeAccessors$21.atomEnd.get = function () {
   return (
-          this.residueStore.atomOffset[ this.residueEnd ] +
-          this.residueStore.atomCount[ this.residueEnd ] - 1
+    this.residueStore.atomOffset[ this.residueEnd ] +
+    this.residueStore.atomCount[ this.residueEnd ] - 1
   )
 };
-  /**
-   * Atom count
-   * @type {Integer}
-   */
+/**
+ * Atom count
+ * @type {Integer}
+ */
 prototypeAccessors$21.atomCount.get = function () {
   if (this.residueCount === 0) {
     return 0
@@ -64765,12 +65824,12 @@ prototypeAccessors$21.atomCount.get = function () {
   }
 };
 
-  //
+//
 
-  /**
-   * Chain name
-   * @type {String}
-   */
+/**
+ * Chain name
+ * @type {String}
+ */
 prototypeAccessors$21.chainname.get = function () {
   return this.chainStore.getChainname(this.index)
 };
@@ -64778,10 +65837,10 @@ prototypeAccessors$21.chainname.set = function (value) {
   this.chainStore.setChainname(this.index, value);
 };
 
-  /**
-   * Chain id
-   * @type {String}
-   */
+/**
+ * Chain id
+ * @type {String}
+ */
 prototypeAccessors$21.chainid.get = function () {
   return this.chainStore.getChainid(this.index)
 };
@@ -64789,26 +65848,26 @@ prototypeAccessors$21.chainid.set = function (value) {
   this.chainStore.setChainid(this.index, value);
 };
 
-  //
+//
 
-  /**
-   * Atom iterator
-   * @param{function(atom: AtomProxy)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Atom iterator
+ * @param{function(atom: AtomProxy)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ChainProxy.prototype.eachAtom = function eachAtom (callback, selection) {
   this.eachResidue(function (rp) {
     rp.eachAtom(callback, selection);
   }, selection);
 };
 
-  /**
-   * Residue iterator
-   * @param{function(residue: ResidueProxy)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Residue iterator
+ * @param{function(residue: ResidueProxy)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ChainProxy.prototype.eachResidue = function eachResidue (callback, selection) {
   var i;
   var count = this.residueCount;
@@ -64839,12 +65898,12 @@ ChainProxy.prototype.eachResidue = function eachResidue (callback, selection) {
   }
 };
 
-  /**
-   * Multi-residue iterator
-   * @param {Integer} n - window size
-   * @param{function(residueList: ResidueProxy[])} callback - the callback
-   * @return {undefined}
-   */
+/**
+ * Multi-residue iterator
+ * @param {Integer} n - window size
+ * @param{function(residueList: ResidueProxy[])} callback - the callback
+ * @return {undefined}
+ */
 ChainProxy.prototype.eachResidueN = function eachResidueN (n, callback) {
     var this$1 = this;
 
@@ -64868,12 +65927,12 @@ ChainProxy.prototype.eachResidueN = function eachResidueN (n, callback) {
   }
 };
 
-  /**
-   * Polymer iterator
-   * @param{function(polymer: Polymer)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Polymer iterator
+ * @param{function(polymer: Polymer)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ChainProxy.prototype.eachPolymer = function eachPolymer (callback, selection) {
   var rStartIndex, rNextIndex;
   var test = selection ? selection.residueOnlyTest : undefined;
@@ -64910,7 +65969,7 @@ ChainProxy.prototype.eachPolymer = function eachPolymer (callback, selection) {
     } else {
       if (bbType1 !== UnknownBackboneType) {
         if (rp1.index - rStartIndex > 1) {
-                      // console.log("FOO1",rStartIndex, rp1.index)
+          // console.log("FOO1",rStartIndex, rp1.index)
           callback(new Polymer(structure, rStartIndex, rp1.index));
         }
       }
@@ -64923,7 +65982,7 @@ ChainProxy.prototype.eachPolymer = function eachPolymer (callback, selection) {
               (test && (!test(rp1) || !test(rp2)))
           ) {
       if (rp1.index - rStartIndex > 1) {
-                  // console.log("FOO2",rStartIndex, rp1.index)
+        // console.log("FOO2",rStartIndex, rp1.index)
         callback(new Polymer(structure, rStartIndex, rp1.index));
       }
       rStartIndex = rNextIndex;
@@ -64932,7 +65991,7 @@ ChainProxy.prototype.eachPolymer = function eachPolymer (callback, selection) {
 
   if (rNextIndex - rStartIndex > 1) {
     if (this.structure.getResidueProxy(rStartIndex).backboneStartType) {
-              // console.log("FOO3",rStartIndex, rNextIndex)
+      // console.log("FOO3",rStartIndex, rNextIndex)
       callback(new Polymer(structure, rStartIndex, rNextIndex));
     }
   }
@@ -64945,10 +66004,10 @@ ChainProxy.prototype.qualifiedName = function qualifiedName () {
   return name
 };
 
-  /**
-   * Clone object
-   * @return {ChainProxy} cloned chain
-   */
+/**
+ * Clone object
+ * @return {ChainProxy} cloned chain
+ */
 ChainProxy.prototype.clone = function clone () {
   return new this.constructor(this.structure, this.index)
 };
@@ -64975,25 +66034,25 @@ Object.defineProperties( ChainProxy.prototype, prototypeAccessors$21 );
  * Model proxy
  */
 var ModelProxy = function ModelProxy (structure, index) {
-      /**
-       * @type {Structure}
-       */
+  /**
+   * @type {Structure}
+   */
   this.structure = structure;
-      /**
-       * @type {ModelStore}
-       */
+  /**
+   * @type {ModelStore}
+   */
   this.modelStore = structure.modelStore;
-      /**
-       * @type {ChainStore}
-       */
+  /**
+   * @type {ChainStore}
+   */
   this.chainStore = structure.chainStore;
-      /**
-       * @type {ResidueStore}
-       */
+  /**
+   * @type {ResidueStore}
+   */
   this.residueStore = structure.residueStore;
-      /**
-       * @type {Number}
-       */
+  /**
+   * @type {Number}
+   */
   this.index = index;
 };
 
@@ -65025,21 +66084,21 @@ prototypeAccessors$23.chainEnd.get = function () {
 };
 prototypeAccessors$23.residueEnd.get = function () {
   return (
-          this.chainStore.residueOffset[ this.chainEnd ] +
-          this.chainStore.residueCount[ this.chainEnd ] - 1
+    this.chainStore.residueOffset[ this.chainEnd ] +
+    this.chainStore.residueCount[ this.chainEnd ] - 1
   )
 };
 prototypeAccessors$23.atomEnd.get = function () {
   return (
-          this.residueStore.atomOffset[ this.residueEnd ] +
-          this.residueStore.atomCount[ this.residueEnd ] - 1
+    this.residueStore.atomOffset[ this.residueEnd ] +
+    this.residueStore.atomCount[ this.residueEnd ] - 1
   )
 };
 
-  /**
-   * Residue count
-   * @type {Integer}
-   */
+/**
+ * Residue count
+ * @type {Integer}
+ */
 prototypeAccessors$23.residueCount.get = function () {
   if (this.chainCount === 0) {
     return 0
@@ -65048,10 +66107,10 @@ prototypeAccessors$23.residueCount.get = function () {
   }
 };
 
-  /**
-   * Atom count
-   * @type {Integer}
-   */
+/**
+ * Atom count
+ * @type {Integer}
+ */
 prototypeAccessors$23.atomCount.get = function () {
   if (this.residueCount === 0) {
     return 0
@@ -65060,38 +66119,38 @@ prototypeAccessors$23.atomCount.get = function () {
   }
 };
 
-  //
+//
 
-  /**
-   * Atom iterator
-   * @param{function(atom: AtomProxy)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Atom iterator
+ * @param{function(atom: AtomProxy)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ModelProxy.prototype.eachAtom = function eachAtom (callback, selection) {
   this.eachChain(function (cp) {
     cp.eachAtom(callback, selection);
   }, selection);
 };
 
-  /**
-   * Residue iterator
-   * @param{function(residue: ResidueProxy)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Residue iterator
+ * @param{function(residue: ResidueProxy)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ModelProxy.prototype.eachResidue = function eachResidue (callback, selection) {
   this.eachChain(function (cp) {
     cp.eachResidue(callback, selection);
   }, selection);
 };
 
-  /**
-   * Polymer iterator
-   * @param{function(polymer: Polymer)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Polymer iterator
+ * @param{function(polymer: Polymer)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ModelProxy.prototype.eachPolymer = function eachPolymer (callback, selection) {
   if (selection && selection.chainOnlyTest) {
     var chainOnlyTest = selection.chainOnlyTest;
@@ -65108,12 +66167,12 @@ ModelProxy.prototype.eachPolymer = function eachPolymer (callback, selection) {
   }
 };
 
-  /**
-   * Chain iterator
-   * @param{function(chain: ChainProxy)} callback - the callback
-   * @param{Selection} [selection] - the selection
-   * @return {undefined}
-   */
+/**
+ * Chain iterator
+ * @param{function(chain: ChainProxy)} callback - the callback
+ * @param{Selection} [selection] - the selection
+ * @return {undefined}
+ */
 ModelProxy.prototype.eachChain = function eachChain (callback, selection) {
   var i;
   var count = this.chainCount;
@@ -65144,17 +66203,17 @@ ModelProxy.prototype.eachChain = function eachChain (callback, selection) {
   }
 };
 
-  //
+//
 
 ModelProxy.prototype.qualifiedName = function qualifiedName () {
   var name = '/' + this.index;
   return name
 };
 
-  /**
-   * Clone object
-   * @return {ModelProxy} cloned model
-   */
+/**
+ * Clone object
+ * @return {ModelProxy} cloned model
+ */
 ModelProxy.prototype.clone = function clone () {
   return new this.constructor(this.structure, this.index)
 };
@@ -66192,53 +67251,6 @@ Structure.prototype.dispose = function dispose () {
 Object.defineProperties( Structure.prototype, prototypeAccessors$13 );
 
 /**
- * @file Queue
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-function Queue (fn, argList) {
-  var queue = [];
-  var pending = false;
-
-  if (argList) {
-    for (var i = 0, il = argList.length; i < il; ++i) {
-      queue.push(argList[ i ]);
-    }
-    next();
-  }
-
-  function run (arg) {
-    fn(arg, next);
-  }
-
-  function next () {
-    var arg = queue.shift();
-    if (arg !== undefined) {
-      pending = true;
-      setTimeout(function () { run(arg); });
-    } else {
-      pending = false;
-    }
-  }
-
-    // API
-
-  this.push = function (arg) {
-    queue.push(arg);
-    if (!pending) { next(); }
-  };
-
-  this.kill = function () {
-    queue.length = 0;
-  };
-
-  this.length = function () {
-    return queue.length
-  };
-}
-
-/**
  * @file Superposition
  * @author Alexander Rose <alexander.rose@weirdbyte.de>
  * @private
@@ -66384,13 +67396,13 @@ Superposition.prototype.transform = function transform (atoms) {
  * @property {String} interpolateType - one of "" (empty string), "linear" or "spline"
  * @property {Integer} interpolateStep - window size used for interpolation
  * @property {String} mode - either "loop" or "once"
- * @property {String} direction - either "forward" or "backward"
+ * @property {String} direction - either "forward", "backward" or "bounce"
  */
 
 /**
  * Trajectory player for animating coordinate frames
  * @example
- * var player = new NGL.TrajectoryPlayer( trajComp.trajectory, { step: 1, timeout: 50 } );
+ * var player = new TrajectoryPlayer(trajectory, {step: 1, timeout: 50});
  * player.play();
  */
 var TrajectoryPlayer = function TrajectoryPlayer (traj, params) {
@@ -66399,15 +67411,15 @@ var TrajectoryPlayer = function TrajectoryPlayer (traj, params) {
     haltedRunning: new Signal()
   };
 
-  var p = Object.assign({}, params);
-
   traj.signals.playerChanged.add(function (player) {
     if (player !== this) {
       this.pause();
     }
   }, this);
 
-  var n = defaults(traj.numframes, 1);
+  var p = Object.assign({}, params);
+  var n = defaults(traj.frameCount, 1);
+
   this.traj = traj;
   this.start = defaults(p.start, 0);
   this.end = Math.min(defaults(p.end, n - 1), n - 1);
@@ -66417,96 +67429,156 @@ var TrajectoryPlayer = function TrajectoryPlayer (traj, params) {
   this.interpolateType = defaults(p.interpolateType, '');
   this.interpolateStep = defaults(p.interpolateStep, 5);
   this.mode = defaults(p.mode, 'loop');// loop, once
-  this.direction = defaults(p.direction, 'forward');// forward, backward
+  this.direction = defaults(p.direction, 'forward');// forward, backward, bounce
 
-  this._stopFlag = false;
-  this._running = false;
+  this._run = false;
+  this._previousTime = 0;
+  this._currentTime = 0;
+  this._currentStep = 1;
+  this._currentFrame = this.start;
+  this._direction = this.direction === 'bounce' ? 'forward' : this.direction;
 
-  traj.signals.gotNumframes.add(function (n) {
-    this.end = Math.min(defaults(p.end, n - 1), n - 1);
+  traj.signals.countChanged.add(function (n) {
+    this.end = Math.min(defaults(this.end, n - 1), n - 1);
   }, this);
 
   this._animate = this._animate.bind(this);
 };
 
-TrajectoryPlayer.prototype._animate = function _animate () {
-  var i;
-  this._running = true;
+var prototypeAccessors$25 = { isRunning: {} };
 
-  if (!this.traj.inProgress && !this._stopFlag) {
-    if (this.direction === 'forward') {
-      i = this.traj.currentFrame + this.step;
-    } else {
-      i = this.traj.currentFrame - this.step;
+prototypeAccessors$25.isRunning.get = function () { return this._run };
+
+/**
+ * set player parameters
+ * @param {TrajectoryPlayerParameters} [params] - parameter object
+ */
+TrajectoryPlayer.prototype.setParameters = function setParameters (params) {
+  var p = Object.assign({}, params);
+
+  if (p.start !== undefined) { this.start = p.start; }
+  if (p.end !== undefined) { this.end = p.end; }
+
+  if (p.step !== undefined) { this.step = p.step; }
+  if (p.timeout !== undefined) { this.timeout = p.timeout; }
+  if (p.interpolateType !== undefined) { this.interpolateType = p.interpolateType; }
+  if (p.interpolateStep !== undefined) { this.interpolateStep = p.interpolateStep; }
+  if (p.mode !== undefined) { this.mode = p.mode; }
+
+  if (p.direction !== undefined) {
+    this.direction = p.direction;
+    if (this.direction !== 'bounce') {
+      this._direction = this.direction;
     }
-
-    if (i >= this.end || i < this.start) {
-      if (this.mode === 'once') {
-        this.pause();
-
-        if (this.direction === 'forward') {
-          i = this.end;
-        } else {
-          i = this.start;
-        }
-      } else {
-        if (this.direction === 'forward') {
-          i = this.start;
-        } else {
-          i = this.end;
-        }
-      }
-    }
-
-    if (!this.interpolateType) {
-      this.traj.setFrame(i);
-    }
-  }
-
-  if (!this._stopFlag) {
-    if (!this.traj.inProgress && this.interpolateType) {
-      var ip, ipp, ippp;
-
-      if (this.direction === 'forward') {
-        ip = Math.max(this.start, i - this.step);
-        ipp = Math.max(this.start, i - 2 * this.step);
-        ippp = Math.max(this.start, i - 3 * this.step);
-      } else {
-        ip = Math.min(this.end, i + this.step);
-        ipp = Math.min(this.end, i + 2 * this.step);
-        ippp = Math.min(this.end, i + 3 * this.step);
-      }
-
-      this._interpolate(
-        i, ip, ipp, ippp, 1 / this.interpolateStep, 0
-      );
-    } else {
-      setTimeout(this._animate, this.timeout);
-    }
-  } else {
-    this._running = false;
   }
 };
 
-TrajectoryPlayer.prototype._interpolate = function _interpolate (i, ip, ipp, ippp, d, t) {
-    var this$1 = this;
+TrajectoryPlayer.prototype._animate = function _animate () {
+  if (!this._run) { return }
 
-  t += d;
+  this._currentTime = window.performance.now();
+  var dt = this._currentTime - this._previousTime;
+  var step = this.interpolateType ? this.interpolateStep : 1;
+  var timeout = this.timeout / step;
+  var traj = this.traj;
 
-  if (t <= 1) {
-    var deltaTime = Math.round(this.timeout * d);
-
-    this.traj.setFrameInterpolated(
-      i, ip, ipp, ippp, t, this.interpolateType,
-      function () {
-        setTimeout(function () {
-          this$1._interpolate(i, ip, ipp, ippp, d, t);
-        }, deltaTime);
+  if (traj && traj.frameCount && !traj.inProgress && dt >= timeout) {
+    if (this.interpolateType) {
+      if (this._currentStep > this.interpolateStep) {
+        this._currentStep = 1;
       }
-    );
-  } else {
-    setTimeout(this._animate, 0);
+      if (this._currentStep === 1) {
+        this._currentFrame = this._nextInterpolated();
+      }
+      if (traj.hasFrame(this._currentFrame)) {
+        this._currentStep += 1;
+        var t = this._currentStep / this.interpolateStep;
+        traj.setFrameInterpolated.apply(
+          traj, this._currentFrame.concat( [t], [this.interpolateType] )
+        );
+        this._previousTime = this._currentTime;
+      } else {
+        traj.loadFrame(this._currentFrame);
+      }
+    } else {
+      var i = this._next();
+      if (traj.hasFrame(i)) {
+        traj.setFrame(i);
+        this._previousTime = this._currentTime;
+      } else {
+        traj.loadFrame(i);
+      }
+    }
   }
+
+  window.requestAnimationFrame(this._animate);
+};
+
+TrajectoryPlayer.prototype._next = function _next () {
+  var i;
+
+  if (this._direction === 'forward') {
+    i = this.traj.currentFrame + this.step;
+  } else {
+    i = this.traj.currentFrame - this.step;
+  }
+
+  if (i > this.end || i < this.start) {
+    if (this.direction === 'bounce') {
+      if (this._direction === 'forward') {
+        this._direction = 'backward';
+      } else {
+        this._direction = 'forward';
+      }
+    }
+
+    if (this.mode === 'once') {
+      this.pause();
+
+      if (this.direction === 'forward') {
+        i = this.end;
+      } else if (this.direction === 'backward') {
+        i = this.start;
+      } else {
+        if (this._direction === 'forward') {
+          i = this.start;
+        } else {
+          i = this.end;
+        }
+      }
+    } else {
+      if (this._direction === 'forward') {
+        i = this.start;
+        if (this.interpolateType) {
+          i = Math.min(this.end, i + this.step);
+        }
+      } else {
+        i = this.end;
+        if (this.interpolateType) {
+          i = Math.max(this.start, i - this.step);
+        }
+      }
+    }
+  }
+
+  return i
+};
+
+TrajectoryPlayer.prototype._nextInterpolated = function _nextInterpolated () {
+  var i = this._next();
+  var ip, ipp, ippp;
+
+  if (this._direction === 'forward') {
+    ip = Math.max(this.start, i - this.step);
+    ipp = Math.max(this.start, i - 2 * this.step);
+    ippp = Math.max(this.start, i - 3 * this.step);
+  } else {
+    ip = Math.min(this.end, i + this.step);
+    ipp = Math.min(this.end, i + 2 * this.step);
+    ippp = Math.min(this.end, i + 3 * this.step);
+  }
+
+  return [i, ip, ipp, ippp]
 };
 
 /**
@@ -66514,7 +67586,7 @@ TrajectoryPlayer.prototype._interpolate = function _interpolate (i, ip, ipp, ipp
  * @return {undefined}
  */
 TrajectoryPlayer.prototype.toggle = function toggle () {
-  if (this._running) {
+  if (this._run) {
     this.pause();
   } else {
     this.play();
@@ -66526,10 +67598,11 @@ TrajectoryPlayer.prototype.toggle = function toggle () {
  * @return {undefined}
  */
 TrajectoryPlayer.prototype.play = function play () {
-  if (!this._running) {
+  if (!this._run) {
     if (this.traj.player !== this) {
       this.traj.setPlayer(this);
     }
+    this._currentStep = 1;
 
     var frame = this.traj.currentFrame;
 
@@ -66545,7 +67618,7 @@ TrajectoryPlayer.prototype.play = function play () {
 
     this.traj.setFrame(i);
 
-    this._stopFlag = false;
+    this._run = true;
     this._animate();
     this.signals.startedRunning.dispatch();
   }
@@ -66556,20 +67629,20 @@ TrajectoryPlayer.prototype.play = function play () {
  * @return {undefined}
  */
 TrajectoryPlayer.prototype.pause = function pause () {
-  if (this._running) {
-    this._stopFlag = true;
-    this.signals.haltedRunning.dispatch();
-  }
+  this._run = false;
+  this.signals.haltedRunning.dispatch();
 };
 
 /**
- * stop the animation (pause and return to start-frame)
+ * stop the animation (pause and go to start-frame)
  * @return {undefined}
  */
 TrajectoryPlayer.prototype.stop = function stop () {
-  this.traj.setFrame(this.start);
   this.pause();
+  this.traj.setFrame(this.start);
 };
+
+Object.defineProperties( TrajectoryPlayer.prototype, prototypeAccessors$25 );
 
 /**
  * @file Trajectory
@@ -66634,6 +67707,44 @@ function removePbc (x, box) {
   return x
 }
 
+function circularMean3 (indices, coords, box) {
+  return [
+    circularMean(coords, box[ 0 ], 3, 0, indices),
+    circularMean(coords, box[ 1 ], 3, 1, indices),
+    circularMean(coords, box[ 2 ], 3, 2, indices)
+  ]
+}
+
+function interpolateSpline (c, cp, cpp, cppp, t) {
+  var m = c.length;
+  var coords = new Float32Array(m);
+
+  for (var j0 = 0; j0 < m; j0 += 3) {
+    var j1 = j0 + 1;
+    var j2 = j0 + 2;
+    coords[ j0 ] = spline(cppp[ j0 ], cpp[ j0 ], cp[ j0 ], c[ j0 ], t, 1);
+    coords[ j1 ] = spline(cppp[ j1 ], cpp[ j1 ], cp[ j1 ], c[ j1 ], t, 1);
+    coords[ j2 ] = spline(cppp[ j2 ], cpp[ j2 ], cp[ j2 ], c[ j2 ], t, 1);
+  }
+
+  return coords
+}
+
+function interpolateLerp (c, cp, t) {
+  var m = c.length;
+  var coords = new Float32Array(m);
+
+  for (var j0 = 0; j0 < m; j0 += 3) {
+    var j1 = j0 + 1;
+    var j2 = j0 + 2;
+    coords[ j0 ] = lerp(cp[ j0 ], c[ j0 ], t);
+    coords[ j1 ] = lerp(cp[ j1 ], c[ j1 ], t);
+    coords[ j2 ] = lerp(cp[ j2 ], c[ j2 ], t);
+  }
+
+  return coords
+}
+
 /**
  * Trajectory parameter object.
  * @typedef {Object} TrajectoryParameters - parameters
@@ -66647,128 +67758,150 @@ function removePbc (x, box) {
  */
 
 /**
- * Trajectory object for tying frames and structure together
- * @class
- * @param {String|Frames} trajPath - trajectory source
- * @param {Structure} structure - the structure object
- * @param {TrajectoryParameters} params - trajectory parameters
+ * @example
+ * trajectory.signals.frameChanged.add( function(i){ ... } );
+ *
+ * @typedef {Object} TrajectorySignals
+ * @property {Signal<Integer>} countChanged - when the frame count is changed
+ * @property {Signal<Integer>} frameChanged - when the set frame is changed
+ * @property {Signal<TrajectoryPlayer>} playerChanged - when the player is changed
+ */
+
+/**
+ * Base class for trajectories, tying structures and coordinates together
+ * @interface
  */
 var Trajectory = function Trajectory (trajPath, structure, params) {
+  /**
+   * Events emitted by the trajectory
+   * @type {TrajectorySignals}
+   */
   this.signals = {
-    gotNumframes: new Signal(),
+    countChanged: new Signal(),
     frameChanged: new Signal(),
-    selectionChanged: new Signal(),
     playerChanged: new Signal()
   };
 
   var p = params || {};
-  p.deltaTime = defaults(p.deltaTime, 0);
-  p.timeOffset = defaults(p.timeOffset, 0);
-  p.centerPbc = defaults(p.centerPbc, false);
-  p.removePbc = defaults(p.removePbc, false);
-  p.superpose = defaults(p.superpose, false);
-  this.setParameters(p);
+
+  this.deltaTime = defaults(p.deltaTime, 0);
+  this.timeOffset = defaults(p.timeOffset, 0);
+  this.centerPbc = defaults(p.centerPbc, false);
+  this.removePbc = defaults(p.removePbc, false);
+  this.superpose = defaults(p.superpose, false);
 
   this.name = trajPath.replace(/^.*[\\/]/, '');
+  this.trajPath = trajPath;
 
-  // selection to restrict atoms used for superposition
+  this.initialCoords = null;
+  this.structureCoords = null;
+
+  /**
+   * selection to restrict atoms used for superposition
+   * @type {Selection}
+   */
   this.selection = new Selection(
     defaults(p.sele, 'backbone and not hydrogen')
   );
 
   this.selection.signals.stringChanged.add(function () {
-    this.makeIndices();
-    this.resetCache();
+    this.selectionIndices = this.structure.getAtomIndices(this.selection);
+    this._resetCache();
+    this._saveInitialCoords();
+    this.setFrame(this._currentFrame);
   }, this);
 
-  // should come after this.selection is set
+  this._frameCount = 0;
+  this._currentFrame = -1;
+};
+
+var prototypeAccessors$24 = { frameCount: {},currentFrame: {} };
+
+/**
+ * Number of frames in the trajectory
+ * @return {Number} count
+ */
+prototypeAccessors$24.frameCount.get = function () {
+  return this._frameCount
+};
+
+/**
+ * Currently set frame of the trajectory
+ * @return {Number} frame
+ */
+prototypeAccessors$24.currentFrame.get = function () {
+  return this._currentFrame
+};
+
+Trajectory.prototype._init = function _init (structure) {
   this.setStructure(structure);
+  this._loadFrameCount();
   this.setPlayer(new TrajectoryPlayer(this));
-
-  this.trajPath = trajPath;
-
-  this.numframes = undefined;
-  this.getNumframes();
 };
 
 Trajectory.prototype.setStructure = function setStructure (structure) {
   this.structure = structure;
   this.atomCount = structure.atomCount;
 
-  this.makeAtomIndices();
-
-  this.saveInitialStructure();
-
-  this.backboneIndices = this.getIndices(
+  this.backboneIndices = this._getIndices(
     new Selection('backbone and not hydrogen')
   );
-  this.makeIndices();
+  this._makeAtomIndices();
+  this._saveStructureCoords();
 
-  this.frameCache = [];
-  this.boxCache = [];
-  this.pathCache = [];
-  this.frameCacheSize = 0;
-  this.currentFrame = -1;
+  this.selectionIndices = this._getIndices(this.selection);
+  this._resetCache();
+  this._saveInitialCoords();
+  this.setFrame(this._currentFrame);
 };
 
-Trajectory.prototype.saveInitialStructure = function saveInitialStructure () {
-  var initialStructure = new Float32Array(3 * this.atomCount);
-  var i = 0;
+Trajectory.prototype._saveInitialCoords = function _saveInitialCoords () {
+    var this$1 = this;
 
-  this.structure.eachAtom(function (a) {
-    initialStructure[ i + 0 ] = a.x;
-    initialStructure[ i + 1 ] = a.y;
-    initialStructure[ i + 2 ] = a.z;
+  if (this.frameCache[0]) {
+    this.initialCoords = new Float32Array(this.frameCache[0]);
+    this._makeSuperposeCoords();
+  } else {
+    this.loadFrame(0, function () { return this$1._saveInitialCoords(); });
+  }
+};
 
-    i += 3;
-  });
-
-  this.initialStructure = initialStructure;
+Trajectory.prototype._saveStructureCoords = function _saveStructureCoords () {
+  var p = { what: { position: true } };
+  this.structureCoords = this.structure.getAtomData(p).position;
 };
 
 Trajectory.prototype.setSelection = function setSelection (string) {
   this.selection.setString(string);
-
   return this
 };
 
-Trajectory.prototype.getIndices = function getIndices (selection) {
-  var indices;
+Trajectory.prototype._getIndices = function _getIndices (selection) {
+  var i = 0;
+  var test = selection.test;
+  var indices = [];
 
-  if (selection && selection.test) {
-    var i = 0;
-    var test = selection.test;
-    indices = [];
-
-    this.structure.eachAtom(function (ap) {
-      if (test(ap)) {
-        indices.push(i);
-      }
-      i += 1;
-    });
-  } else {
-    indices = this.structure.getAtomIndices(this.selection);
-  }
+  this.structure.eachAtom(function (ap) {
+    if (test(ap)) { indices.push(i); }
+    i += 1;
+  });
 
   return indices
 };
 
-Trajectory.prototype.makeIndices = function makeIndices () {
+Trajectory.prototype._makeSuperposeCoords = function _makeSuperposeCoords () {
     var this$1 = this;
 
-  // indices to restrict atoms used for superposition
-  this.indices = this.getIndices(this.selection);
-
-  var n = this.indices.length * 3;
+  var n = this.selectionIndices.length * 3;
 
   this.coords1 = new Float32Array(n);
   this.coords2 = new Float32Array(n);
 
-  var y = this.initialStructure;
+  var y = this.initialCoords;
   var coords2 = this.coords2;
 
   for (var i = 0; i < n; i += 3) {
-    var j = this$1.indices[ i / 3 ] * 3;
+    var j = this$1.selectionIndices[ i / 3 ] * 3;
 
     coords2[ i + 0 ] = y[ j + 0 ];
     coords2[ i + 1 ] = y[ j + 1 ];
@@ -66776,26 +67909,21 @@ Trajectory.prototype.makeIndices = function makeIndices () {
   }
 };
 
-Trajectory.prototype.makeAtomIndices = function makeAtomIndices () {
-  Log.error('Trajectory.makeAtomIndices not implemented');
+Trajectory.prototype._makeAtomIndices = function _makeAtomIndices () {
+  Log.error('Trajectory._makeAtomIndices not implemented');
 };
 
-Trajectory.prototype.getNumframes = function getNumframes () {
-  Log.error('Trajectory.loadFrame not implemented');
-};
-
-Trajectory.prototype.resetCache = function resetCache () {
-  this.frameCache = [];
-  this.boxCache = [];
-  this.pathCache = [];
+Trajectory.prototype._resetCache = function _resetCache () {
+  this.frameCache = {};
+  this.loadQueue = {};
+  this.boxCache = {};
+  this.pathCache = {};
   this.frameCacheSize = 0;
-  this.setFrame(this.currentFrame);
-
-  return this
+  this.initialCoords = null;
 };
 
 Trajectory.prototype.setParameters = function setParameters (params) {
-  var p = params;
+  var p = params || {};
   var resetCache = false;
 
   if (p.centerPbc !== undefined && p.centerPbc !== this.centerPbc) {
@@ -66816,9 +67944,32 @@ Trajectory.prototype.setParameters = function setParameters (params) {
   this.deltaTime = defaults(p.deltaTime, this.deltaTime);
   this.timeOffset = defaults(p.timeOffset, this.timeOffset);
 
-  if (resetCache) { this.resetCache(); }
+  if (resetCache) {
+    this._resetCache();
+    this.setFrame(this._currentFrame);
+  }
 };
 
+/**
+ * Check if a frame is available
+ * @param{Integer|Integer[]} i - the frame index
+ * @return {Boolean} frame availability
+ */
+Trajectory.prototype.hasFrame = function hasFrame (i) {
+    var this$1 = this;
+
+  if (Array.isArray(i)) {
+    return i.every(function (j) { return !!this$1.frameCache[j]; })
+  } else {
+    return !!this.frameCache[i]
+  }
+};
+
+/**
+ * Set trajectory to a frame index
+ * @param {Integer} i - the frame index
+ * @param {Function} callback - fired when the frame has been set
+ */
 Trajectory.prototype.setFrame = function setFrame (i, callback) {
     var this$1 = this;
 
@@ -66829,56 +67980,43 @@ Trajectory.prototype.setFrame = function setFrame (i, callback) {
   i = parseInt(i);
 
   if (i === -1 || this.frameCache[ i ]) {
-    this.updateStructure(i, callback);
+    this._updateStructure(i);
+    if (callback) { callback(); }
   } else {
     this.loadFrame(i, function () {
-      this$1.updateStructure(i, callback);
+      this$1._updateStructure(i);
+      if (callback) { callback(); }
     });
   }
 
   return this
 };
 
-Trajectory.prototype.interpolate = function interpolate (i, ip, ipp, ippp, t, type, callback) {
+Trajectory.prototype._interpolate = function _interpolate (i, ip, ipp, ippp, t, type) {
   var fc = this.frameCache;
 
-  var c = fc[ i ];
-  var cp = fc[ ip ];
-  var cpp = fc[ ipp ];
-  var cppp = fc[ ippp ];
-
-  var m = c.length;
-  var coords = new Float32Array(m);
-
+  var coords;
   if (type === 'spline') {
-    for (var j = 0; j < m; j += 3) {
-      coords[ j + 0 ] = spline(
-        cppp[ j + 0 ], cpp[ j + 0 ], cp[ j + 0 ], c[ j + 0 ], t, 1
-      );
-      coords[ j + 1 ] = spline(
-        cppp[ j + 1 ], cpp[ j + 1 ], cp[ j + 1 ], c[ j + 1 ], t, 1
-      );
-      coords[ j + 2 ] = spline(
-        cppp[ j + 2 ], cpp[ j + 2 ], cp[ j + 2 ], c[ j + 2 ], t, 1
-      );
-    }
+    coords = interpolateSpline(fc[ i ], fc[ ip ], fc[ ipp ], fc[ ippp ], t);
   } else {
-    for (var j$1 = 0; j$1 < m; j$1 += 3) {
-      coords[ j$1 + 0 ] = lerp(cp[ j$1 + 0 ], c[ j$1 + 0 ], t);
-      coords[ j$1 + 1 ] = lerp(cp[ j$1 + 1 ], c[ j$1 + 1 ], t);
-      coords[ j$1 + 2 ] = lerp(cp[ j$1 + 2 ], c[ j$1 + 2 ], t);
-    }
+    coords = interpolateLerp(fc[ i ], fc[ ip ], t);
   }
 
   this.structure.updatePosition(coords);
-  this.currentFrame = i;
+  this._currentFrame = i;
   this.signals.frameChanged.dispatch(i);
-
-  if (typeof callback === 'function') {
-    callback();
-  }
 };
 
+/**
+ * Interpolated and set trajectory to frame indices
+ * @param {Integer} i - the frame index
+ * @param {Integer} ip - one before frame index
+ * @param {Integer} ipp - two before frame index
+ * @param {Integer} ippp - three before frame index
+ * @param {Number} t - interpolation step [0,1]
+ * @param {String} type - interpolation type, '', 'spline' or 'linear'
+ * @param {Function} callback - fired when the frame has been set
+ */
 Trajectory.prototype.setFrameInterpolated = function setFrameInterpolated (i, ip, ipp, ippp, t, type, callback) {
     var this$1 = this;
 
@@ -66894,43 +68032,65 @@ Trajectory.prototype.setFrameInterpolated = function setFrameInterpolated (i, ip
 
   if (iList.length) {
     this.loadFrame(iList, function () {
-      this$1.interpolate(i, ip, ipp, ippp, t, type, callback);
+      this$1._interpolate(i, ip, ipp, ippp, t, type);
+      if (callback) { callback(); }
     });
   } else {
-    this.interpolate(i, ip, ipp, ippp, t, type, callback);
+    this._interpolate(i, ip, ipp, ippp, t, type);
+    if (callback) { callback(); }
   }
 
   return this
 };
 
+/**
+ * Load frame index
+ * @param {Integer|Integer[]} i - the frame index
+ * @param {Function} callback - fired when the frame has been loaded
+ */
 Trajectory.prototype.loadFrame = function loadFrame (i, callback) {
     var this$1 = this;
 
   if (Array.isArray(i)) {
-    var queue;
-    var fn = function (j, wcallback) {
-      this$1._loadFrame(j, function () {
-        wcallback();
-        if (queue.length() === 0 && typeof callback === 'function') {
-          callback();
-        }
-      });
-    };
-    queue = new Queue(fn, i);
+    i.forEach(function (j) {
+      if (!this$1.loadQueue[j] && !this$1.frameCache[j]) {
+        this$1.loadQueue[j] = true;
+        this$1._loadFrame(j, function () {
+          delete this$1.loadQueue[j];
+        });
+      }
+    });
   } else {
-    this._loadFrame(i, callback);
+    if (!this.loadQueue[i] && !this.frameCache[i]) {
+      this.loadQueue[i] = true;
+      this._loadFrame(i, function () {
+        delete this$1.loadQueue[i];
+        if (callback) { callback(); }
+      });
+    }
   }
 };
 
+/**
+ * Load frame index
+ * @abstract
+ * @param {Integer} i - the frame index
+ * @param {Function} callback - fired when the frame has been loaded
+ */
 Trajectory.prototype._loadFrame = function _loadFrame (i, callback) {
   Log.error('Trajectory._loadFrame not implemented', i, callback);
 };
 
-Trajectory.prototype.updateStructure = function updateStructure (i, callback) {
-  if (this._disposed) { return }
+Trajectory.prototype._updateStructure = function _updateStructure (i) {
+  if (this._disposed) {
+    console.error('updateStructure: traj disposed');
+    return
+  }
 
   if (i === -1) {
-    this.structure.updatePosition(this.initialStructure);
+    if (this.structureCoords) {
+      this.structure.updatePosition(this.structureCoords);
+    }
   } else {
     this.structure.updatePosition(this.frameCache[ i ]);
   }
@@ -66940,33 +68100,21 @@ Trajectory.prototype.updateStructure = function updateStructure (i, callback) {
     frame: i
   };
 
-  if (typeof callback === 'function') {
-    callback();
-  }
-
-  this.currentFrame = i;
+  this._currentFrame = i;
   this.inProgress = false;
   this.signals.frameChanged.dispatch(i);
 };
 
-Trajectory.prototype.getCircularMean = function getCircularMean (indices, coords, box) {
-  return [
-    circularMean(coords, box[ 0 ], 3, 0, indices),
-    circularMean(coords, box[ 1 ], 3, 1, indices),
-    circularMean(coords, box[ 2 ], 3, 2, indices)
-  ]
-};
-
-Trajectory.prototype.doSuperpose = function doSuperpose (x) {
+Trajectory.prototype._doSuperpose = function _doSuperpose (x) {
     var this$1 = this;
 
-  var n = this.indices.length * 3;
+  var n = this.selectionIndices.length * 3;
 
   var coords1 = this.coords1;
   var coords2 = this.coords2;
 
   for (var i = 0; i < n; i += 3) {
-    var j = this$1.indices[ i / 3 ] * 3;
+    var j = this$1.selectionIndices[ i / 3 ] * 3;
 
     coords1[ i + 0 ] = x[ j + 0 ];
     coords1[ i + 1 ] = x[ j + 1 ];
@@ -66978,15 +68126,13 @@ Trajectory.prototype.doSuperpose = function doSuperpose (x) {
   sp.transform(x);
 };
 
-Trajectory.prototype.process = function process (i, box, coords, numframes) {
-  this.setNumframes(numframes);
+Trajectory.prototype._process = function _process (i, box, coords, frameCount) {
+  this._setFrameCount(frameCount);
 
   if (box) {
     if (this.backboneIndices.length > 0 && this.centerPbc) {
       var box2 = [ box[ 0 ], box[ 4 ], box[ 8 ] ];
-      var mean = this.getCircularMean(
-        this.backboneIndices, coords, box2
-      );
+      var mean = circularMean3(this.backboneIndices, coords, box2);
       centerPbc(coords, mean, box2);
     }
 
@@ -66995,8 +68141,8 @@ Trajectory.prototype.process = function process (i, box, coords, numframes) {
     }
   }
 
-  if (this.indices.length > 0 && this.superpose) {
-    this.doSuperpose(coords);
+  if (this.selectionIndices.length > 0 && this.coords1 && this.superpose) {
+    this._doSuperpose(coords);
   }
 
   this.frameCache[ i ] = coords;
@@ -67004,24 +68150,39 @@ Trajectory.prototype.process = function process (i, box, coords, numframes) {
   this.frameCacheSize += 1;
 };
 
-Trajectory.prototype.setNumframes = function setNumframes (n) {
-  if (n !== this.numframes) {
-    this.numframes = n;
-    this.signals.gotNumframes.dispatch(n);
+Trajectory.prototype._setFrameCount = function _setFrameCount (n) {
+  if (n !== this._frameCount) {
+    this._frameCount = n;
+    this.signals.countChanged.dispatch(n);
   }
 };
 
+/**
+ * Dispose of the trajectory object
+ * @return {undefined}
+ */
 Trajectory.prototype.dispose = function dispose () {
-  this.frameCache = [];// aid GC
+  this._resetCache();// aid GC
   this._disposed = true;
   if (this.player) { this.player.stop(); }
 };
 
+/**
+ * Set player for this trajectory
+ * @param {TrajectoryPlayer} player - the player
+ */
 Trajectory.prototype.setPlayer = function setPlayer (player) {
   this.player = player;
   this.signals.playerChanged.dispatch(player);
 };
 
+/**
+ * Get path of atom
+ * abstract
+ * @param{Integer} index - atom index
+ * @param{Function} callback - fired when the path is available
+ * @return {undefined}
+ */
 Trajectory.prototype.getPath = function getPath (index, callback) {
   Log.error('Trajectory.getPath not implemented', index, callback);
 };
@@ -67034,6 +68195,8 @@ Trajectory.prototype.getPath = function getPath (index, callback) {
 Trajectory.prototype.getFrameTime = function getFrameTime (i) {
   return this.timeOffset + i * this.deltaTime
 };
+
+Object.defineProperties( Trajectory.prototype, prototypeAccessors$24 );
 
 ShaderRegistry.add('shader/Mesh.vert', "#define STANDARD\nuniform float nearClip;\nuniform vec3 clipCenter;\n#if defined( NEAR_CLIP ) || defined( RADIUS_CLIP ) || ( !defined( PICKING ) && !defined( NOLIGHT ) )\nvarying vec3 vViewPosition;\n#endif\n#if defined( RADIUS_CLIP )\nvarying vec3 vClipCenter;\n#endif\n#if defined( PICKING )\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#elif defined( NOLIGHT )\nvarying vec3 vColor;\n#else\n#include color_pars_vertex\n#ifndef FLAT_SHADED\nvarying vec3 vNormal;\n#endif\n#endif\n#include common\nvoid main(){\n#if defined( PICKING )\nvPickingColor = unpackColor( primitiveId );\n#elif defined( NOLIGHT )\nvColor = color;\n#else\n#include color_vertex\n#include beginnormal_vertex\n#include defaultnormal_vertex\n#ifndef FLAT_SHADED\nvNormal = normalize( transformedNormal );\n#endif\n#endif\n#include begin_vertex\n#include project_vertex\n#if defined( NEAR_CLIP ) || defined( RADIUS_CLIP ) || ( !defined( PICKING ) && !defined( NOLIGHT ) )\nvViewPosition = -mvPosition.xyz;\n#endif\n#if defined( RADIUS_CLIP )\nvClipCenter = -( modelViewMatrix * vec4( clipCenter, 1.0 ) ).xyz;\n#endif\n#include nearclip_vertex\n}");
 
@@ -67176,9 +68339,9 @@ var Buffer$1 = function Buffer (data, params) {
   this.makeWireframeGeometry();
 };
 
-var prototypeAccessors$25 = { parameters: {},matrix: {},transparent: {},size: {},attributeSize: {},pickable: {},dynamic: {},vertexShader: {},fragmentShader: {} };
+var prototypeAccessors$27 = { parameters: {},matrix: {},transparent: {},size: {},attributeSize: {},pickable: {},dynamic: {},vertexShader: {},fragmentShader: {} };
 
-prototypeAccessors$25.parameters.get = function () {
+prototypeAccessors$27.parameters.get = function () {
   return {
     opaqueBack: { updateShader: true },
     dullInterior: { updateShader: true },
@@ -67199,40 +68362,40 @@ prototypeAccessors$25.parameters.get = function () {
   }
 };
 
-prototypeAccessors$25.matrix.set = function (m) {
+prototypeAccessors$27.matrix.set = function (m) {
   this.setMatrix(m);
 };
-prototypeAccessors$25.matrix.get = function () {
+prototypeAccessors$27.matrix.get = function () {
   return this.group.matrix.clone()
 };
 
-prototypeAccessors$25.transparent.get = function () {
+prototypeAccessors$27.transparent.get = function () {
   return this.opacity < 1 || this.forceTransparent
 };
 
-prototypeAccessors$25.size.get = function () {
+prototypeAccessors$27.size.get = function () {
   return this._positionDataSize
 };
 
-prototypeAccessors$25.attributeSize.get = function () {
+prototypeAccessors$27.attributeSize.get = function () {
   return this.size
 };
 
-prototypeAccessors$25.pickable.get = function () {
+prototypeAccessors$27.pickable.get = function () {
   return !!this.picking && !this.disablePicking
 };
 
-prototypeAccessors$25.dynamic.get = function () { return true };
+prototypeAccessors$27.dynamic.get = function () { return true };
 
   /**
    * @abstract
    */
-prototypeAccessors$25.vertexShader.get = function () {};
+prototypeAccessors$27.vertexShader.get = function () {};
 
   /**
    * @abstract
    */
-prototypeAccessors$25.fragmentShader.get = function () {};
+prototypeAccessors$27.fragmentShader.get = function () {};
 
 Buffer$1.prototype.setMatrix = function setMatrix (m) {
   setObjectMatrix(this.group, m);
@@ -67871,7 +69034,7 @@ Buffer$1.prototype.dispose = function dispose () {
   if (this.wireframeGeometry) { this.wireframeGeometry.dispose(); }
 };
 
-Object.defineProperties( Buffer$1.prototype, prototypeAccessors$25 );
+Object.defineProperties( Buffer$1.prototype, prototypeAccessors$27 );
 
 /**
  * @file Mesh Buffer
@@ -67926,1893 +69089,35 @@ var MeshBuffer = (function (Buffer) {
 }(Buffer$1));
 
 /**
- * @file Geometry Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var matrix$1 = new Matrix4();
-var normalMatrix = new Matrix3();
-
-/**
- * Geometry buffer. Base class for geometry-based buffers. Used to draw
- * geometry primitives given a mesh.
- * @interface
- */
-var GeometryBuffer = (function (MeshBuffer$$1) {
-  function GeometryBuffer (data, params, geo) {
-    var d = data || {};
-    var p = params || {};
-
-    var geoPosition = geo.attributes.position.array;
-    var geoNormal = geo.attributes.normal.array;
-    var geoIndex = geo.index ? geo.index.array : undefined;
-
-    var n = d.position.length / 3;
-    var m = geoPosition.length / 3;
-
-    var size = n * m;
-
-    var meshPosition = new Float32Array(size * 3);
-    var meshNormal = new Float32Array(size * 3);
-    var meshColor = new Float32Array(size * 3);
-
-    var meshIndex;
-    if (geoIndex) {
-      meshIndex = getUintArray(n * geoIndex.length, size);
-    }
-
-    MeshBuffer$$1.call(this, {
-      position: meshPosition,
-      color: meshColor,
-      index: meshIndex,
-      normal: meshNormal,
-      primitiveId: d.primitiveId || serialBlockArray(n, m),
-      picking: d.picking
-    }, p);
-
-    this.setAttributes(d);
-
-    this.geoPosition = geoPosition;
-    this.geoNormal = geoNormal;
-    this.geoIndex = geoIndex;
-
-    this.positionCount = n;
-    this.geoPositionCount = m;
-
-    this.transformedGeoPosition = new Float32Array(m * 3);
-    this.transformedGeoNormal = new Float32Array(m * 3);
-
-    this.meshPosition = meshPosition;
-    this.meshColor = meshColor;
-    this.meshIndex = meshIndex;
-    this.meshNormal = meshNormal;
-
-    this.meshIndex = meshIndex;
-    this.makeIndex();
-  }
-
-  if ( MeshBuffer$$1 ) GeometryBuffer.__proto__ = MeshBuffer$$1;
-  GeometryBuffer.prototype = Object.create( MeshBuffer$$1 && MeshBuffer$$1.prototype );
-  GeometryBuffer.prototype.constructor = GeometryBuffer;
-
-  var prototypeAccessors = { updateNormals: {} };
-
-  GeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform () {};
-
-  GeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
-    var this$1 = this;
-
-    var attributes = this.geometry.attributes;
-
-    var position, color;
-    var geoPosition, geoNormal;
-    var transformedGeoPosition, transformedGeoNormal;
-    var meshPosition, meshColor, meshNormal;
-
-    var updateNormals = this.updateNormals;
-
-    if (data.position) {
-      position = data.position;
-      geoPosition = this.geoPosition;
-      meshPosition = this.meshPosition;
-      transformedGeoPosition = this.transformedGeoPosition;
-      attributes.position.needsUpdate = true;
-      if (updateNormals || initNormals) {
-        geoNormal = this.geoNormal;
-        meshNormal = this.meshNormal;
-        transformedGeoNormal = this.transformedGeoNormal;
-        attributes.normal.needsUpdate = true;
-      }
-    }
-
-    if (data.color) {
-      color = data.color;
-      meshColor = this.meshColor;
-      attributes.color.needsUpdate = true;
-    }
-
-    var n = this.positionCount;
-    var m = this.geoPositionCount;
-
-    for (var i = 0; i < n; ++i) {
-      var j = (void 0), l = (void 0);
-      var k = i * m * 3;
-      var i3 = i * 3;
-
-      if (position) {
-        transformedGeoPosition.set(geoPosition);
-        matrix$1.makeTranslation(
-                    position[ i3 ], position[ i3 + 1 ], position[ i3 + 2 ]
-                );
-        this$1.applyPositionTransform(matrix$1, i, i3);
-        applyMatrix4toVector3array(matrix$1.elements, transformedGeoPosition);
-
-        meshPosition.set(transformedGeoPosition, k);
-
-        if (updateNormals) {
-          transformedGeoNormal.set(geoNormal);
-          normalMatrix.getNormalMatrix(matrix$1);
-          applyMatrix3toVector3array(normalMatrix.elements, transformedGeoNormal);
-
-          meshNormal.set(transformedGeoNormal, k);
-        } else if (initNormals) {
-          meshNormal.set(geoNormal, k);
-        }
-      }
-
-      if (color) {
-        for (j = 0; j < m; ++j) {
-          l = k + 3 * j;
-
-          meshColor[ l ] = color[ i3 ];
-          meshColor[ l + 1 ] = color[ i3 + 1 ];
-          meshColor[ l + 2 ] = color[ i3 + 2 ];
-        }
-      }
-    }
-  };
-
-  GeometryBuffer.prototype.makeIndex = function makeIndex () {
-    var geoIndex = this.geoIndex;
-    var meshIndex = this.meshIndex;
-
-    if (!geoIndex) { return }
-
-    var n = this.positionCount;
-    var m = this.geoPositionCount;
-    var o = geoIndex.length / 3;
-
-    var o3 = o * 3;
-
-    for (var i = 0; i < n; ++i) {
-      var j = i * o3;
-      var q = j + o3;
-
-      meshIndex.set(geoIndex, j);
-      for (var p = j; p < q; ++p) { meshIndex[ p ] += i * m; }
-    }
-  };
-
-  prototypeAccessors.updateNormals.get = function () { return false };
-
-  Object.defineProperties( GeometryBuffer.prototype, prototypeAccessors );
-
-  return GeometryBuffer;
-}(MeshBuffer));
-
-/**
- * @file Sphere Geometry Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var scale = new Vector3();
-
-/**
- * Sphere geometry buffer.
- *
- * @example
- * var sphereGeometryBuffer = new SphereGeometryBuffer( {
- *     position: new Float32Array( [ 0, 0, 0 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var SphereGeometryBuffer = (function (GeometryBuffer$$1) {
-  function SphereGeometryBuffer (data, params) {
-    var p = params || {};
-    var detail = defaults(p.sphereDetail, 1);
-    var geo = new IcosahedronBufferGeometry(1, detail);
-
-    GeometryBuffer$$1.call(this, data, p, geo);
-
-    this.setAttributes(data, true);
-  }
-
-  if ( GeometryBuffer$$1 ) SphereGeometryBuffer.__proto__ = GeometryBuffer$$1;
-  SphereGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
-  SphereGeometryBuffer.prototype.constructor = SphereGeometryBuffer;
-
-  SphereGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i) {
-    var r = this._radius[ i ];
-    scale.set(r, r, r);
-    matrix.scale(scale);
-  };
-
-  SphereGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
-    if (data.radius) {
-      this._radius = data.radius;
-    }
-
-    GeometryBuffer$$1.prototype.setAttributes.call(this, data, initNormals);
-  };
-
-  return SphereGeometryBuffer;
-}(GeometryBuffer));
-
-ShaderRegistry.add('shader/SphereImpostor.vert', "uniform mat4 projectionMatrixInverse;\nuniform float nearClip;\nvarying float vRadius;\nvarying float vRadiusSq;\nvarying vec3 vPoint;\nvarying vec3 vPointViewPosition;\nattribute vec2 mapping;\nattribute float radius;\n#ifdef PICKING\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#else\n#include color_pars_vertex\n#endif\n#include matrix_scale\nconst mat4 D = mat4(\n1.0, 0.0, 0.0, 0.0,\n0.0, 1.0, 0.0, 0.0,\n0.0, 0.0, 1.0, 0.0,\n0.0, 0.0, 0.0, -1.0\n);\nmat4 transpose( in mat4 inMatrix ) {\nvec4 i0 = inMatrix[0];\nvec4 i1 = inMatrix[1];\nvec4 i2 = inMatrix[2];\nvec4 i3 = inMatrix[3];\nmat4 outMatrix = mat4(\nvec4(i0.x, i1.x, i2.x, i3.x),\nvec4(i0.y, i1.y, i2.y, i3.y),\nvec4(i0.z, i1.z, i2.z, i3.z),\nvec4(i0.w, i1.w, i2.w, i3.w)\n);\nreturn outMatrix;\n}\nvoid ComputePointSizeAndPositionInClipCoordSphere(){\nvec2 xbc;\nvec2 ybc;\nmat4 T = mat4(\nradius, 0.0, 0.0, 0.0,\n0.0, radius, 0.0, 0.0,\n0.0, 0.0, radius, 0.0,\nposition.x, position.y, position.z, 1.0\n);\nmat4 R = transpose( projectionMatrix * modelViewMatrix * T );\nfloat A = dot( R[ 3 ], D * R[ 3 ] );\nfloat B = -2.0 * dot( R[ 0 ], D * R[ 3 ] );\nfloat C = dot( R[ 0 ], D * R[ 0 ] );\nxbc[ 0 ] = ( -B - sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nxbc[ 1 ] = ( -B + sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nfloat sx = abs( xbc[ 0 ] - xbc[ 1 ] ) * 0.5;\nA = dot( R[ 3 ], D * R[ 3 ] );\nB = -2.0 * dot( R[ 1 ], D * R[ 3 ] );\nC = dot( R[ 1 ], D * R[ 1 ] );\nybc[ 0 ] = ( -B - sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nybc[ 1 ] = ( -B + sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nfloat sy = abs( ybc[ 0 ] - ybc[ 1 ] ) * 0.5;\ngl_Position.xy = vec2( 0.5 * ( xbc.x + xbc.y ), 0.5 * ( ybc.x + ybc.y ) );\ngl_Position.xy -= mapping * vec2( sx, sy );\ngl_Position.xy *= gl_Position.w;\n}\nvoid main(void){\n#ifdef PICKING\nvPickingColor = unpackColor( primitiveId );\n#else\n#include color_vertex\n#endif\nvRadius = radius * matrixScale( modelViewMatrix );\nvec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\nmvPosition.z -= vRadius;\ngl_Position = projectionMatrix * vec4( mvPosition.xyz, 1.0 );\nComputePointSizeAndPositionInClipCoordSphere();\nvRadiusSq = vRadius * vRadius;\nvec4 vPoint4 = projectionMatrixInverse * gl_Position;\nvPoint = vPoint4.xyz / vPoint4.w;\nvPointViewPosition = -mvPosition.xyz / mvPosition.w;\n}");
-
-ShaderRegistry.add('shader/SphereImpostor.frag', "#define STANDARD\n#define IMPOSTOR\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform float roughness;\nuniform float metalness;\nuniform float opacity;\nuniform float nearClip;\nuniform mat4 projectionMatrix;\nuniform float ortho;\nvarying float vRadius;\nvarying float vRadiusSq;\nvarying vec3 vPoint;\nvarying vec3 vPointViewPosition;\n#ifdef PICKING\nuniform float objectId;\nvarying vec3 vPickingColor;\n#else\n#include common\n#include color_pars_fragment\n#include fog_pars_fragment\n#include bsdfs\n#include lights_pars\n#include lights_physical_pars_fragment\n#endif\nbool flag2 = false;\nbool interior = false;\nvec3 cameraPos;\nvec3 cameraNormal;\nfloat calcDepth( in vec3 cameraPos ){\nvec2 clipZW = cameraPos.z * projectionMatrix[2].zw + projectionMatrix[3].zw;\nreturn 0.5 + 0.5 * clipZW.x / clipZW.y;\n}\nfloat calcClip( vec3 cameraPos ){\nreturn dot( vec4( cameraPos, 1.0 ), vec4( 0.0, 0.0, 1.0, nearClip - 0.5 ) );\n}\nbool Impostor( out vec3 cameraPos, out vec3 cameraNormal ){\nvec3 cameraSpherePos = -vPointViewPosition;\ncameraSpherePos.z += vRadius;\nvec3 rayOrigin = mix( vec3( 0.0, 0.0, 0.0 ), vPoint, ortho );\nvec3 rayDirection = mix( normalize( vPoint ), vec3( 0.0, 0.0, 1.0 ), ortho );\nvec3 cameraSphereDir = mix( cameraSpherePos, rayOrigin - cameraSpherePos, ortho );\nfloat B = dot( rayDirection, cameraSphereDir );\nfloat det = B * B + vRadiusSq - dot( cameraSphereDir, cameraSphereDir );\nif( det < 0.0 ){\ndiscard;\nreturn false;\n}else{\nfloat sqrtDet = sqrt( det );\nfloat posT = mix( B + sqrtDet, B + sqrtDet, ortho );\nfloat negT = mix( B - sqrtDet, sqrtDet - B, ortho );\ncameraPos = rayDirection * negT + rayOrigin;\n#ifdef NEAR_CLIP\nif( calcDepth( cameraPos ) <= 0.0 ){\ncameraPos = rayDirection * posT + rayOrigin;\ninterior = true;\nreturn false;\n}else if( calcClip( cameraPos ) > 0.0 ){\ncameraPos = rayDirection * posT + rayOrigin;\ninterior = true;\nflag2 = true;\nreturn false;\n}else{\ncameraNormal = normalize( cameraPos - cameraSpherePos );\n}\n#else\nif( calcDepth( cameraPos ) <= 0.0 ){\ncameraPos = rayDirection * posT + rayOrigin;\ninterior = true;\nreturn false;\n}else{\ncameraNormal = normalize( cameraPos - cameraSpherePos );\n}\n#endif\nreturn true;\n}\nreturn false;\n}\nvoid main(void){\nbool flag = Impostor( cameraPos, cameraNormal );\n#ifdef NEAR_CLIP\nif( calcClip( cameraPos ) > 0.0 )\ndiscard;\n#endif\ngl_FragDepthEXT = calcDepth( cameraPos );\nif( !flag ){\n#ifdef NEAR_CLIP\nif( flag2 ){\ngl_FragDepthEXT = max( 0.0, calcDepth( vec3( - ( nearClip - 0.5 ) ) ) + ( 0.0000001 / vRadius ) );\n}else if( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n#else\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n#endif\n}\nif (gl_FragDepthEXT < 0.0)\ndiscard;\nif (gl_FragDepthEXT > 1.0)\ndiscard;\n#ifdef PICKING\ngl_FragColor = vec4( vPickingColor, objectId );\n#else\nvec3 vNormal = cameraNormal;\nvec3 vViewPosition = -cameraPos;\nvec4 diffuseColor = vec4( diffuse, opacity );\nReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\nvec3 totalEmissiveLight = emissive;\n#include color_fragment\n#include roughnessmap_fragment\n#include metalnessmap_fragment\n#include normal_flip\n#include normal_fragment\nif( interior ){\nnormal = vec3( 0.0, 0.0, 0.4 );\n}\n#include lights_physical_fragment\n#include lights_template\nvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveLight;\ngl_FragColor = vec4( outgoingLight, diffuseColor.a );\n#include premultiplied_alpha_fragment\n#include tonemapping_fragment\n#include encodings_fragment\n#include fog_fragment\n#endif\n}");
-
-/**
- * @file Mapped Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Mapped buffer. Sends mapping attribute to the GPU and repeats data in
- * others attributes. Used to render imposters.
- * @interface
- */
-var MappedBuffer = (function (Buffer) {
-  function MappedBuffer (data, params) {
-    Buffer.call(this, data, params);
-
-    this.index = getUintArray(this.indexSize, this.attributeSize);
-    this.makeIndex();
-    this.initIndex(this.index, 1);
-
-    this.addAttributes({
-      'mapping': { type: this.mappingType, value: null }
-    });
-
-    this.setAttributes({ primitiveId: serialArray(this.size) });
-  }
-
-  if ( Buffer ) MappedBuffer.__proto__ = Buffer;
-  MappedBuffer.prototype = Object.create( Buffer && Buffer.prototype );
-  MappedBuffer.prototype.constructor = MappedBuffer;
-
-  var prototypeAccessors = { attributeSize: {},indexSize: {},mapping: {},mappingIndices: {},mappingIndicesSize: {},mappingType: {},mappingSize: {},mappingItemSize: {} };
-
-  prototypeAccessors.attributeSize.get = function () {
-    return this.size * this.mappingSize
-  };
-
-  prototypeAccessors.indexSize.get = function () {
-    return this.size * this.mappingIndicesSize
-  };
-
-    /**
-     * @abstract
-     */
-  prototypeAccessors.mapping.get = function () {};
-
-    /**
-     * @abstract
-     */
-  prototypeAccessors.mappingIndices.get = function () {};
-
-    /**
-     * @abstract
-     */
-  prototypeAccessors.mappingIndicesSize.get = function () {};
-
-    /**
-     * @abstract
-     */
-  prototypeAccessors.mappingType.get = function () {};
-
-    /**
-     * @abstract
-     */
-  prototypeAccessors.mappingSize.get = function () {};
-
-    /**
-     * @abstract
-     */
-  prototypeAccessors.mappingItemSize.get = function () {};
-
-  MappedBuffer.prototype.addAttributes = function addAttributes (attributes) {
-    var nullValueAttributes = {};
-    for (var name in attributes) {
-      var a = attributes[ name ];
-      nullValueAttributes[ name ] = {
-        type: a.type,
-        value: null
-      };
-    }
-
-    Buffer.prototype.addAttributes.call(this, nullValueAttributes);
-  };
-
-  MappedBuffer.prototype.getAttributeIndex = function getAttributeIndex (dataIndex) {
-    return dataIndex * 3 * this.mappingSize
-  };
-
-  MappedBuffer.prototype.setAttributes = function setAttributes (data) {
-    if (data && !data.position && data.position1 && data.position2) {
-      data.position = calculateCenterArray(data.position1, data.position2);
-    }
-
-    var size = this.size;
-    var mappingSize = this.mappingSize;
-    var attributes = this.geometry.attributes;
-
-    var a, d, itemSize, array, n, i, j;
-
-    for (var name in data) {
-      if (name === 'index' || name === 'picking') { continue }
-
-      d = data[ name ];
-      a = attributes[ name ];
-      itemSize = a.itemSize;
-      array = a.array;
-
-      for (var k = 0; k < size; ++k) {
-        n = k * itemSize;
-        i = n * mappingSize;
-
-        for (var l = 0; l < mappingSize; ++l) {
-          j = i + (itemSize * l);
-
-          for (var m = 0; m < itemSize; ++m) {
-            array[ j + m ] = d[ n + m ];
-          }
-        }
-      }
-
-      a.needsUpdate = true;
-    }
-  };
-
-  MappedBuffer.prototype.makeMapping = function makeMapping () {
-    var size = this.size;
-    var mapping = this.mapping;
-    var mappingSize = this.mappingSize;
-    var mappingItemSize = this.mappingItemSize;
-
-    var aMapping = this.geometry.attributes.mapping.array;
-
-    for (var v = 0; v < size; v++) {
-      aMapping.set(mapping, v * mappingItemSize * mappingSize);
-    }
-  };
-
-  MappedBuffer.prototype.makeIndex = function makeIndex () {
-    var size = this.size;
-    var mappingSize = this.mappingSize;
-    var mappingIndices = this.mappingIndices;
-    var mappingIndicesSize = this.mappingIndicesSize;
-
-    var index = this.index;
-
-    var ix, it;
-
-    for (var v = 0; v < size; v++) {
-      ix = v * mappingIndicesSize;
-      it = v * mappingSize;
-
-      index.set(mappingIndices, ix);
-
-      for (var s = 0; s < mappingIndicesSize; ++s) {
-        index[ ix + s ] += it;
-      }
-    }
-  };
-
-  Object.defineProperties( MappedBuffer.prototype, prototypeAccessors );
-
-  return MappedBuffer;
-}(Buffer$1));
-
-/**
- * @file Quad Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var mapping = new Float32Array([
-  -1.0, 1.0,
-  -1.0, -1.0,
-  1.0, 1.0,
-  1.0, -1.0
-]);
-
-var mappingIndices = new Uint16Array([
-  0, 1, 2,
-  1, 3, 2
-]);
-
-/**
- * Quad buffer. Draws screen-aligned quads. Used to render impostors.
- * @interface
- */
-var QuadBuffer = (function (MappedBuffer$$1) {
-  function QuadBuffer () {
-    MappedBuffer$$1.apply(this, arguments);
-  }
-
-  if ( MappedBuffer$$1 ) QuadBuffer.__proto__ = MappedBuffer$$1;
-  QuadBuffer.prototype = Object.create( MappedBuffer$$1 && MappedBuffer$$1.prototype );
-  QuadBuffer.prototype.constructor = QuadBuffer;
-
-  var prototypeAccessors = { mapping: {},mappingIndices: {},mappingIndicesSize: {},mappingType: {},mappingSize: {},mappingItemSize: {} };
-
-  prototypeAccessors.mapping.get = function () { return mapping };
-  prototypeAccessors.mappingIndices.get = function () { return mappingIndices };
-  prototypeAccessors.mappingIndicesSize.get = function () { return 6 };
-  prototypeAccessors.mappingType.get = function () { return 'v2' };
-  prototypeAccessors.mappingSize.get = function () { return 4 };
-  prototypeAccessors.mappingItemSize.get = function () { return 2 };
-
-  Object.defineProperties( QuadBuffer.prototype, prototypeAccessors );
-
-  return QuadBuffer;
-}(MappedBuffer));
-
-/**
- * @file Sphere Impostor Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Sphere impostor buffer.
- *
- * @example
- * var sphereImpostorBuffer = new SphereImpostorBuffer( {
- *     position: new Float32Array( [ 0, 0, 0 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var SphereImpostorBuffer = (function (QuadBuffer$$1) {
-  function SphereImpostorBuffer (data, params) {
-    QuadBuffer$$1.call(this, data, params);
-
-    this.addUniforms({
-      'projectionMatrixInverse': { value: new Matrix4() },
-      'ortho': { value: 0.0 }
-    });
-
-    this.addAttributes({
-      'radius': { type: 'f', value: null }
-    });
-
-    this.setAttributes(data);
-    this.makeMapping();
-  }
-
-  if ( QuadBuffer$$1 ) SphereImpostorBuffer.__proto__ = QuadBuffer$$1;
-  SphereImpostorBuffer.prototype = Object.create( QuadBuffer$$1 && QuadBuffer$$1.prototype );
-  SphereImpostorBuffer.prototype.constructor = SphereImpostorBuffer;
-
-  var prototypeAccessors = { isImpostor: {},vertexShader: {},fragmentShader: {} };
-
-  prototypeAccessors.isImpostor.get = function () { return true };
-  prototypeAccessors.vertexShader.get = function () { return 'SphereImpostor.vert' };
-  prototypeAccessors.fragmentShader.get = function () { return 'SphereImpostor.frag' };
-
-  Object.defineProperties( SphereImpostorBuffer.prototype, prototypeAccessors );
-
-  return SphereImpostorBuffer;
-}(QuadBuffer));
-
-/**
- * @file Sphere Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Sphere buffer. Depending on the value {@link ExtensionFragDepth} and
- * `params.disableImpostor` the constructor returns either a
- * {@link SphereGeometryBuffer} or a {@link SphereImpostorBuffer}
- * @implements {Buffer}
- *
- * @example
- * var sphereBuffer = new SphereBuffer( {
- *     position: new Float32Array( [ 0, 0, 0 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var SphereBuffer = function SphereBuffer (data, params) {
-  if (!ExtensionFragDepth || (params && params.disableImpostor)) {
-    return new SphereGeometryBuffer(data, params)
-  } else {
-    return new SphereImpostorBuffer(data, params)
-  }
-};
-
-/**
- * @file Ellipsoid Geometry Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var scale$1 = new Vector3();
-var target = new Vector3();
-var up = new Vector3();
-var eye = new Vector3(0, 0, 0);
-
-/**
- * Ellipsoid geometry buffer. Draws ellipsoids.
- *
- * @example
- * var ellipsoidGeometryBuffer = new EllipsoidGeometryBuffer( {
- *     position: new Float32Array( [ 0, 0, 0 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     radius: new Float32Array( [ 1 ] ),
- *     majorAxis: new Float32Array( [ 1, 1, 0 ] ),
- *     minorAxis: new Float32Array( [ 0.5, 0, 0.5 ] ),
- * } );
- */
-var EllipsoidGeometryBuffer = (function (GeometryBuffer$$1) {
-  function EllipsoidGeometryBuffer (data, params) {
-    var p = params || {};
-    var detail = defaults(p.sphereDetail, 2);
-    var geo = new IcosahedronBufferGeometry(1, detail);
-
-    GeometryBuffer$$1.call(this, data, p, geo);
-
-    this.setAttributes(data, true);
-  }
-
-  if ( GeometryBuffer$$1 ) EllipsoidGeometryBuffer.__proto__ = GeometryBuffer$$1;
-  EllipsoidGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
-  EllipsoidGeometryBuffer.prototype.constructor = EllipsoidGeometryBuffer;
-
-  var prototypeAccessors = { updateNormals: {} };
-
-  EllipsoidGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i, i3) {
-    target.fromArray(this._majorAxis, i3);
-    up.fromArray(this._minorAxis, i3);
-    matrix.lookAt(eye, target, up);
-
-    scale$1.set(this._radius[ i ], up.length(), target.length());
-    matrix.scale(scale$1);
-  };
-
-  EllipsoidGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
-    if (data.radius) {
-      this._radius = data.radius;
-    }
-
-    if (data.majorAxis) {
-      this._majorAxis = data.majorAxis;
-    }
-
-    if (data.minorAxis) {
-      this._minorAxis = data.minorAxis;
-    }
-
-    GeometryBuffer$$1.prototype.setAttributes.call(this, data, initNormals);
-  };
-
-  prototypeAccessors.updateNormals.get = function () { return true };
-
-  Object.defineProperties( EllipsoidGeometryBuffer.prototype, prototypeAccessors );
-
-  return EllipsoidGeometryBuffer;
-}(GeometryBuffer));
-
-/**
- * @file Ellipsoid Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Ellipsoid buffer. Returns an {@link EllipsoidGeometryBuffer}
- *
- * @example
- * var ellipsoidBuffer = new EllipsoidBuffer( {
- *     position: new Float32Array( [ 0, 0, 0 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     radius: new Float32Array( [ 1 ] ),
- *     majorAxis: new Float32Array( [ 1, 1, 0 ] ),
- *     minorAxis: new Float32Array( [ 0.5, 0, 0.5 ] ),
- * } );
- */
-var EllipsoidBuffer = function EllipsoidBuffer (data, params) {
-  return new EllipsoidGeometryBuffer(data, params)
-};
-
-/**
- * @file Cylinder Geometry Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var scale$2 = new Vector3();
-var eye$1 = new Vector3();
-var target$1 = new Vector3();
-var up$1 = new Vector3(0, 1, 0);
-
-/**
- * Cylinder geometry buffer.
- *
- * @example
- * var cylinderGeometryBuffer = new CylinderGeometryBuffer( {
- *     position1: new Float32Array( [ 0, 0, 0 ] ),
- *     position2: new Float32Array( [ 1, 1, 1 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     color2: new Float32Array( [ 0, 1, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var CylinderGeometryBuffer = (function (GeometryBuffer$$1) {
-  function CylinderGeometryBuffer (data, params) {
-    var d = data || {};
-    var p = params || {};
-
-    var radialSegments = defaults(p.radialSegments, 10);
-    var openEnded = defaults(p.openEnded, true);
-    var matrix = new Matrix4().makeRotationX(Math.PI / 2);
-
-    var geo = new CylinderBufferGeometry(
-            1,  // radiusTop,
-            1,  // radiusBottom,
-            1,  // height,
-            radialSegments,  // radialSegments,
-            1,  // heightSegments,
-            openEnded  // openEnded
-        );
-    geo.applyMatrix(matrix);
-
-    var n = d.position1.length;
-    var m = d.radius.length;
-
-        //
-
-    var geoLength = geo.attributes.position.array.length / 3;
-    var count = n / 3;
-    var primitiveId = new Float32Array(count * 2 * geoLength);
-    serialBlockArray(count, geoLength, 0, primitiveId);
-    serialBlockArray(count, geoLength, count * geoLength, primitiveId);
-
-        //
-
-    var position = new Float32Array(n * 2);
-    var color = new Float32Array(n * 2);
-
-    GeometryBuffer$$1.call(this, {
-      position: position,
-      color: color,
-      primitiveId: primitiveId,
-      picking: d.picking
-    }, p, geo);
-
-    this.__center = new Float32Array(n);
-
-    this._position = position;
-    this._color = color;
-    this._from = new Float32Array(n * 2);
-    this._to = new Float32Array(n * 2);
-    this._radius = new Float32Array(m * 2);
-
-    this.setAttributes(d, true);
-  }
-
-  if ( GeometryBuffer$$1 ) CylinderGeometryBuffer.__proto__ = GeometryBuffer$$1;
-  CylinderGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
-  CylinderGeometryBuffer.prototype.constructor = CylinderGeometryBuffer;
-
-  var prototypeAccessors = { updateNormals: {} };
-
-  CylinderGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i, i3) {
-    eye$1.fromArray(this._from, i3);
-    target$1.fromArray(this._to, i3);
-    matrix.lookAt(eye$1, target$1, up$1);
-
-    var r = this._radius[ i ];
-    scale$2.set(r, r, eye$1.distanceTo(target$1));
-    matrix.scale(scale$2);
-  };
-
-  CylinderGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
-    var meshData = {};
-
-    if (data.position1 && data.position2) {
-      calculateCenterArray(
-                data.position1, data.position2, this.__center
-            );
-      calculateCenterArray(
-                data.position1, this.__center, this._position
-            );
-      calculateCenterArray(
-                this.__center, data.position2, this._position, data.position1.length
-            );
-      this._from.set(data.position1);
-      this._from.set(this.__center, data.position1.length);
-      this._to.set(this.__center);
-      this._to.set(data.position2, this.__center.length);
-      meshData.position = this._position;
-    }
-
-    if (data.color && data.color2) {
-      this._color.set(data.color);
-      this._color.set(data.color2, data.color.length);
-      meshData.color = this._color;
-    }
-
-    if (data.radius) {
-      this._radius.set(data.radius);
-      this._radius.set(data.radius, data.radius.length);
-      meshData.radius = this._radius;
-    }
-
-    GeometryBuffer$$1.prototype.setAttributes.call(this, meshData, initNormals);
-  };
-
-  prototypeAccessors.updateNormals.get = function () { return true };
-
-  Object.defineProperties( CylinderGeometryBuffer.prototype, prototypeAccessors );
-
-  return CylinderGeometryBuffer;
-}(GeometryBuffer));
-
-ShaderRegistry.add('shader/CylinderImpostor.vert', "\nattribute vec3 mapping;\nattribute vec3 position1;\nattribute vec3 position2;\nattribute float radius;\nvarying vec3 axis;\nvarying vec4 base_radius;\nvarying vec4 end_b;\nvarying vec3 U;\nvarying vec3 V;\nvarying vec4 w;\n#ifdef PICKING\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#else\nattribute vec3 color2;\nvarying vec3 vColor1;\nvarying vec3 vColor2;\n#endif\nuniform mat4 modelViewMatrixInverse;\nuniform float ortho;\n#include matrix_scale\nvoid main(){\n#ifdef PICKING\nvPickingColor = unpackColor( primitiveId );\n#else\nvColor1 = color;\nvColor2 = color2;\n#endif\nbase_radius.w = radius * matrixScale( modelViewMatrix );\nvec3 center = position;\nvec3 dir = normalize( position2 - position1 );\nfloat ext = length( position2 - position1 ) / 2.0;\nvec3 cam_dir;\nif( ortho == 0.0 ){\ncam_dir = ( modelViewMatrixInverse * vec4( 0, 0, 0, 1 ) ).xyz - center;\n}else{\ncam_dir = ( modelViewMatrixInverse * vec4( 0, 0, 1, 0 ) ).xyz;\n}\ncam_dir = normalize( cam_dir );\nvec3 ldir;\nfloat b = dot( cam_dir, dir );\nend_b.w = b;\nif( b < 0.0 )\nldir = -ext * dir;\nelse\nldir = ext * dir;\nvec3 left = normalize( cross( cam_dir, ldir ) );\nleft = radius * left;\nvec3 up = radius * normalize( cross( left, ldir ) );\naxis = normalize( normalMatrix * ldir );\nU = normalize( normalMatrix * up );\nV = normalize( normalMatrix * left );\nvec4 base4 = modelViewMatrix * vec4( center - ldir, 1.0 );\nbase_radius.xyz = base4.xyz / base4.w;\nvec4 top_position = modelViewMatrix * vec4( center + ldir, 1.0 );\nvec4 end4 = top_position;\nend_b.xyz = end4.xyz / end4.w;\nw = modelViewMatrix * vec4(\ncenter + mapping.x*ldir + mapping.y*left + mapping.z*up, 1.0\n);\ngl_Position = projectionMatrix * w;\ngl_Position.z = 0.99;\n}");
-
-ShaderRegistry.add('shader/CylinderImpostor.frag', "#define STANDARD\n#define IMPOSTOR\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform float roughness;\nuniform float metalness;\nuniform float opacity;\nuniform float nearClip;\nuniform mat4 projectionMatrix;\nuniform float ortho;\nvarying vec3 axis;\nvarying vec4 base_radius;\nvarying vec4 end_b;\nvarying vec3 U;\nvarying vec3 V;\nvarying vec4 w;\n#ifdef PICKING\nuniform float objectId;\nvarying vec3 vPickingColor;\n#else\nvarying vec3 vColor1;\nvarying vec3 vColor2;\n#include common\n#include fog_pars_fragment\n#include bsdfs\n#include lights_pars\n#include lights_physical_pars_fragment\n#endif\nbool interior = false;\nfloat distSq3( vec3 v3a, vec3 v3b ){\nreturn (\n( v3a.x - v3b.x ) * ( v3a.x - v3b.x ) +\n( v3a.y - v3b.y ) * ( v3a.y - v3b.y ) +\n( v3a.z - v3b.z ) * ( v3a.z - v3b.z )\n);\n}\nfloat calcDepth( in vec3 cameraPos ){\nvec2 clipZW = cameraPos.z * projectionMatrix[2].zw + projectionMatrix[3].zw;\nreturn 0.5 + 0.5 * clipZW.x / clipZW.y;\n}\nfloat calcClip( vec3 cameraPos ){\nreturn dot( vec4( cameraPos, 1.0 ), vec4( 0.0, 0.0, 1.0, nearClip - 0.5 ) );\n}\nvoid main(){\nvec3 point = w.xyz / w.w;\nvec3 base = base_radius.xyz;\nfloat vRadius = base_radius.w;\nvec3 end = end_b.xyz;\nfloat b = end_b.w;\nvec3 end_cyl = end;\nvec3 surface_point = point;\nvec3 ray_target = surface_point;\nvec3 ray_origin = vec3(0.0);\nvec3 ray_direction = mix(normalize(ray_origin - ray_target), vec3(0.0, 0.0, 1.0), ortho);\nmat3 basis = mat3( U, V, axis );\nvec3 diff = ray_target - 0.5 * (base + end_cyl);\nvec3 P = diff * basis;\nfloat dz = dot( axis, ray_direction );\nfloat radius2 = vRadius*vRadius;\nvec3 D = vec3(dot(U, ray_direction),\ndot(V, ray_direction),\ndz);\nfloat a0 = P.x*P.x + P.y*P.y - radius2;\nfloat a1 = P.x*D.x + P.y*D.y;\nfloat a2 = D.x*D.x + D.y*D.y;\nfloat d = a1*a1 - a0*a2;\nif (d < 0.0)\ndiscard;\nfloat dist = (-a1 + sqrt(d)) / a2;\nvec3 new_point = ray_target + dist * ray_direction;\nvec3 tmp_point = new_point - base;\nvec3 _normal = normalize( tmp_point - axis * dot(tmp_point, axis) );\nray_origin = mix( ray_origin, surface_point, ortho );\nfloat front_cap_test = dot( tmp_point, axis );\nfloat end_cap_test = dot((new_point - end_cyl), axis);\n#ifndef CAP\nvec3 new_point2 = ray_target + ( (-a1 - sqrt(d)) / a2 ) * ray_direction;\nvec3 tmp_point2 = new_point2 - base;\n#endif\nif (front_cap_test < 0.0)\n{\nfloat dNV = dot(-axis, ray_direction);\nif (dNV < 0.0)\ndiscard;\nfloat near = dot(-axis, (base)) / dNV;\nvec3 front_point = ray_direction * near + ray_origin;\nif (dot(front_point - base, front_point-base) > radius2)\ndiscard;\n#ifdef CAP\nnew_point = front_point;\n_normal = axis;\n#else\nnew_point = ray_target + ( (-a1 - sqrt(d)) / a2 ) * ray_direction;\ndNV = dot(-axis, ray_direction);\nnear = dot(axis, end_cyl) / dNV;\nnew_point2 = ray_direction * near + ray_origin;\nif (dot(new_point2 - end_cyl, new_point2-base) < radius2)\ndiscard;\ninterior = true;\n#endif\n}\nif( end_cap_test > 0.0 )\n{\nfloat dNV = dot(axis, ray_direction);\nif (dNV < 0.0)\ndiscard;\nfloat near = dot(axis, end_cyl) / dNV;\nvec3 end_point = ray_direction * near + ray_origin;\nif( dot(end_point - end_cyl, end_point-base) > radius2 )\ndiscard;\n#ifdef CAP\nnew_point = end_point;\n_normal = axis;\n#else\nnew_point = ray_target + ( (-a1 - sqrt(d)) / a2 ) * ray_direction;\ndNV = dot(-axis, ray_direction);\nnear = dot(-axis, (base)) / dNV;\nnew_point2 = ray_direction * near + ray_origin;\nif (dot(new_point2 - base, new_point2-base) < radius2)\ndiscard;\ninterior = true;\n#endif\n}\ngl_FragDepthEXT = calcDepth( new_point );\n#ifdef NEAR_CLIP\nif( calcClip( new_point ) > 0.0 ){\ndist = (-a1 - sqrt(d)) / a2;\nnew_point = ray_target + dist * ray_direction;\nif( calcClip( new_point ) > 0.0 )\ndiscard;\ninterior = true;\ngl_FragDepthEXT = calcDepth( new_point );\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = max( 0.0, calcDepth( vec3( - ( nearClip - 0.5 ) ) ) + ( 0.0000001 / vRadius ) );\n}\n}else if( gl_FragDepthEXT <= 0.0 ){\ndist = (-a1 - sqrt(d)) / a2;\nnew_point = ray_target + dist * ray_direction;\ninterior = true;\ngl_FragDepthEXT = calcDepth( new_point );\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n}\n#else\nif( gl_FragDepthEXT <= 0.0 ){\ndist = (-a1 - sqrt(d)) / a2;\nnew_point = ray_target + dist * ray_direction;\ninterior = true;\ngl_FragDepthEXT = calcDepth( new_point );\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n}\n#endif\nif (gl_FragDepthEXT < 0.0)\ndiscard;\nif (gl_FragDepthEXT > 1.0)\ndiscard;\n#ifdef PICKING\ngl_FragColor = vec4( vPickingColor, objectId );\n#else\nvec3 vViewPosition = -new_point;\nvec3 vNormal = _normal;\nvec3 vColor;\nif( distSq3( new_point, end_cyl ) < distSq3( new_point, base ) ){\nif( b < 0.0 ){\nvColor = vColor1;\n}else{\nvColor = vColor2;\n}\n}else{\nif( b > 0.0 ){\nvColor = vColor1;\n}else{\nvColor = vColor2;\n}\n}\nvec4 diffuseColor = vec4( diffuse, opacity );\nReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\nvec3 totalEmissiveLight = emissive;\n#include color_fragment\n#include roughnessmap_fragment\n#include metalnessmap_fragment\nvec3 normal = normalize( vNormal );\nif( interior ){\nnormal = vec3( 0.0, 0.0, 0.4 );\n}\n#include lights_physical_fragment\n#include lights_template\nvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveLight;\ngl_FragColor = vec4( outgoingLight, diffuseColor.a );\n#include premultiplied_alpha_fragment\n#include tonemapping_fragment\n#include encodings_fragment\n#include fog_fragment\n#endif\n}");
-
-/**
- * @file Aligned Box Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var mapping$1 = new Float32Array([
-  -1.0, 1.0, -1.0,
-  -1.0, -1.0, -1.0,
-  1.0, 1.0, -1.0,
-  1.0, 1.0, 1.0,
-  1.0, -1.0, -1.0,
-  1.0, -1.0, 1.0
-]);
-
-var mappingIndices$1 = new Uint16Array([
-  0, 1, 2,
-  1, 4, 2,
-  2, 4, 3,
-  4, 5, 3
-]);
-
-/**
- * Aligned box buffer. Draws boxes where one side is always screen-space aligned.
- * Used to render cylinder imposters.
- * @interface
- */
-var AlignedBoxBuffer = (function (MappedBuffer$$1) {
-  function AlignedBoxBuffer () {
-    MappedBuffer$$1.apply(this, arguments);
-  }
-
-  if ( MappedBuffer$$1 ) AlignedBoxBuffer.__proto__ = MappedBuffer$$1;
-  AlignedBoxBuffer.prototype = Object.create( MappedBuffer$$1 && MappedBuffer$$1.prototype );
-  AlignedBoxBuffer.prototype.constructor = AlignedBoxBuffer;
-
-  var prototypeAccessors = { mapping: {},mappingIndices: {},mappingIndicesSize: {},mappingType: {},mappingSize: {},mappingItemSize: {} };
-
-  prototypeAccessors.mapping.get = function () { return mapping$1 };
-  prototypeAccessors.mappingIndices.get = function () { return mappingIndices$1 };
-  prototypeAccessors.mappingIndicesSize.get = function () { return 12 };
-  prototypeAccessors.mappingType.get = function () { return 'v3' };
-  prototypeAccessors.mappingSize.get = function () { return 6 };
-  prototypeAccessors.mappingItemSize.get = function () { return 3 };
-
-  Object.defineProperties( AlignedBoxBuffer.prototype, prototypeAccessors );
-
-  return AlignedBoxBuffer;
-}(MappedBuffer));
-
-/**
- * @file Cylinder Impostor Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Cylinder impostor buffer.
- *
- * @example
- * var cylinderimpostorBuffer = new CylinderImpostorBuffer( {
- *     position1: new Float32Array( [ 0, 0, 0 ] ),
- *     position2: new Float32Array( [ 1, 1, 1 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     color2: new Float32Array( [ 0, 1, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var CylinderImpostorBuffer = (function (AlignedBoxBuffer$$1) {
-  function CylinderImpostorBuffer (data, params) {
-    AlignedBoxBuffer$$1.call(this, data, params);
-
-    var p = params || {};
-
-    this.openEnded = defaults(p.openEnded, false);
-
-    this.addUniforms({
-      'modelViewMatrixInverse': { value: new Matrix4() },
-      'ortho': { value: 0.0 }
-    });
-
-    this.addAttributes({
-      'position1': { type: 'v3', value: null },
-      'position2': { type: 'v3', value: null },
-      'color2': { type: 'c', value: null },
-      'radius': { type: 'f', value: null }
-    });
-
-    this.setAttributes(data);
-    this.makeMapping();
-  }
-
-  if ( AlignedBoxBuffer$$1 ) CylinderImpostorBuffer.__proto__ = AlignedBoxBuffer$$1;
-  CylinderImpostorBuffer.prototype = Object.create( AlignedBoxBuffer$$1 && AlignedBoxBuffer$$1.prototype );
-  CylinderImpostorBuffer.prototype.constructor = CylinderImpostorBuffer;
-
-  var prototypeAccessors = { parameters: {},isImpostor: {},vertexShader: {},fragmentShader: {} };
-
-  prototypeAccessors.parameters.get = function () {
-    return Object.assign.call(this, {
-
-      openEnded: { updateShader: true }
-
-    }, AlignedBoxBuffer$$1.prototype.parameters)
-  };
-
-  CylinderImpostorBuffer.prototype.getDefines = function getDefines (type) {
-    var defines = AlignedBoxBuffer$$1.prototype.getDefines.call(this, type);
-
-    if (!this.openEnded) {
-      defines.CAP = 1;
-    }
-
-    return defines
-  };
-
-  prototypeAccessors.isImpostor.get = function () { return true };
-  prototypeAccessors.vertexShader.get = function () { return 'CylinderImpostor.vert' };
-  prototypeAccessors.fragmentShader.get = function () { return 'CylinderImpostor.frag' };
-
-  Object.defineProperties( CylinderImpostorBuffer.prototype, prototypeAccessors );
-
-  return CylinderImpostorBuffer;
-}(AlignedBoxBuffer));
-
-/**
- * @file Cylinder Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Cylinder buffer. Depending on the value {@link ExtensionFragDepth} and
- * `params.disableImpostor` the constructor returns either a
- * {@link CylinderGeometryBuffer} or a {@link CylinderImpostorBuffer}
- * @implements {Buffer}
- *
- * @example
- * var cylinderBuffer = new CylinderBuffer( {
- *     position1: new Float32Array( [ 0, 0, 0 ] ),
- *     position2: new Float32Array( [ 1, 1, 1 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     color2: new Float32Array( [ 0, 1, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var CylinderBuffer = function CylinderBuffer (data, params) {
-  if (!ExtensionFragDepth || (params && params.disableImpostor)) {
-    return new CylinderGeometryBuffer(data, params)
-  } else {
-    return new CylinderImpostorBuffer(data, params)
-  }
-};
-
-/**
- * @file Cone Geometry Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var scale$3 = new Vector3();
-var eye$2 = new Vector3();
-var target$2 = new Vector3();
-var up$2 = new Vector3(0, 1, 0);
-
-/**
- * Cone geometry buffer.
- *
- * @example
- * var coneGeometryBuffer = new ConeGeometryBuffer( {
- *     position1: new Float32Array( [ 0, 0, 0 ] ),
- *     position2: new Float32Array( [ 1, 1, 1 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     color2: new Float32Array( [ 0, 1, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var ConeGeometryBuffer = (function (GeometryBuffer$$1) {
-  function ConeGeometryBuffer (data, params) {
-    var p = params || {};
-
-    var radialSegments = defaults(p.radialSegments, 60);
-    var openEnded = defaults(p.openEnded, false);
-    var matrix = new Matrix4().makeRotationX(-Math.PI / 2);
-
-    var geo = new ConeBufferGeometry(
-            1,  // radius
-            1,  // height
-            radialSegments,  // radialSegments
-            1,  // heightSegments
-            openEnded  // openEnded
-        );
-    geo.applyMatrix(matrix);
-
-    var n = data.position1.length;
-    var m = data.radius.length;
-
-    var position = new Float32Array(n);
-
-    GeometryBuffer$$1.call(this, {
-      position: position,
-      color: data.color,
-      picking: data.picking
-    }, p, geo);
-
-    this._position = position;
-    this._from = new Float32Array(n);
-    this._to = new Float32Array(n);
-    this._radius = new Float32Array(m);
-
-    this.setAttributes(data, true);
-  }
-
-  if ( GeometryBuffer$$1 ) ConeGeometryBuffer.__proto__ = GeometryBuffer$$1;
-  ConeGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
-  ConeGeometryBuffer.prototype.constructor = ConeGeometryBuffer;
-
-  var prototypeAccessors = { updateNormals: {} };
-
-  ConeGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i, i3) {
-    eye$2.fromArray(this._from, i3);
-    target$2.fromArray(this._to, i3);
-    matrix.lookAt(eye$2, target$2, up$2);
-
-    var r = this._radius[ i ];
-    scale$3.set(r, r, eye$2.distanceTo(target$2));
-    matrix.scale(scale$3);
-  };
-
-  ConeGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
-    var meshData = {};
-
-    if (data.position1 && data.position2) {
-      calculateCenterArray(
-                data.position1, data.position2, this._position
-            );
-      this._from.set(data.position1);
-      this._to.set(data.position2);
-      meshData.position = this._position;
-    }
-
-    if (data.color) {
-      meshData.color = data.color;
-    }
-
-    if (data.radius) {
-      this._radius.set(data.radius);
-    }
-
-    GeometryBuffer$$1.prototype.setAttributes.call(this, meshData, initNormals);
-  };
-
-  prototypeAccessors.updateNormals.get = function () { return true };
-
-  Object.defineProperties( ConeGeometryBuffer.prototype, prototypeAccessors );
-
-  return ConeGeometryBuffer;
-}(GeometryBuffer));
-
-/**
- * @file Cone Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Cone buffer. Returns a {@link ConeGeometryBuffer}
- * @implements {Buffer}
- *
- * @example
- * var coneBuffer = new ConeBuffer( {
- *     position1: new Float32Array( [ 0, 0, 0 ] ),
- *     position2: new Float32Array( [ 1, 1, 1 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     color2: new Float32Array( [ 0, 1, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var ConeBuffer = function ConeBuffer (data, params) {
-  return new ConeGeometryBuffer(data, params)
-};
-
-/**
- * @file Geometry Group
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var GeometryGroup = function GeometryGroup (geometryList) {
-  this.geometryList = geometryList;
-  this.boundingBox = null;
-};
-
-GeometryGroup.prototype.computeBoundingBox = function computeBoundingBox () {
-    var this$1 = this;
-
-  if (!this.boundingBox) {
-    this.boundingBox = new Box3();
-  } else {
-    this.boundingBox.empty();
-  }
-
-  this.geometryList.forEach(function (geo) {
-    if (!geo.boundingBox) { geo.computeBoundingBox(); }
-    this$1.boundingBox.union(geo.boundingBox);
-  });
-};
-
-/**
- * @file Arrow Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-/**
- * Arrow buffer. Draws arrows made from a cylinder and a cone.
- * @implements {Buffer}
- *
- * @example
- * var arrowBuffer = new ArrowBuffer( {
- *     position1: new Float32Array( [ 0, 0, 0 ] ),
- *     position2: new Float32Array( [ 10, 1, 1 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     radius: new Float32Array( [ 1 ] )
- * } );
- */
-var ArrowBuffer = function ArrowBuffer (data, params) {
-  var d = data || {};
-  var p = params || {};
-
-  this.aspectRatio = defaults(p.aspectRatio, 1.5);
-  this.wireframe = defaults(p.wireframe, false);
-
-  this.splitPosition = new Float32Array(d.position1.length);
-  this.cylinderRadius = new Float32Array(d.radius.length);
-
-  var attr = this.makeAttributes(d);
-  var bufferParams = {
-    radialSegments: defaults(p.radialSegments, 50),
-    openEnded: defaults(p.openEnded, false),
-    disableImpostor: defaults(p.disableImpostor, false)
-  };
-
-  this.cylinderBuffer = new CylinderBuffer(
-          attr.cylinder, bufferParams
-      );
-  this.coneBuffer = new ConeBuffer(
-          attr.cone, bufferParams
-      );
-
-  this.geometry = new GeometryGroup([
-    this.cylinderBuffer.geometry,
-    this.coneBuffer.geometry
-  ]);
-
-  this.group = new Group();
-  this.wireframeGroup = new Group();
-  this.pickingGroup = new Group();
-
-      // requires Group objects to be present
-  this.matrix = defaults(p.matrix, new Matrix4());
-
-  this.picking = d.picking;
-};
-
-var prototypeAccessors$26 = { matrix: {},pickable: {} };
-
-prototypeAccessors$26.matrix.set = function (m) {
-  Buffer$1.prototype.setMatrix.call(this, m);
-};
-prototypeAccessors$26.matrix.get = function () {
-  return this.group.matrix.clone()
-};
-
-prototypeAccessors$26.pickable.get = function () {
-  return !!this.picking
-};
-
-ArrowBuffer.prototype.makeAttributes = function makeAttributes (data) {
-  var splitPosition = this.splitPosition;
-  var cylinderRadius = this.cylinderRadius;
-
-  var aspectRatio = this.aspectRatio;
-
-  var i, il;
-  var cylinder = {};
-  var cone = {};
-
-  if (data.radius) {
-    for (i = 0, il = cylinderRadius.length; i < il; ++i) {
-      cylinderRadius[ i ] = data.radius[ i ] / aspectRatio;
-    }
-    cylinder.radius = cylinderRadius;
-    cone.radius = data.radius;
-  }
-
-  if (data.position1 && data.position2) {
-    var vFrom = new Vector3();
-    var vTo = new Vector3();
-    var vDir = new Vector3();
-    var vSplit = new Vector3();
-    for (i = 0, il = splitPosition.length; i < il; i += 3) {
-      vFrom.fromArray(data.position1, i);
-      vTo.fromArray(data.position2, i);
-      vDir.subVectors(vFrom, vTo);
-      var fullLength = vDir.length();
-      var coneLength = cylinderRadius[ i / 3 ] * aspectRatio * 2;
-      var length = Math.min(fullLength, coneLength);
-      vDir.setLength(length);
-      vSplit.copy(vTo).add(vDir);
-      vSplit.toArray(splitPosition, i);
-    }
-    cylinder.position1 = data.position1;
-    cylinder.position2 = splitPosition;
-    cone.position1 = splitPosition;
-    cone.position2 = data.position2;
-  }
-
-  if (data.color) {
-    cylinder.color = data.color;
-    cylinder.color2 = data.color;
-    cone.color = data.color;
-  }
-
-  return {
-    cylinder: cylinder,
-    cone: cone
-  }
-};
-
-ArrowBuffer.prototype.getMesh = function getMesh (picking) {
-  return new Group().add(
-          this.cylinderBuffer.getMesh(picking),
-          this.coneBuffer.getMesh(picking)
-      )
-};
-
-ArrowBuffer.prototype.getWireframeMesh = function getWireframeMesh () {
-  return new Group().add(
-          this.cylinderBuffer.getWireframeMesh(),
-          this.coneBuffer.getWireframeMesh()
-      )
-};
-
-ArrowBuffer.prototype.getPickingMesh = function getPickingMesh () {
-  return new Group().add(
-          this.cylinderBuffer.getPickingMesh(),
-          this.coneBuffer.getPickingMesh()
-      )
-};
-
-ArrowBuffer.prototype.setAttributes = function setAttributes (data) {
-  var attr = this.makeAttributes(data);
-
-  this.cylinderBuffer.setAttributes(attr.cylinder);
-  this.coneBuffer.setAttributes(attr.cone);
-};
-
-  /**
-   * Set buffer parameters
-   * @param {BufferParameters} params - buffer parameters object
-   * @return {undefined}
-   */
-ArrowBuffer.prototype.setParameters = function setParameters (params) {
-  params = Object.assign({}, params);
-
-  if (params && params.matrix !== undefined) {
-    this.matrix = params.matrix;
-  }
-  delete params.matrix;
-
-  if (params && params.wireframe !== undefined) {
-    this.wireframe = params.wireframe;
-    this.setVisibility(this.visible);
-  }
-
-  this.cylinderBuffer.setParameters(params);
-  this.coneBuffer.setParameters(params);
-};
-
-ArrowBuffer.prototype.setVisibility = function setVisibility () {
-  Buffer$1.prototype.setVisibility.apply(this, arguments);
-};
-
-ArrowBuffer.prototype.dispose = function dispose () {
-  this.cylinderBuffer.dispose();
-  this.coneBuffer.dispose();
-};
-
-Object.defineProperties( ArrowBuffer.prototype, prototypeAccessors$26 );
-
-ShaderRegistry.add('shader/SDFFont.vert', "uniform float nearClip;\nuniform float clipRadius;\nuniform vec3 clipCenter;\nuniform float xOffset;\nuniform float yOffset;\nuniform float zOffset;\nuniform bool ortho;\n#if defined( NEAR_CLIP ) || defined( RADIUS_CLIP ) || ( !defined( PICKING ) && !defined( NOLIGHT ) )\nvarying vec3 vViewPosition;\n#endif\nvarying vec2 texCoord;\n#if defined( RADIUS_CLIP )\nvarying vec3 vClipCenter;\n#endif\n#if defined( PICKING )\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#else\n#include color_pars_vertex\n#endif\nattribute vec2 mapping;\nattribute vec2 inputTexCoord;\nattribute float inputSize;\n#include matrix_scale\n#include common\nvoid main(void){\n#if defined( PICKING )\nvPickingColor = unpackColor( primitiveId );\n#else\n#include color_vertex\n#endif\ntexCoord = inputTexCoord;\nfloat scale = matrixScale( modelViewMatrix );\nfloat _zOffset = zOffset * scale;\nif( texCoord.x == 10.0 ){\n_zOffset -= 0.001;\n}\nvec3 pos = position;\nif( ortho ){\npos += normalize( cameraPosition ) * _zOffset;\n}\nvec4 cameraPos = modelViewMatrix * vec4( pos, 1.0 );\nvec4 cameraCornerPos = vec4( cameraPos.xyz, 1.0 );\ncameraCornerPos.xy += mapping * inputSize * 0.01 * scale;\ncameraCornerPos.x += xOffset * scale;\ncameraCornerPos.y += yOffset * scale;\nif( !ortho ){\ncameraCornerPos.xyz += normalize( -cameraCornerPos.xyz ) * _zOffset;\n}\ngl_Position = projectionMatrix * cameraCornerPos;\n#if defined( NEAR_CLIP ) || defined( RADIUS_CLIP ) || ( !defined( PICKING ) && !defined( NOLIGHT ) )\nvViewPosition = -cameraCornerPos.xyz;\n#endif\n#if defined( RADIUS_CLIP )\nvClipCenter = -( modelViewMatrix * vec4( clipCenter, 1.0 ) ).xyz;\n#endif\n#include nearclip_vertex\n#include radiusclip_vertex\n}");
-
-ShaderRegistry.add('shader/SDFFont.frag', "uniform sampler2D fontTexture;\nuniform float opacity;\nuniform bool showBorder;\nuniform vec3 borderColor;\nuniform float borderWidth;\nuniform vec3 backgroundColor;\nuniform float backgroundOpacity;\nuniform float nearClip;\nuniform float clipRadius;\nvarying vec3 vViewPosition;\nvarying vec2 texCoord;\n#if defined( RADIUS_CLIP )\nvarying vec3 vClipCenter;\n#endif\n#if defined( PICKING )\nuniform float objectId;\nvarying vec3 vPickingColor;\nconst vec3 vColor = vec3( 0.0 );\n#else\n#include common\n#include color_pars_fragment\n#include fog_pars_fragment\n#endif\n#ifdef SDF\nconst float smoothness = 16.0;\n#else\nconst float smoothness = 256.0;\n#endif\nconst float gamma = 2.2;\nvoid main(){\n#include nearclip_fragment\n#include radiusclip_fragment\nif( texCoord.x > 1.0 ){\ngl_FragColor = vec4( backgroundColor, backgroundOpacity );\n}else{\nfloat sdf = texture2D( fontTexture, texCoord ).a;\nif( showBorder ) sdf += borderWidth;\nfloat w = clamp(\nsmoothness * ( abs( dFdx( texCoord.x ) ) + abs( dFdy( texCoord.y ) ) ),\n0.0,\n0.5\n);\nfloat a = smoothstep( 0.5 - w, 0.5 + w, sdf );\na = pow( a, 1.0 / gamma );\nif( a < 0.2 ) discard;\na *= opacity;\nvec3 outgoingLight = vColor;\nif( showBorder && sdf < ( 0.5 + borderWidth ) ){\noutgoingLight = borderColor;\n}\ngl_FragColor = vec4( outgoingLight, a );\n}\n#if defined( PICKING )\ngl_FragColor = vec4( vPickingColor, objectId );\n#else\n#include premultiplied_alpha_fragment\n#include tonemapping_fragment\n#include encodings_fragment\n#include fog_fragment\n#endif\n}");
-
-/**
- * @file Text Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- */
-
-var TextAtlasCache = {};
-
-function getTextAtlas (params) {
-  var hash = JSON.stringify(params);
-  if (TextAtlasCache[ hash ] === undefined) {
-    TextAtlasCache[ hash ] = new TextAtlas(params);
-  }
-  return TextAtlasCache[ hash ]
-}
-
-var TextAtlas = function TextAtlas (params) {
-      // adapted from https://github.com/unconed/mathbox
-      // MIT License Copyright (C) 2013+ Steven Wittens and contributors
-
-  var p = Object.assign({}, params);
-
-  this.font = defaults(p.font, [ 'sans-serif' ]);
-  this.size = defaults(p.size, 36);
-  this.style = defaults(p.style, 'normal');
-  this.variant = defaults(p.variant, 'normal');
-  this.weight = defaults(p.weight, 'normal');
-  this.outline = defaults(p.outline, 0);
-  this.width = defaults(p.width, 2048);
-  this.height = defaults(p.height, 2048);
-
-  this.gamma = 1;
-  if (typeof navigator !== 'undefined') {
-    var ua = navigator.userAgent;
-    if (ua.match(/Chrome/) && ua.match(/OS X/)) {
-      this.gamma = 0.5;
-    }
-  }
-
-  this.mapped = {};
-  this.scratchW = 0;
-  this.scratchH = 0;
-  this.currentX = 0;
-  this.currentY = 0;
-
-  this.build();
-  this.populate();
-
-  this.texture = new CanvasTexture(this.canvas2);
-  this.texture.flipY = false;
-  this.texture.needsUpdate = true;
-};
-
-TextAtlas.prototype.build = function build () {
-      // Prepare line-height with room for outline and descenders/ascenders
-  var lineHeight = this.size + 2 * this.outline + Math.round(this.size / 4);
-  var maxWidth = this.width / 4;
-
-      // Prepare scratch canvas
-  var canvas = document.createElement('canvas');
-  canvas.width = maxWidth;
-  canvas.height = lineHeight;
-
-  var ctx = canvas.getContext('2d');
-  ctx.font = this.style + ' ' + this.variant + ' ' + this.weight + ' ' + this.size + 'px ' + this.font;
-  ctx.fillStyle = '#FF0000';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'bottom';
-  ctx.lineJoin = 'round';
-
-  var colors = [];
-  var dilate = this.outline * 3;
-  for (var i = 0; i < dilate; ++i) {
-          // 8 rgb levels = 1 step = .5 pixel increase
-    var val = Math.max(0, -i * 8 + 128 - (!i) * 8);
-    var hex = ('00' + val.toString(16)).slice(-2);
-    colors.push('#' + hex + hex + hex);
-  }
-  var scratch = new Uint8Array(maxWidth * lineHeight * 2);
-
-  this.canvas = canvas;
-  this.context = ctx;
-  this.lineHeight = lineHeight;
-  this.maxWidth = maxWidth;
-  this.colors = colors;
-  this.scratch = scratch;
-
-  this.data = new Uint8Array(this.width * this.height * 4);
-
-  this.canvas2 = document.createElement('canvas');
-  this.canvas2.width = this.width;
-  this.canvas2.height = this.height;
-  this.context2 = this.canvas2.getContext('2d');
-};
-
-TextAtlas.prototype.map = function map (text) {
-  if (this.mapped[ text ] === undefined) {
-    this.draw(text);
-
-    if (this.currentX + this.scratchW > this.width) {
-      this.currentX = 0;
-      this.currentY += this.scratchH;
-    }
-    if (this.currentY + this.scratchH > this.height) {
-      console.warn('canvas to small');
-    }
-
-    this.mapped[ text ] = {
-      x: this.currentX,
-      y: this.currentY,
-      w: this.scratchW,
-      h: this.scratchH
-    };
-
-    this.context2.drawImage(
-              this.canvas,
-              0, 0,
-              this.scratchW, this.scratchH,
-              this.currentX, this.currentY,
-              this.scratchW, this.scratchH
-          );
-
-    this.currentX += this.scratchW;
-  }
-
-  return this.mapped[ text ]
-};
-
-TextAtlas.prototype.get = function get (text) {
-  return this.mapped[ text ] || this.placeholder
-};
-
-TextAtlas.prototype.draw = function draw (text) {
-  var h = this.lineHeight;
-  var o = this.outline;
-  var ctx = this.context;
-  var dst = this.scratch;
-  var max = this.maxWidth;
-  var colors = this.colors;
-
-      // Bottom aligned, take outline into account
-  var x = o;
-  var y = h - this.outline;
-
-      // Measure text
-  var m = ctx.measureText(text);
-  var w = Math.min(max, Math.ceil(m.width + 2 * x + 1));
-
-      // Clear scratch area
-  ctx.clearRect(0, 0, w, h);
-
-  var i, il, j, imageData, data;
-
-  if (this.outline === 0) {
-    ctx.fillText(text, x, y);
-    imageData = ctx.getImageData(0, 0, w, h);
-    data = imageData.data;
-
-    j = 3;// Skip to alpha channel
-    for (i = 0, il = data.length / 4; i < il; ++i) {
-      dst[ i ] = data[ j ];
-      j += 4;
-    }
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-          // Draw strokes of decreasing width to create
-          // nested outlines (absolute distance)
-    for (i = o + 1; i > 0; --i) {
-              // Eliminate odd strokes once past > 1px,
-              // don't need the detail
-      j = i > 1 ? i * 2 - 2 : i;
-      ctx.strokeStyle = colors[ j - 1 ];
-      ctx.lineWidth = j;
-      ctx.strokeText(text, x, y);
-    }
-    ctx.globalCompositeOperation = 'multiply';
-    ctx.fillStyle = '#FF00FF';
-    ctx.fillText(text, x, y);
-    imageData = ctx.getImageData(0, 0, w, h);
-    data = imageData.data;
-
-    j = 0;
-    var gamma = this.gamma;
-    for (i = 0, il = data.length / 4; i < il; ++i) {
-              // Get value + mask
-      var a = data[ j ];
-      var mask = a ? data[ j + 1 ] / a : 1;
-      if (gamma === 0.5) {
-        mask = Math.sqrt(mask);
-      }
-      mask = Math.min(1, Math.max(0, mask));
-
-              // Blend between positive/outside and negative/inside
-      var b = 256 - a;
-      var c = b + (a - b) * mask;
-
-              // Clamp (slight expansion to hide errors around the transition)
-      dst[ i ] = Math.max(0, Math.min(255, c + 2));
-      data[ j + 3 ] = dst[ i ];
-      j += 4;
-    }
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-  this.scratchW = w;
-  this.scratchH = h;
-};
-
-TextAtlas.prototype.populate = function populate () {
-    var this$1 = this;
-
-      // Replacement Character
-  this.placeholder = this.map(String.fromCharCode(0xFFFD));
-
-      // Basic Latin
-  for (var i = 0x0000; i < 0x007F; ++i) {
-    this$1.map(String.fromCharCode(i));
-  }
-
-      // Latin-1 Supplement
-  for (var i$1 = 0x0080; i$1 < 0x00FF; ++i$1) {
-    this$1.map(String.fromCharCode(i$1));
-  }
-
-      // Greek and Coptic
-  for (var i$2 = 0x0370; i$2 < 0x03FF; ++i$2) {
-    this$1.map(String.fromCharCode(i$2));
-  }
-
-      // Cyrillic
-  for (var i$3 = 0x0400; i$3 < 0x04FF; ++i$3) {
-    this$1.map(String.fromCharCode(i$3));
-  }
-
-      // Angstrom Sign
-  this.map(String.fromCharCode(0x212B));
-};
-
-/**
- * Text buffer parameter object.
- * @typedef {Object} TextBufferParameters - text buffer parameters
- *
- * @property {Float} opacity - translucency: 1 is fully opaque, 0 is fully transparent
- * @property {Integer} clipNear - position of camera near/front clipping plane
- *                                in percent of scene bounding box
- * @property {String} labelType - type of the label, one of:
- *                                 "atomname", "atomindex", "occupancy", "bfactor",
- *                                 "serial", "element", "atom", "resname", "resno",
- *                                 "res", "text", "qualified". When set to "text", the
- *                                 `labelText` list is used.
- * @property {String[]} labelText - list of label strings, must set `labelType` to "text"
- *                                   to take effect
- * @property {String} fontFamily - font family, one of: "sans-serif", "monospace", "serif"
- * @property {String} fontStyle - font style, "normal" or "italic"
- * @property {String} fontWeight - font weight, "normal" or "bold"
- * @property {Boolean} sdf - use "signed distance field"-based rendering for sharper edges
- * @property {Float} xOffset - offset in x-direction
- * @property {Float} yOffset - offset in y-direction
- * @property {Float} zOffset - offset in z-direction (i.e. in camera direction)
- * @property {String} attachment - attachment of the label, one of:
- *                                 "bottom-left", "bottom-center", "bottom-right",
- *                                 "middle-left", "middle-center", "middle-right",
- *                                 "top-left", "top-center", "top-right"
- * @property {Boolean} showBorder - show border/outline
- * @property {Color} borderColor - color of the border/outline
- * @property {Float} borderWidth - width of the border/outline
- * @property {Boolean} showBackground - show background rectangle
- * @property {Color} backgroundColor - color of the background
- * @property {Float} backgroundMargin - width of the background
- * @property {Float} backgroundOpacity - opacity of the background
- */
-
-/**
- * Text buffer. Renders screen-aligned text strings.
- *
- * @example
- * var textBuffer = new TextBuffer( {
- *     position: new Float32Array( [ 0, 0, 0 ] ),
- *     color: new Float32Array( [ 1, 0, 0 ] ),
- *     size: new Float32Array( [ 2 ] ),
- *     text: [ "Hello" ]
- * } );
- */
-var TextBuffer = (function (QuadBuffer$$1) {
-  function TextBuffer (data, params) {
-    var d = data || {};
-    var p = params || {};
-
-    p.forceTransparent = true;
-
-    var n = d.position.length / 3;
-    var charCount = 0;
-    for (var i = 0; i < n; ++i) {
-      charCount += d.text[ i ].length;
-    }
-
-    var count = charCount;
-    if (p.showBackground) { count += n; }
-
-    QuadBuffer$$1.call(this, {
-      position: new Float32Array(count * 3),
-      color: new Float32Array(count * 3),
-      picking: new IgnorePicker()
-    }, p);
-
-    this.fontFamily = defaults(p.fontFamily, 'sans-serif');
-    this.fontStyle = defaults(p.fontStyle, 'normal');
-    this.fontWeight = defaults(p.fontWeight, 'bold');
-    this.fontSize = defaults(p.fontSize, 48);
-    this.sdf = defaults(p.sdf, Browser === 'Chrome');
-    this.xOffset = defaults(p.xOffset, 0.0);
-    this.yOffset = defaults(p.yOffset, 0.0);
-    this.zOffset = defaults(p.zOffset, 0.5);
-    this.attachment = defaults(p.attachment, 'bottom-left');
-    this.showBorder = defaults(p.showBorder, false);
-    this.borderColor = defaults(p.borderColor, 'lightgrey');
-    this.borderWidth = defaults(p.borderWidth, 0.15);
-    this.showBackground = defaults(p.showBackground, false);
-    this.backgroundColor = defaults(p.backgroundColor, 'lightgrey');
-    this.backgroundMargin = defaults(p.backgroundMargin, 0.5);
-    this.backgroundOpacity = defaults(p.backgroundOpacity, 1.0);
-
-    this.text = d.text;
-    this.positionCount = n;
-
-    this.addUniforms({
-      'fontTexture': { value: null },
-      'xOffset': { value: this.xOffset },
-      'yOffset': { value: this.yOffset },
-      'zOffset': { value: this.zOffset },
-      'ortho': { value: false },
-      'showBorder': { value: this.showBorder },
-      'borderColor': { value: new Color(this.borderColor) },
-      'borderWidth': { value: this.borderWidth },
-      'backgroundColor': { value: new Color(this.backgroundColor) },
-      'backgroundOpacity': { value: this.backgroundOpacity }
-    });
-
-    this.addAttributes({
-      'inputTexCoord': { type: 'v2', value: null },
-      'inputSize': { type: 'f', value: null }
-    });
-
-    this.setAttributes(data);
-
-    this.makeTexture();
-    this.makeMapping();
-  }
-
-  if ( QuadBuffer$$1 ) TextBuffer.__proto__ = QuadBuffer$$1;
-  TextBuffer.prototype = Object.create( QuadBuffer$$1 && QuadBuffer$$1.prototype );
-  TextBuffer.prototype.constructor = TextBuffer;
-
-  var prototypeAccessors = { parameters: {},wireframe: {},isText: {},vertexShader: {},fragmentShader: {} };
-
-  prototypeAccessors.parameters.get = function () {
-    return Object.assign.call(this, {
-
-      fontFamily: { uniform: true },
-      fontStyle: { uniform: true },
-      fontWeight: { uniform: true },
-      fontSize: { uniform: true },
-      sdf: { updateShader: true, uniform: true },
-      xOffset: { uniform: true },
-      yOffset: { uniform: true },
-      zOffset: { uniform: true },
-      showBorder: { uniform: true },
-      borderColor: { uniform: true },
-      borderWidth: { uniform: true },
-      backgroundColor: { uniform: true },
-      backgroundOpacity: { uniform: true }
-
-    }, QuadBuffer$$1.prototype.parameters, {
-
-      flatShaded: undefined
-
-    })
-  };
-
-  TextBuffer.prototype.makeMaterial = function makeMaterial () {
-    QuadBuffer$$1.prototype.makeMaterial.call(this);
-
-    var tex = this.texture;
-
-    var m = this.material;
-    m.extensions.derivatives = true;
-    m.lights = false;
-    m.uniforms.fontTexture.value = tex;
-    m.needsUpdate = true;
-
-    var wm = this.wireframeMaterial;
-    wm.extensions.derivatives = true;
-    wm.lights = false;
-    wm.uniforms.fontTexture.value = tex;
-    wm.needsUpdate = true;
-
-    var pm = this.pickingMaterial;
-    pm.extensions.derivatives = true;
-    pm.lights = false;
-    pm.uniforms.fontTexture.value = tex;
-    pm.needsUpdate = true;
-  };
-
-  TextBuffer.prototype.setAttributes = function setAttributes (data) {
-    var this$1 = this;
-
-    var position, size, color;
-    var aPosition, inputSize, aColor;
-
-    var text = this.text;
-    var attributes = this.geometry.attributes;
-
-    if (data.position) {
-      position = data.position;
-      aPosition = attributes.position.array;
-      attributes.position.needsUpdate = true;
-    }
-
-    if (data.size) {
-      size = data.size;
-      inputSize = attributes.inputSize.array;
-      attributes.inputSize.needsUpdate = true;
-    }
-
-    if (data.color) {
-      color = data.color;
-      aColor = attributes.color.array;
-      attributes.color.needsUpdate = true;
-    }
-
-    var n = this.positionCount;
-
-    var j, o;
-    var iCharAll = 0;
-    var txt, iChar, nChar;
-
-    for (var v = 0; v < n; ++v) {
-      o = 3 * v;
-      txt = text[ v ];
-      nChar = txt.length;
-      if (this$1.showBackground) { nChar += 1; }
-
-      for (iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
-        for (var m = 0; m < 4; m++) {
-          j = iCharAll * 4 * 3 + (3 * m);
-
-          if (position) {
-            aPosition[ j ] = position[ o ];
-            aPosition[ j + 1 ] = position[ o + 1 ];
-            aPosition[ j + 2 ] = position[ o + 2 ];
-          }
-
-          if (size) {
-            inputSize[ (iCharAll * 4) + m ] = size[ v ];
-          }
-
-          if (color) {
-            aColor[ j ] = color[ o ];
-            aColor[ j + 1 ] = color[ o + 1 ];
-            aColor[ j + 2 ] = color[ o + 2 ];
-          }
-        }
-      }
-    }
-  };
-
-  TextBuffer.prototype.makeTexture = function makeTexture () {
-    this.textAtlas = getTextAtlas({
-      font: [ this.fontFamily ],
-      style: this.fontStyle,
-      weight: this.fontWeight,
-      size: this.fontSize,
-      outline: this.sdf ? 5 : 0
-    });
-
-    this.texture = this.textAtlas.texture;
-  };
-
-  TextBuffer.prototype.makeMapping = function makeMapping () {
-    var this$1 = this;
-
-    var ta = this.textAtlas;
-    var text = this.text;
-    var attachment = this.attachment;
-    var margin = (ta.lineHeight * this.backgroundMargin * 0.1) - 10;
-
-    var inputTexCoord = this.geometry.attributes.inputTexCoord.array;
-    var inputMapping = this.geometry.attributes.mapping.array;
-
-    var n = this.positionCount;
-    var iCharAll = 0;
-    var c, i, txt, xadvance, iChar, nChar, xShift, yShift;
-
-    for (var v = 0; v < n; ++v) {
-      txt = text[ v ];
-      xadvance = 0;
-      nChar = txt.length;
-
-            // calculate width
-      for (iChar = 0; iChar < nChar; ++iChar) {
-        c = ta.get(txt[ iChar ]);
-        xadvance += c.w - 2 * ta.outline;
-      }
-
-            // attachment
-      if (attachment.startsWith('top')) {
-        yShift = ta.lineHeight / 1.25;
-      } else if (attachment.startsWith('middle')) {
-        yShift = ta.lineHeight / 2.5;
-      } else {
-        yShift = 0;  // "bottom"
-      }
-      if (attachment.endsWith('right')) {
-        xShift = xadvance;
-      } else if (attachment.endsWith('center')) {
-        xShift = xadvance / 2;
-      } else {
-        xShift = 0;  // "left"
-      }
-      xShift += ta.outline;
-      yShift += ta.outline;
-
-            // background
-      if (this$1.showBackground) {
-        i = iCharAll * 2 * 4;
-        inputMapping[ i + 0 ] = -ta.lineHeight / 6 - xShift - margin;  // top left
-        inputMapping[ i + 1 ] = ta.lineHeight - yShift + margin;
-        inputMapping[ i + 2 ] = -ta.lineHeight / 6 - xShift - margin;  // bottom left
-        inputMapping[ i + 3 ] = 0 - yShift - margin;
-        inputMapping[ i + 4 ] = xadvance + ta.lineHeight / 6 - xShift + 2 * ta.outline + margin;  // top right
-        inputMapping[ i + 5 ] = ta.lineHeight - yShift + margin;
-        inputMapping[ i + 6 ] = xadvance + ta.lineHeight / 6 - xShift + 2 * ta.outline + margin;  // bottom right
-        inputMapping[ i + 7 ] = 0 - yShift - margin;
-        inputTexCoord[ i + 0 ] = 10;
-        inputTexCoord[ i + 2 ] = 10;
-        inputTexCoord[ i + 4 ] = 10;
-        inputTexCoord[ i + 6 ] = 10;
-        iCharAll += 1;
-      }
-
-      xadvance = 0;
-
-      for (iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
-        c = ta.get(txt[ iChar ]);
-        i = iCharAll * 2 * 4;
-
-        inputMapping[ i + 0 ] = xadvance - xShift;  // top left
-        inputMapping[ i + 1 ] = c.h - yShift;
-        inputMapping[ i + 2 ] = xadvance - xShift;  // bottom left
-        inputMapping[ i + 3 ] = 0 - yShift;
-        inputMapping[ i + 4 ] = xadvance + c.w - xShift;  // top right
-        inputMapping[ i + 5 ] = c.h - yShift;
-        inputMapping[ i + 6 ] = xadvance + c.w - xShift;  // bottom right
-        inputMapping[ i + 7 ] = 0 - yShift;
-
-        var texWidth = ta.width;
-        var texHeight = ta.height;
-
-        var texCoords = [
-          c.x / texWidth, c.y / texHeight,             // top left
-          c.x / texWidth, (c.y + c.h) / texHeight,       // bottom left
-          (c.x + c.w) / texWidth, c.y / texHeight,       // top right
-          (c.x + c.w) / texWidth, (c.y + c.h) / texHeight  // bottom right
-        ];
-        inputTexCoord.set(texCoords, i);
-
-        xadvance += c.w - 2 * ta.outline;
-      }
-    }
-
-    this.geometry.attributes.inputTexCoord.needsUpdate = true;
-    this.geometry.attributes.mapping.needsUpdate = true;
-  };
-
-  TextBuffer.prototype.getDefines = function getDefines (type) {
-    var defines = QuadBuffer$$1.prototype.getDefines.call(this, type);
-
-    if (this.sdf) {
-      defines.SDF = 1;
-    }
-
-    return defines
-  };
-
-  TextBuffer.prototype.setUniforms = function setUniforms (data) {
-    if (data && (
-                data.fontFamily !== undefined ||
-                data.fontStyle !== undefined ||
-                data.fontWeight !== undefined ||
-                data.fontSize !== undefined ||
-                data.sdf !== undefined
-            )
-        ) {
-      this.makeTexture();
-      this.makeMapping();
-      this.texture.needsUpdate = true;
-      data.fontTexture = this.texture;
-    }
-
-    QuadBuffer$$1.prototype.setUniforms.call(this, data);
-  };
-
-  prototypeAccessors.wireframe.set = function (value) {};
-  prototypeAccessors.wireframe.get = function () { return false };
-
-  prototypeAccessors.isText.get = function () { return true };
-  prototypeAccessors.vertexShader.get = function () { return 'SDFFont.vert' };
-  prototypeAccessors.fragmentShader.get = function () { return 'SDFFont.frag' };
-
-  Object.defineProperties( TextBuffer.prototype, prototypeAccessors );
-
-  return TextBuffer;
-}(QuadBuffer));
-
-/**
  * @file Shape
  * @author Alexander Rose <alexander.rose@weirdbyte.de>
  * @private
  */
 
-function addElement (elm, array) {
-  if (elm.toArray !== undefined) {
-    elm = elm.toArray();
-  } else if (elm.x !== undefined) {
-    elm = [ elm.x, elm.y, elm.z ];
-  } else if (elm.r !== undefined) {
-    elm = [ elm.r, elm.g, elm.b ];
-  }
-  array.push.apply(array, elm);
-}
-
-var tmpVec = new Vector3();
 var tmpBox = new Box3();
+
+var Primitives = [
+  ArrowPrimitive, BoxPrimitive, ConePrimitive, CylinderPrimitive,
+  EllipsoidPrimitive, TextPrimitive, SpherePrimitive
+];
 
 /**
  * Class for building custom shapes.
  *
  * @example
- * var shape = new NGL.Shape( "shape", { disableImpostor: true } );
- * shape.addSphere( [ 0, 0, 9 ], [ 1, 0, 0 ], 1.5 );
- * shape.addEllipsoid( [ 6, 0, 0 ], [ 1, 0, 0 ], 1.5, [ 3, 0, 0 ], [ 0, 2, 0 ] );
- * shape.addCylinder( [ 0, 2, 7 ], [ 0, 0, 9 ], [ 1, 1, 0 ], 0.5 );
- * shape.addCone( [ 0, 2, 7 ], [ 0, 3, 3 ], [ 1, 1, 0 ], 1.5 );
- * shape.addArrow( [ 1, 2, 7 ], [ 30, 3, 3 ], [ 1, 0, 1 ], 1.0 );
- * var shapeComp = stage.addComponentFromObject( shape );
- * geoComp.addRepresentation( "buffer" );
+ * var shape = new NGL.Shape("shape", { disableImpostor: true });
+ * shape.addSphere([ 0, 0, 9 ], [ 1, 0, 0 ], 1.5 );
+ * shape.addEllipsoid([ 6, 0, 0 ], [ 1, 0, 0 ], 1.5, [ 3, 0, 0 ], [ 0, 2, 0 ]);
+ * shape.addCylinder([ 0, 2, 7 ], [ 0, 0, 9 ], [ 1, 1, 0 ], 0.5);
+ * shape.addCone([ 0, 2, 7 ], [ 0, 3, 3 ], [ 1, 1, 0 ], 1.5);
+ * shape.addArrow([ 1, 2, 7 ], [ 30, 3, 3 ], [ 1, 0, 1 ], 1.0);
+ * shape.addBox([ 0, 3, 0 ], [ 1, 0, 1 ], 2, [ 0, 1, 1 ], [ 1, 0, 1 ]);
+ * var shapeComp = stage.addComponentFromObject(shape);
+ * geoComp.addRepresentation("buffer");
  */
 var Shape$1 = function Shape$$1 (name, params) {
+  var this$1 = this;
+
   this.name = defaults(name, 'shape');
 
   var p = params || {};
@@ -69829,49 +69134,21 @@ var Shape$1 = function Shape$$1 (name, params) {
   this.bufferList = [];
   this.meshCount = 0;
 
-  this.spherePosition = [];
-  this.sphereColor = [];
-  this.sphereRadius = [];
-  this.sphereName = [];
-
-  this.ellipsoidPosition = [];
-  this.ellipsoidColor = [];
-  this.ellipsoidRadius = [];
-  this.ellipsoidMajorAxis = [];
-  this.ellipsoidMinorAxis = [];
-  this.ellipsoidName = [];
-
-  this.cylinderPosition1 = [];
-  this.cylinderPosition2 = [];
-  this.cylinderColor = [];
-  this.cylinderRadius = [];
-  this.cylinderName = [];
-
-  this.conePosition1 = [];
-  this.conePosition2 = [];
-  this.coneColor = [];
-  this.coneRadius = [];
-  this.coneName = [];
-
-  this.arrowPosition1 = [];
-  this.arrowPosition2 = [];
-  this.arrowColor = [];
-  this.arrowRadius = [];
-  this.arrowName = [];
-
-  this.labelPosition = [];
-  this.labelColor = [];
-  this.labelSize = [];
-  this.labelText = [];
+  Primitives.forEach(function (P) {
+    Object.keys(P.fields).forEach(function (name) {
+      this$1[ P.getShapeKey(name) ] = [];
+    });
+    this$1[ P.getShapeKey('name') ] = [];
+  });
 };
 
-var prototypeAccessors$24 = { center: {},type: {} };
+var prototypeAccessors$26 = { center: {},type: {} };
 
-  /**
-   * Add a buffer
-   * @param {Buffer} buffer - buffer object
-   * @return {Shape} this object
-   */
+/**
+ * Add a buffer
+ * @param {Buffer} buffer - buffer object
+ * @return {Shape} this object
+ */
 Shape$1.prototype.addBuffer = function addBuffer (buffer) {
   this.bufferList.push(buffer);
 
@@ -69884,21 +69161,21 @@ Shape$1.prototype.addBuffer = function addBuffer (buffer) {
   return this
 };
 
-  /**
-   * Add a mesh
-   * @example
-   * shape.addMesh(
-   *   [ 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1 ],
-   *   [ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 ]
-   * );
-   *
-   * @param {Float32Array|Array} position - positions
-   * @param {Float32Array|Array} color - colors
-   * @param {Uint32Array|Uint16Array|Array} [index] - indices
-   * @param {Float32Array|Array} [normal] - normals
-   * @param {String} [name] - text
-   * @return {Shape} this object
-   */
+/**
+ * Add a mesh
+ * @example
+ * shape.addMesh(
+ * [ 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1 ],
+ * [ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 ]
+ * );
+ *
+ * @param {Float32Array|Array} position - positions
+ * @param {Float32Array|Array} color - colors
+ * @param {Uint32Array|Uint16Array|Array} [index] - indices
+ * @param {Float32Array|Array} [normal] - normals
+ * @param {String} [name] - text
+ * @return {Shape} this object
+ */
 Shape$1.prototype.addMesh = function addMesh (position, color, index, normal, name) {
   position = ensureFloat32Array(position);
   color = ensureFloat32Array(color);
@@ -69911,11 +69188,11 @@ Shape$1.prototype.addMesh = function addMesh (position, color, index, normal, na
 
   var data = { position: position, color: color, index: index, normal: normal };
   var picking = new MeshPicker(
-          this, Object.assign({ serial: this.meshCount, name: name }, data)
-      );
+    this, Object.assign({ serial: this.meshCount, name: name }, data)
+  );
   var meshBuffer = new MeshBuffer(
-          Object.assign({ picking: picking }, data)
-      );
+    Object.assign({ picking: picking }, data)
+  );
   this.bufferList.push(meshBuffer);
 
   tmpBox.setFromArray(position);
@@ -69925,312 +69202,243 @@ Shape$1.prototype.addMesh = function addMesh (position, color, index, normal, na
   return this
 };
 
-  /**
-   * Add a sphere
-   * @example
-   * shape.addSphere( [ 0, 0, 9 ], [ 1, 0, 0 ], 1.5 );
-   *
-   * @param {Vector3|Array} position - position vector or array
-   * @param {Color|Array} color - color object or array
-   * @param {Float} radius - radius value
-   * @param {String} [name] - text
-   * @return {Shape} this object
-   */
+/**
+ * Add a sphere
+ * @example
+ * shape.addSphere([ 0, 0, 9 ], [ 1, 0, 0 ], 1.5);
+ *
+ * @param {Vector3|Array} position - position vector or array
+ * @param {Color|Array} color - color object or array
+ * @param {Float} radius - radius value
+ * @param {String} [name] - text
+ * @return {Shape} this object
+ */
 Shape$1.prototype.addSphere = function addSphere (position, color, radius, name) {
-  addElement(position, this.spherePosition);
-  addElement(color, this.sphereColor);
-  this.sphereRadius.push(radius);
-  this.sphereName.push(name);
-
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position));
-
+  SpherePrimitive.objectToShape(
+    this, { position: position, color: color, radius: radius, name: name }
+  );
   return this
 };
 
-  /**
-   * Add an ellipsoid
-   * @example
-   * shape.addEllipsoid( [ 6, 0, 0 ], [ 1, 0, 0 ], 1.5, [ 3, 0, 0 ], [ 0, 2, 0 ] );
-   *
-   * @param {Vector3|Array} position - position vector or array
-   * @param {Color|Array} color - color object or array
-   * @param {Float} radius - radius value
-   * @param {Vector3|Array} majorAxis - major axis vector or array
-   * @param {Vector3|Array} minorAxis - minor axis vector or array
-   * @param {String} [name] - text
-   * @return {Shape} this object
-   */
+/**
+ * Add an ellipsoid
+ * @example
+ * shape.addEllipsoid([ 6, 0, 0 ], [ 1, 0, 0 ], 1.5, [ 3, 0, 0 ], [ 0, 2, 0 ]);
+ *
+ * @param {Vector3|Array} position - position vector or array
+ * @param {Color|Array} color - color object or array
+ * @param {Float} radius - radius value
+ * @param {Vector3|Array} majorAxis - major axis vector or array
+ * @param {Vector3|Array} minorAxis - minor axis vector or array
+ * @param {String} [name] - text
+ * @return {Shape} this object
+ */
 Shape$1.prototype.addEllipsoid = function addEllipsoid (position, color, radius, majorAxis, minorAxis, name) {
-  addElement(position, this.ellipsoidPosition);
-  addElement(color, this.ellipsoidColor);
-  this.ellipsoidRadius.push(radius);
-  addElement(majorAxis, this.ellipsoidMajorAxis);
-  addElement(minorAxis, this.ellipsoidMinorAxis);
-  this.ellipsoidName.push(name);
-
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position));
-
+  EllipsoidPrimitive.objectToShape(
+    this, { position: position, color: color, radius: radius, majorAxis: majorAxis, minorAxis: minorAxis, name: name }
+  );
   return this
 };
 
-  /**
-   * Add a cylinder
-   * @example
-   * shape.addCylinder( [ 0, 2, 7 ], [ 0, 0, 9 ], [ 1, 1, 0 ], 0.5 );
-   *
-   * @param {Vector3|Array} position1 - from position vector or array
-   * @param {Vector3|Array} position2 - to position vector or array
-   * @param {Color|Array} color - color object or array
-   * @param {Float} radius - radius value
-   * @param {String} [name] - text
-   * @return {Shape} this object
-   */
+/**
+ * Add a cylinder
+ * @example
+ * shape.addCylinder([ 0, 2, 7 ], [ 0, 0, 9 ], [ 1, 1, 0 ], 0.5);
+ *
+ * @param {Vector3|Array} position1 - from position vector or array
+ * @param {Vector3|Array} position2 - to position vector or array
+ * @param {Color|Array} color - color object or array
+ * @param {Float} radius - radius value
+ * @param {String} [name] - text
+ * @return {Shape} this object
+ */
 Shape$1.prototype.addCylinder = function addCylinder (position1, position2, color, radius, name) {
-  addElement(position1, this.cylinderPosition1);
-  addElement(position2, this.cylinderPosition2);
-  addElement(color, this.cylinderColor);
-  this.cylinderRadius.push(radius);
-  this.cylinderName.push(name);
-
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position1));
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position2));
-
+  CylinderPrimitive.objectToShape(
+    this, { position1: position1, position2: position2, color: color, radius: radius, name: name }
+  );
   return this
 };
 
-  /**
-   * Add a cone
-   * @example
-   * shape.addCone( [ 0, 2, 7 ], [ 0, 3, 3 ], [ 1, 1, 0 ], 1.5 );
-   *
-   * @param {Vector3|Array} position1 - from position vector or array
-   * @param {Vector3|Array} position2 - to position vector or array
-   * @param {Color|Array} color - color object or array
-   * @param {Float} radius - radius value
-   * @param {String} [name] - text
-   * @return {Shape} this object
-   */
+/**
+ * Add a cone
+ * @example
+ * shape.addCone([ 0, 2, 7 ], [ 0, 3, 3 ], [ 1, 1, 0 ], 1.5);
+ *
+ * @param {Vector3|Array} position1 - from position vector or array
+ * @param {Vector3|Array} position2 - to position vector or array
+ * @param {Color|Array} color - color object or array
+ * @param {Float} radius - radius value
+ * @param {String} [name] - text
+ * @return {Shape} this object
+ */
 Shape$1.prototype.addCone = function addCone (position1, position2, color, radius, name) {
-  addElement(position1, this.conePosition1);
-  addElement(position2, this.conePosition2);
-  addElement(color, this.coneColor);
-  this.coneRadius.push(radius);
-  this.coneName.push(name);
-
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position1));
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position2));
-
+  ConePrimitive.objectToShape(
+    this, { position1: position1, position2: position2, color: color, radius: radius, name: name }
+  );
   return this
 };
 
-  /**
-   * Add an arrow
-   * @example
-   * shape.addArrow( [ 0, 2, 7 ], [ 0, 0, 9 ], [ 1, 1, 0 ], 0.5 );
-   *
-   * @param {Vector3|Array} position1 - from position vector or array
-   * @param {Vector3|Array} position2 - to position vector or array
-   * @param {Color|Array} color - color object or array
-   * @param {Float} radius - radius value
-   * @param {String} [name] - text
-   * @return {Shape} this object
-   */
+/**
+ * Add an arrow
+ * @example
+ * shape.addArrow([ 0, 2, 7 ], [ 0, 0, 9 ], [ 1, 1, 0 ], 0.5);
+ *
+ * @param {Vector3|Array} position1 - from position vector or array
+ * @param {Vector3|Array} position2 - to position vector or array
+ * @param {Color|Array} color - color object or array
+ * @param {Float} radius - radius value
+ * @param {String} [name] - text
+ * @return {Shape} this object
+ */
 Shape$1.prototype.addArrow = function addArrow (position1, position2, color, radius, name) {
-  addElement(position1, this.arrowPosition1);
-  addElement(position2, this.arrowPosition2);
-  addElement(color, this.arrowColor);
-  this.arrowRadius.push(radius);
-  this.arrowName.push(name);
-
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position1));
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position2));
-
+  ArrowPrimitive.objectToShape(
+    this, { position1: position1, position2: position2, color: color, radius: radius, name: name }
+  );
   return this
 };
 
-  /**
-   * Add a label
-   * @example
-   * shape.addLabel( [ 10, -2, 4 ], [ 0.2, 0.5, 0.8 ], 0.5, "Hello" );
-   *
-   * @param {Vector3|Array} position - from position vector or array
-   * @param {Color|Array} color - color object or array
-   * @param {Float} size - size value
-   * @param {String} text - text value
-   * @return {Shape} this object
-   */
-Shape$1.prototype.addLabel = function addLabel (position, color, size, text) {
-  addElement(position, this.labelPosition);
-  addElement(color, this.labelColor);
-  this.labelSize.push(size);
-  this.labelText.push(text);
-
-  this.boundingBox.expandByPoint(tmpVec.fromArray(position));
-
+/**
+ * Add a box
+ * @example
+ * shape.addBox([ 0, 3, 0 ], [ 1, 0, 1 ], 2, [ 0, 1, 1 ], [ 1, 0, 1 ]);
+ *
+ * @param {Vector3|Array} position - position vector or array
+ * @param {Color|Array} color - color object or array
+ * @param {Float} size - size value
+ * @param {Vector3|Array} heightAxis - height axis vector or array
+ * @param {Vector3|Array} depthAxis - depth axis vector or array
+ * @param {String} [name] - text
+ * @return {Shape} this object
+ */
+Shape$1.prototype.addBox = function addBox (position, color, size, heightAxis, depthAxis, name) {
+  BoxPrimitive.objectToShape(
+    this, { position: position, color: color, size: size, heightAxis: heightAxis, depthAxis: depthAxis, name: name }
+  );
   return this
+};
+
+/**
+ * Add text
+ * @example
+ * shape.addText([ 10, -2, 4 ], [ 0.2, 0.5, 0.8 ], 0.5, "Hello");
+ *
+ * @param {Vector3|Array} position - from position vector or array
+ * @param {Color|Array} color - color object or array
+ * @param {Float} size - size value
+ * @param {String} text - text value
+ * @return {Shape} this object
+ */
+Shape$1.prototype.addText = function addText (position, color, size, text) {
+  TextPrimitive.objectToShape(
+    this, { position: position, color: color, size: size, text: text }
+  );
+  return this
+};
+
+/**
+ * Deprecated, use `.addText`
+ */
+Shape$1.prototype.addLabel = function addLabel (position, color, size, text) {
+  console.warn('Shape.addLabel is deprecated, use .addText instead');
+  return this.addText(position, color, size, text)
 };
 
 Shape$1.prototype.getBufferList = function getBufferList () {
+    var this$1 = this;
+
   var buffers = [];
 
-  if (this.spherePosition.length) {
-    var sphereBuffer = new SphereBuffer(
-      {
-        position: new Float32Array(this.spherePosition),
-        color: new Float32Array(this.sphereColor),
-        radius: new Float32Array(this.sphereRadius),
-        picking: new SpherePicker(this)
-      },
-      {
-        sphereDetail: this.sphereDetail,
-        disableImpostor: this.disableImpostor
-      }
-          );
-    buffers.push(sphereBuffer);
-  }
+  var params = {
+    aspectRatio: this.aspectRatio,
+    sphereDetail: this.sphereDetail,
+    radialSegments: this.radialSegments,
+    disableImpostor: this.disableImpostor,
+    openEnded: this.openEnded,
+    labelParams: this.labelParams
+  };
 
-  if (this.ellipsoidPosition.length) {
-    var ellipsoidBuffer = new EllipsoidBuffer(
-      {
-        position: new Float32Array(this.ellipsoidPosition),
-        color: new Float32Array(this.ellipsoidColor),
-        radius: new Float32Array(this.ellipsoidRadius),
-        majorAxis: new Float32Array(this.ellipsoidMajorAxis),
-        minorAxis: new Float32Array(this.ellipsoidMinorAxis),
-        picking: new EllipsoidPicker(this)
-      },
-      {
-        sphereDetail: this.sphereDetail,
-        disableImpostor: this.disableImpostor
-      }
-          );
-    buffers.push(ellipsoidBuffer);
-  }
-
-  if (this.cylinderPosition1.length) {
-    var cylinderBuffer = new CylinderBuffer(
-      {
-        position1: new Float32Array(this.cylinderPosition1),
-        position2: new Float32Array(this.cylinderPosition2),
-        color: new Float32Array(this.cylinderColor),
-        color2: new Float32Array(this.cylinderColor),
-        radius: new Float32Array(this.cylinderRadius),
-        picking: new CylinderPicker(this)
-      },
-      {
-        radialSegments: this.radialSegments,
-        disableImpostor: this.disableImpostor,
-        openEnded: this.openEnded
-      }
-          );
-    buffers.push(cylinderBuffer);
-  }
-
-  if (this.conePosition1.length) {
-    var coneBuffer = new ConeBuffer(
-      {
-        position1: new Float32Array(this.conePosition1),
-        position2: new Float32Array(this.conePosition2),
-        color: new Float32Array(this.coneColor),
-        radius: new Float32Array(this.coneRadius),
-        picking: new ConePicker(this)
-      },
-      {
-        radialSegments: this.radialSegments,
-        disableImpostor: this.disableImpostor,
-        openEnded: this.openEnded
-      }
-          );
-    buffers.push(coneBuffer);
-  }
-
-  if (this.arrowPosition1.length) {
-    var arrowBuffer = new ArrowBuffer(
-      {
-        position1: new Float32Array(this.arrowPosition1),
-        position2: new Float32Array(this.arrowPosition2),
-        color: new Float32Array(this.arrowColor),
-        radius: new Float32Array(this.arrowRadius),
-        picking: new ArrowPicker(this)
-      },
-      {
-        aspectRatio: this.aspectRatio,
-        radialSegments: this.radialSegments,
-        disableImpostor: this.disableImpostor,
-        openEnded: this.openEnded
-      }
-          );
-    buffers.push(arrowBuffer);
-  }
-
-  if (this.labelPosition.length) {
-    var labelBuffer = new TextBuffer(
-      {
-        position: new Float32Array(this.labelPosition),
-        color: new Float32Array(this.labelColor),
-        size: new Float32Array(this.labelSize),
-        text: this.labelText
-      },
-              this.labelParams
-          );
-    buffers.push(labelBuffer);
-  }
+  Primitives.forEach(function (P) {
+    if (this$1[ P.getShapeKey('color') ].length) {
+      buffers.push(P.bufferFromShape(this$1, params));
+    }
+  });
 
   return this.bufferList.concat(buffers)
 };
 
 Shape$1.prototype.dispose = function dispose () {
+    var this$1 = this;
+
   this.bufferList.forEach(function (buffer) {
     buffer.dispose();
   });
   this.bufferList.length = 0;
 
-  this.spherePosition.length = 0;
-  this.sphereColor.length = 0;
-  this.sphereRadius.length = 0;
-  this.sphereName.length = 0;
-
-  this.ellipsoidPosition.length = 0;
-  this.ellipsoidColor.length = 0;
-  this.ellipsoidRadius.length = 0;
-  this.ellipsoidMajorAxis.length = 0;
-  this.ellipsoidMinorAxis.length = 0;
-  this.ellipsoidName.length = 0;
-
-  this.cylinderPosition1.length = 0;
-  this.cylinderPosition2.length = 0;
-  this.cylinderColor.length = 0;
-  this.cylinderRadius.length = 0;
-  this.cylinderName.length = 0;
-
-  this.conePosition1.length = 0;
-  this.conePosition2.length = 0;
-  this.coneColor.length = 0;
-  this.coneRadius.length = 0;
-  this.coneName.length = 0;
-
-  this.arrowPosition1.length = 0;
-  this.arrowPosition2.length = 0;
-  this.arrowColor.length = 0;
-  this.arrowRadius.length = 0;
-  this.arrowName.length = 0;
-
-  this.labelPosition.length = 0;
-  this.labelColor.length = 0;
-  this.labelSize.length = 0;
-  this.labelText.length = 0;
+  Primitives.forEach(function (P) {
+    Object.keys(P.fields).forEach(function (name) {
+      this$1[ P.getShapeKey(name) ].length = 0;
+    });
+    this$1[ P.getShapeKey('name') ].length = 0;
+  });
 };
 
-prototypeAccessors$24.center.get = function () {
+prototypeAccessors$26.center.get = function () {
   if (!this._center) {
     this._center = this.boundingBox.getCenter();
   }
   return this._center
 };
 
-prototypeAccessors$24.type.get = function () { return 'Shape' };
+prototypeAccessors$26.type.get = function () { return 'Shape' };
 
-Object.defineProperties( Shape$1.prototype, prototypeAccessors$24 );
+Object.defineProperties( Shape$1.prototype, prototypeAccessors$26 );
+
+/**
+ * @file Queue
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+function Queue (fn, argList) {
+  var queue = [];
+  var pending = false;
+
+  if (argList) {
+    for (var i = 0, il = argList.length; i < il; ++i) {
+      queue.push(argList[ i ]);
+    }
+    next();
+  }
+
+  function run (arg) {
+    fn(arg, next);
+  }
+
+  function next () {
+    var arg = queue.shift();
+    if (arg !== undefined) {
+      pending = true;
+      setTimeout(function () { run(arg); });
+    } else {
+      pending = false;
+    }
+  }
+
+    // API
+
+  this.push = function (arg) {
+    queue.push(arg);
+    if (!pending) { next(); }
+  };
+
+  this.kill = function () {
+    queue.length = 0;
+  };
+
+  this.length = function () {
+    return queue.length
+  };
+}
 
 /**
  * @file Representation
@@ -70975,16 +70183,16 @@ var DoubleSidedBuffer = function DoubleSidedBuffer (buffer) {
   this.backBuffer = backBuffer;
 };
 
-var prototypeAccessors$27 = { matrix: {},pickable: {} };
+var prototypeAccessors$28 = { matrix: {},pickable: {} };
 
-prototypeAccessors$27.matrix.set = function (m) {
+prototypeAccessors$28.matrix.set = function (m) {
   Buffer$1.prototype.setMatrix.call(this, m);
 };
-prototypeAccessors$27.matrix.get = function () {
+prototypeAccessors$28.matrix.get = function () {
   return this.group.matrix.clone()
 };
 
-prototypeAccessors$27.pickable.get = function () {
+prototypeAccessors$28.pickable.get = function () {
   return !!this.picking && !this.disablePicking
 };
 
@@ -71059,7 +70267,7 @@ DoubleSidedBuffer.prototype.dispose = function dispose () {
   this.backBuffer.dispose();
 };
 
-Object.defineProperties( DoubleSidedBuffer.prototype, prototypeAccessors$27 );
+Object.defineProperties( DoubleSidedBuffer.prototype, prototypeAccessors$28 );
 
 DoubleSidedBuffer.prototype.setVisibility = Buffer$1.prototype.setVisibility;
 
@@ -71439,6 +70647,521 @@ var SurfaceRepresentation = (function (Representation$$1) {
 
   return SurfaceRepresentation;
 }(Representation));
+
+/**
+ * @file Geometry Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var matrix$1 = new Matrix4();
+var normalMatrix = new Matrix3();
+
+/**
+ * Geometry buffer. Base class for geometry-based buffers. Used to draw
+ * geometry primitives given a mesh.
+ * @interface
+ */
+var GeometryBuffer = (function (MeshBuffer$$1) {
+  function GeometryBuffer (data, params, geo) {
+    var d = data || {};
+    var p = params || {};
+
+    var geoPosition = geo.attributes.position.array;
+    var geoNormal = geo.attributes.normal.array;
+    var geoIndex = geo.index ? geo.index.array : undefined;
+
+    var n = d.position.length / 3;
+    var m = geoPosition.length / 3;
+
+    var size = n * m;
+
+    var meshPosition = new Float32Array(size * 3);
+    var meshNormal = new Float32Array(size * 3);
+    var meshColor = new Float32Array(size * 3);
+
+    var meshIndex;
+    if (geoIndex) {
+      meshIndex = getUintArray(n * geoIndex.length, size);
+    }
+
+    MeshBuffer$$1.call(this, {
+      position: meshPosition,
+      color: meshColor,
+      index: meshIndex,
+      normal: meshNormal,
+      primitiveId: d.primitiveId || serialBlockArray(n, m),
+      picking: d.picking
+    }, p);
+
+    this.setAttributes(d);
+
+    this.geoPosition = geoPosition;
+    this.geoNormal = geoNormal;
+    this.geoIndex = geoIndex;
+
+    this.positionCount = n;
+    this.geoPositionCount = m;
+
+    this.transformedGeoPosition = new Float32Array(m * 3);
+    this.transformedGeoNormal = new Float32Array(m * 3);
+
+    this.meshPosition = meshPosition;
+    this.meshColor = meshColor;
+    this.meshIndex = meshIndex;
+    this.meshNormal = meshNormal;
+
+    this.meshIndex = meshIndex;
+    this.makeIndex();
+  }
+
+  if ( MeshBuffer$$1 ) GeometryBuffer.__proto__ = MeshBuffer$$1;
+  GeometryBuffer.prototype = Object.create( MeshBuffer$$1 && MeshBuffer$$1.prototype );
+  GeometryBuffer.prototype.constructor = GeometryBuffer;
+
+  var prototypeAccessors = { updateNormals: {} };
+
+  GeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform () {};
+
+  GeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
+    var this$1 = this;
+
+    var attributes = this.geometry.attributes;
+
+    var position, color;
+    var geoPosition, geoNormal;
+    var transformedGeoPosition, transformedGeoNormal;
+    var meshPosition, meshColor, meshNormal;
+
+    var updateNormals = this.updateNormals;
+
+    if (data.position) {
+      position = data.position;
+      geoPosition = this.geoPosition;
+      meshPosition = this.meshPosition;
+      transformedGeoPosition = this.transformedGeoPosition;
+      attributes.position.needsUpdate = true;
+      if (updateNormals || initNormals) {
+        geoNormal = this.geoNormal;
+        meshNormal = this.meshNormal;
+        transformedGeoNormal = this.transformedGeoNormal;
+        attributes.normal.needsUpdate = true;
+      }
+    }
+
+    if (data.color) {
+      color = data.color;
+      meshColor = this.meshColor;
+      attributes.color.needsUpdate = true;
+    }
+
+    var n = this.positionCount;
+    var m = this.geoPositionCount;
+
+    for (var i = 0; i < n; ++i) {
+      var j = (void 0), l = (void 0);
+      var k = i * m * 3;
+      var i3 = i * 3;
+
+      if (position) {
+        transformedGeoPosition.set(geoPosition);
+        matrix$1.makeTranslation(
+                    position[ i3 ], position[ i3 + 1 ], position[ i3 + 2 ]
+                );
+        this$1.applyPositionTransform(matrix$1, i, i3);
+        applyMatrix4toVector3array(matrix$1.elements, transformedGeoPosition);
+
+        meshPosition.set(transformedGeoPosition, k);
+
+        if (updateNormals) {
+          transformedGeoNormal.set(geoNormal);
+          normalMatrix.getNormalMatrix(matrix$1);
+          applyMatrix3toVector3array(normalMatrix.elements, transformedGeoNormal);
+
+          meshNormal.set(transformedGeoNormal, k);
+        } else if (initNormals) {
+          meshNormal.set(geoNormal, k);
+        }
+      }
+
+      if (color) {
+        for (j = 0; j < m; ++j) {
+          l = k + 3 * j;
+
+          meshColor[ l ] = color[ i3 ];
+          meshColor[ l + 1 ] = color[ i3 + 1 ];
+          meshColor[ l + 2 ] = color[ i3 + 2 ];
+        }
+      }
+    }
+  };
+
+  GeometryBuffer.prototype.makeIndex = function makeIndex () {
+    var geoIndex = this.geoIndex;
+    var meshIndex = this.meshIndex;
+
+    if (!geoIndex) { return }
+
+    var n = this.positionCount;
+    var m = this.geoPositionCount;
+    var o = geoIndex.length / 3;
+
+    var o3 = o * 3;
+
+    for (var i = 0; i < n; ++i) {
+      var j = i * o3;
+      var q = j + o3;
+
+      meshIndex.set(geoIndex, j);
+      for (var p = j; p < q; ++p) { meshIndex[ p ] += i * m; }
+    }
+  };
+
+  prototypeAccessors.updateNormals.get = function () { return false };
+
+  Object.defineProperties( GeometryBuffer.prototype, prototypeAccessors );
+
+  return GeometryBuffer;
+}(MeshBuffer));
+
+/**
+ * @file Sphere Geometry Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var scale = new Vector3();
+
+/**
+ * Sphere geometry buffer.
+ *
+ * @example
+ * var sphereGeometryBuffer = new SphereGeometryBuffer( {
+ *     position: new Float32Array( [ 0, 0, 0 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var SphereGeometryBuffer = (function (GeometryBuffer$$1) {
+  function SphereGeometryBuffer (data, params) {
+    var p = params || {};
+    var detail = defaults(p.sphereDetail, 1);
+    var geo = new IcosahedronBufferGeometry(1, detail);
+
+    GeometryBuffer$$1.call(this, data, p, geo);
+
+    this.setAttributes(data, true);
+  }
+
+  if ( GeometryBuffer$$1 ) SphereGeometryBuffer.__proto__ = GeometryBuffer$$1;
+  SphereGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
+  SphereGeometryBuffer.prototype.constructor = SphereGeometryBuffer;
+
+  SphereGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i) {
+    var r = this._radius[ i ];
+    scale.set(r, r, r);
+    matrix.scale(scale);
+  };
+
+  SphereGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
+    if (data.radius) {
+      this._radius = data.radius;
+    }
+
+    GeometryBuffer$$1.prototype.setAttributes.call(this, data, initNormals);
+  };
+
+  return SphereGeometryBuffer;
+}(GeometryBuffer));
+
+ShaderRegistry.add('shader/SphereImpostor.vert', "uniform mat4 projectionMatrixInverse;\nuniform float nearClip;\nvarying float vRadius;\nvarying float vRadiusSq;\nvarying vec3 vPoint;\nvarying vec3 vPointViewPosition;\nattribute vec2 mapping;\nattribute float radius;\n#ifdef PICKING\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#else\n#include color_pars_vertex\n#endif\n#include matrix_scale\nconst mat4 D = mat4(\n1.0, 0.0, 0.0, 0.0,\n0.0, 1.0, 0.0, 0.0,\n0.0, 0.0, 1.0, 0.0,\n0.0, 0.0, 0.0, -1.0\n);\nmat4 transpose( in mat4 inMatrix ) {\nvec4 i0 = inMatrix[0];\nvec4 i1 = inMatrix[1];\nvec4 i2 = inMatrix[2];\nvec4 i3 = inMatrix[3];\nmat4 outMatrix = mat4(\nvec4(i0.x, i1.x, i2.x, i3.x),\nvec4(i0.y, i1.y, i2.y, i3.y),\nvec4(i0.z, i1.z, i2.z, i3.z),\nvec4(i0.w, i1.w, i2.w, i3.w)\n);\nreturn outMatrix;\n}\nvoid ComputePointSizeAndPositionInClipCoordSphere(){\nvec2 xbc;\nvec2 ybc;\nmat4 T = mat4(\nradius, 0.0, 0.0, 0.0,\n0.0, radius, 0.0, 0.0,\n0.0, 0.0, radius, 0.0,\nposition.x, position.y, position.z, 1.0\n);\nmat4 R = transpose( projectionMatrix * modelViewMatrix * T );\nfloat A = dot( R[ 3 ], D * R[ 3 ] );\nfloat B = -2.0 * dot( R[ 0 ], D * R[ 3 ] );\nfloat C = dot( R[ 0 ], D * R[ 0 ] );\nxbc[ 0 ] = ( -B - sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nxbc[ 1 ] = ( -B + sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nfloat sx = abs( xbc[ 0 ] - xbc[ 1 ] ) * 0.5;\nA = dot( R[ 3 ], D * R[ 3 ] );\nB = -2.0 * dot( R[ 1 ], D * R[ 3 ] );\nC = dot( R[ 1 ], D * R[ 1 ] );\nybc[ 0 ] = ( -B - sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nybc[ 1 ] = ( -B + sqrt( B * B - 4.0 * A * C ) ) / ( 2.0 * A );\nfloat sy = abs( ybc[ 0 ] - ybc[ 1 ] ) * 0.5;\ngl_Position.xy = vec2( 0.5 * ( xbc.x + xbc.y ), 0.5 * ( ybc.x + ybc.y ) );\ngl_Position.xy -= mapping * vec2( sx, sy );\ngl_Position.xy *= gl_Position.w;\n}\nvoid main(void){\n#ifdef PICKING\nvPickingColor = unpackColor( primitiveId );\n#else\n#include color_vertex\n#endif\nvRadius = radius * matrixScale( modelViewMatrix );\nvec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\nmvPosition.z -= vRadius;\ngl_Position = projectionMatrix * vec4( mvPosition.xyz, 1.0 );\nComputePointSizeAndPositionInClipCoordSphere();\nvRadiusSq = vRadius * vRadius;\nvec4 vPoint4 = projectionMatrixInverse * gl_Position;\nvPoint = vPoint4.xyz / vPoint4.w;\nvPointViewPosition = -mvPosition.xyz / mvPosition.w;\n}");
+
+ShaderRegistry.add('shader/SphereImpostor.frag', "#define STANDARD\n#define IMPOSTOR\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform float roughness;\nuniform float metalness;\nuniform float opacity;\nuniform float nearClip;\nuniform mat4 projectionMatrix;\nuniform float ortho;\nvarying float vRadius;\nvarying float vRadiusSq;\nvarying vec3 vPoint;\nvarying vec3 vPointViewPosition;\n#ifdef PICKING\nuniform float objectId;\nvarying vec3 vPickingColor;\n#else\n#include common\n#include color_pars_fragment\n#include fog_pars_fragment\n#include bsdfs\n#include lights_pars\n#include lights_physical_pars_fragment\n#endif\nbool flag2 = false;\nbool interior = false;\nvec3 cameraPos;\nvec3 cameraNormal;\nfloat calcDepth( in vec3 cameraPos ){\nvec2 clipZW = cameraPos.z * projectionMatrix[2].zw + projectionMatrix[3].zw;\nreturn 0.5 + 0.5 * clipZW.x / clipZW.y;\n}\nfloat calcClip( vec3 cameraPos ){\nreturn dot( vec4( cameraPos, 1.0 ), vec4( 0.0, 0.0, 1.0, nearClip - 0.5 ) );\n}\nbool Impostor( out vec3 cameraPos, out vec3 cameraNormal ){\nvec3 cameraSpherePos = -vPointViewPosition;\ncameraSpherePos.z += vRadius;\nvec3 rayOrigin = mix( vec3( 0.0, 0.0, 0.0 ), vPoint, ortho );\nvec3 rayDirection = mix( normalize( vPoint ), vec3( 0.0, 0.0, 1.0 ), ortho );\nvec3 cameraSphereDir = mix( cameraSpherePos, rayOrigin - cameraSpherePos, ortho );\nfloat B = dot( rayDirection, cameraSphereDir );\nfloat det = B * B + vRadiusSq - dot( cameraSphereDir, cameraSphereDir );\nif( det < 0.0 ){\ndiscard;\nreturn false;\n}else{\nfloat sqrtDet = sqrt( det );\nfloat posT = mix( B + sqrtDet, B + sqrtDet, ortho );\nfloat negT = mix( B - sqrtDet, sqrtDet - B, ortho );\ncameraPos = rayDirection * negT + rayOrigin;\n#ifdef NEAR_CLIP\nif( calcDepth( cameraPos ) <= 0.0 ){\ncameraPos = rayDirection * posT + rayOrigin;\ninterior = true;\nreturn false;\n}else if( calcClip( cameraPos ) > 0.0 ){\ncameraPos = rayDirection * posT + rayOrigin;\ninterior = true;\nflag2 = true;\nreturn false;\n}else{\ncameraNormal = normalize( cameraPos - cameraSpherePos );\n}\n#else\nif( calcDepth( cameraPos ) <= 0.0 ){\ncameraPos = rayDirection * posT + rayOrigin;\ninterior = true;\nreturn false;\n}else{\ncameraNormal = normalize( cameraPos - cameraSpherePos );\n}\n#endif\nreturn true;\n}\nreturn false;\n}\nvoid main(void){\nbool flag = Impostor( cameraPos, cameraNormal );\n#ifdef NEAR_CLIP\nif( calcClip( cameraPos ) > 0.0 )\ndiscard;\n#endif\ngl_FragDepthEXT = calcDepth( cameraPos );\nif( !flag ){\n#ifdef NEAR_CLIP\nif( flag2 ){\ngl_FragDepthEXT = max( 0.0, calcDepth( vec3( - ( nearClip - 0.5 ) ) ) + ( 0.0000001 / vRadius ) );\n}else if( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n#else\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n#endif\n}\nif (gl_FragDepthEXT < 0.0)\ndiscard;\nif (gl_FragDepthEXT > 1.0)\ndiscard;\n#ifdef PICKING\ngl_FragColor = vec4( vPickingColor, objectId );\n#else\nvec3 vNormal = cameraNormal;\nvec3 vViewPosition = -cameraPos;\nvec4 diffuseColor = vec4( diffuse, opacity );\nReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\nvec3 totalEmissiveLight = emissive;\n#include color_fragment\n#include roughnessmap_fragment\n#include metalnessmap_fragment\n#include normal_flip\n#include normal_fragment\nif( interior ){\nnormal = vec3( 0.0, 0.0, 0.4 );\n}\n#include lights_physical_fragment\n#include lights_template\nvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveLight;\ngl_FragColor = vec4( outgoingLight, diffuseColor.a );\n#include premultiplied_alpha_fragment\n#include tonemapping_fragment\n#include encodings_fragment\n#include fog_fragment\n#endif\n}");
+
+/**
+ * @file Mapped Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Mapped buffer. Sends mapping attribute to the GPU and repeats data in
+ * others attributes. Used to render imposters.
+ * @interface
+ */
+var MappedBuffer = (function (Buffer) {
+  function MappedBuffer (data, params) {
+    Buffer.call(this, data, params);
+
+    this.index = getUintArray(this.indexSize, this.attributeSize);
+    this.makeIndex();
+    this.initIndex(this.index, 1);
+
+    this.addAttributes({
+      'mapping': { type: this.mappingType, value: null }
+    });
+
+    this.setAttributes({ primitiveId: serialArray(this.size) });
+  }
+
+  if ( Buffer ) MappedBuffer.__proto__ = Buffer;
+  MappedBuffer.prototype = Object.create( Buffer && Buffer.prototype );
+  MappedBuffer.prototype.constructor = MappedBuffer;
+
+  var prototypeAccessors = { attributeSize: {},indexSize: {},mapping: {},mappingIndices: {},mappingIndicesSize: {},mappingType: {},mappingSize: {},mappingItemSize: {} };
+
+  prototypeAccessors.attributeSize.get = function () {
+    return this.size * this.mappingSize
+  };
+
+  prototypeAccessors.indexSize.get = function () {
+    return this.size * this.mappingIndicesSize
+  };
+
+    /**
+     * @abstract
+     */
+  prototypeAccessors.mapping.get = function () {};
+
+    /**
+     * @abstract
+     */
+  prototypeAccessors.mappingIndices.get = function () {};
+
+    /**
+     * @abstract
+     */
+  prototypeAccessors.mappingIndicesSize.get = function () {};
+
+    /**
+     * @abstract
+     */
+  prototypeAccessors.mappingType.get = function () {};
+
+    /**
+     * @abstract
+     */
+  prototypeAccessors.mappingSize.get = function () {};
+
+    /**
+     * @abstract
+     */
+  prototypeAccessors.mappingItemSize.get = function () {};
+
+  MappedBuffer.prototype.addAttributes = function addAttributes (attributes) {
+    var nullValueAttributes = {};
+    for (var name in attributes) {
+      var a = attributes[ name ];
+      nullValueAttributes[ name ] = {
+        type: a.type,
+        value: null
+      };
+    }
+
+    Buffer.prototype.addAttributes.call(this, nullValueAttributes);
+  };
+
+  MappedBuffer.prototype.getAttributeIndex = function getAttributeIndex (dataIndex) {
+    return dataIndex * 3 * this.mappingSize
+  };
+
+  MappedBuffer.prototype.setAttributes = function setAttributes (data) {
+    if (data && !data.position && data.position1 && data.position2) {
+      data.position = calculateCenterArray(data.position1, data.position2);
+    }
+
+    var size = this.size;
+    var mappingSize = this.mappingSize;
+    var attributes = this.geometry.attributes;
+
+    var a, d, itemSize, array, n, i, j;
+
+    for (var name in data) {
+      if (name === 'index' || name === 'picking') { continue }
+
+      d = data[ name ];
+      a = attributes[ name ];
+      itemSize = a.itemSize;
+      array = a.array;
+
+      for (var k = 0; k < size; ++k) {
+        n = k * itemSize;
+        i = n * mappingSize;
+
+        for (var l = 0; l < mappingSize; ++l) {
+          j = i + (itemSize * l);
+
+          for (var m = 0; m < itemSize; ++m) {
+            array[ j + m ] = d[ n + m ];
+          }
+        }
+      }
+
+      a.needsUpdate = true;
+    }
+  };
+
+  MappedBuffer.prototype.makeMapping = function makeMapping () {
+    var size = this.size;
+    var mapping = this.mapping;
+    var mappingSize = this.mappingSize;
+    var mappingItemSize = this.mappingItemSize;
+
+    var aMapping = this.geometry.attributes.mapping.array;
+
+    for (var v = 0; v < size; v++) {
+      aMapping.set(mapping, v * mappingItemSize * mappingSize);
+    }
+  };
+
+  MappedBuffer.prototype.makeIndex = function makeIndex () {
+    var size = this.size;
+    var mappingSize = this.mappingSize;
+    var mappingIndices = this.mappingIndices;
+    var mappingIndicesSize = this.mappingIndicesSize;
+
+    var index = this.index;
+
+    var ix, it;
+
+    for (var v = 0; v < size; v++) {
+      ix = v * mappingIndicesSize;
+      it = v * mappingSize;
+
+      index.set(mappingIndices, ix);
+
+      for (var s = 0; s < mappingIndicesSize; ++s) {
+        index[ ix + s ] += it;
+      }
+    }
+  };
+
+  Object.defineProperties( MappedBuffer.prototype, prototypeAccessors );
+
+  return MappedBuffer;
+}(Buffer$1));
+
+/**
+ * @file Mapped Quad Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var mapping = new Float32Array([
+  -1.0, 1.0,
+  -1.0, -1.0,
+  1.0, 1.0,
+  1.0, -1.0
+]);
+
+var mappingIndices = new Uint16Array([
+  0, 1, 2,
+  1, 3, 2
+]);
+
+/**
+ * Mapped Quad buffer. Draws screen-aligned quads. Used to render impostors.
+ * @interface
+ */
+var MappedQuadBuffer = (function (MappedBuffer$$1) {
+  function MappedQuadBuffer () {
+    MappedBuffer$$1.apply(this, arguments);
+  }
+
+  if ( MappedBuffer$$1 ) MappedQuadBuffer.__proto__ = MappedBuffer$$1;
+  MappedQuadBuffer.prototype = Object.create( MappedBuffer$$1 && MappedBuffer$$1.prototype );
+  MappedQuadBuffer.prototype.constructor = MappedQuadBuffer;
+
+  var prototypeAccessors = { mapping: {},mappingIndices: {},mappingIndicesSize: {},mappingType: {},mappingSize: {},mappingItemSize: {} };
+
+  prototypeAccessors.mapping.get = function () { return mapping };
+  prototypeAccessors.mappingIndices.get = function () { return mappingIndices };
+  prototypeAccessors.mappingIndicesSize.get = function () { return 6 };
+  prototypeAccessors.mappingType.get = function () { return 'v2' };
+  prototypeAccessors.mappingSize.get = function () { return 4 };
+  prototypeAccessors.mappingItemSize.get = function () { return 2 };
+
+  Object.defineProperties( MappedQuadBuffer.prototype, prototypeAccessors );
+
+  return MappedQuadBuffer;
+}(MappedBuffer));
+
+/**
+ * @file Sphere Impostor Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Sphere impostor buffer.
+ *
+ * @example
+ * var sphereImpostorBuffer = new SphereImpostorBuffer( {
+ *     position: new Float32Array( [ 0, 0, 0 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var SphereImpostorBuffer = (function (MappedQuadBuffer$$1) {
+  function SphereImpostorBuffer (data, params) {
+    MappedQuadBuffer$$1.call(this, data, params);
+
+    this.addUniforms({
+      'projectionMatrixInverse': { value: new Matrix4() },
+      'ortho': { value: 0.0 }
+    });
+
+    this.addAttributes({
+      'radius': { type: 'f', value: null }
+    });
+
+    this.setAttributes(data);
+    this.makeMapping();
+  }
+
+  if ( MappedQuadBuffer$$1 ) SphereImpostorBuffer.__proto__ = MappedQuadBuffer$$1;
+  SphereImpostorBuffer.prototype = Object.create( MappedQuadBuffer$$1 && MappedQuadBuffer$$1.prototype );
+  SphereImpostorBuffer.prototype.constructor = SphereImpostorBuffer;
+
+  var prototypeAccessors = { isImpostor: {},vertexShader: {},fragmentShader: {} };
+
+  prototypeAccessors.isImpostor.get = function () { return true };
+  prototypeAccessors.vertexShader.get = function () { return 'SphereImpostor.vert' };
+  prototypeAccessors.fragmentShader.get = function () { return 'SphereImpostor.frag' };
+
+  Object.defineProperties( SphereImpostorBuffer.prototype, prototypeAccessors );
+
+  return SphereImpostorBuffer;
+}(MappedQuadBuffer));
+
+/**
+ * @file Sphere Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Sphere buffer. Depending on the value {@link ExtensionFragDepth} and
+ * `params.disableImpostor` the constructor returns either a
+ * {@link SphereGeometryBuffer} or a {@link SphereImpostorBuffer}
+ * @implements {Buffer}
+ *
+ * @example
+ * var sphereBuffer = new SphereBuffer( {
+ *     position: new Float32Array( [ 0, 0, 0 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var SphereBuffer = function SphereBuffer (data, params) {
+  if (!ExtensionFragDepth || (params && params.disableImpostor)) {
+    return new SphereGeometryBuffer(data, params)
+  } else {
+    return new SphereImpostorBuffer(data, params)
+  }
+};
+
+BufferRegistry.add('sphere', SphereBuffer);
 
 ShaderRegistry.add('shader/Point.vert', "uniform float nearClip;\nuniform float clipRadius;\nuniform vec3 clipCenter;\nuniform float size;\nuniform float canvasHeight;\nuniform float pixelRatio;\nvarying vec3 vViewPosition;\n#if defined( RADIUS_CLIP )\nvarying vec3 vClipCenter;\n#endif\n#if defined( PICKING )\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#else\n#include color_pars_vertex\n#endif\n#include common\nvoid main(){\n#if defined( PICKING )\nvPickingColor = unpackColor( primitiveId );\n#else\n#include color_vertex\n#endif\n#include begin_vertex\n#include project_vertex\n#ifdef USE_SIZEATTENUATION\ngl_PointSize = size * pixelRatio * ( ( canvasHeight / 2.0 ) / -mvPosition.z );\n#else\ngl_PointSize = size * pixelRatio;\n#endif\nvViewPosition = -mvPosition.xyz;\n#if defined( RADIUS_CLIP )\nvClipCenter = -( modelViewMatrix * vec4( clipCenter, 1.0 ) ).xyz;\n#endif\n#include nearclip_vertex\n#include radiusclip_vertex\n}");
 
@@ -72477,7 +72200,6 @@ var StructureRepresentation = (function (Representation$$1) {
     this.type = 'structure';
 
     this.parameters = Object.assign({
-
       radiusType: {
         type: 'select', options: RadiusFactory.types
       },
@@ -72491,29 +72213,28 @@ var StructureRepresentation = (function (Representation$$1) {
       defaultAssembly: {
         type: 'hidden'
       }
-
     }, this.parameters);
 
-        /**
-         * @type {Selection}
-         * @private
-         */
+    /**
+     * @type {Selection}
+     * @private
+     */
     this.selection = new Selection(p.sele);
 
-        /**
-         * @type {Array}
-         * @private
-         */
+    /**
+     * @type {Array}
+     * @private
+     */
     this.dataList = [];
 
-        /**
-         * @type {Structure}
-         */
+    /**
+     * @type {Structure}
+     */
     this.structure = structure;
 
-        /**
-         * @type {StructureView}
-         */
+    /**
+     * @type {StructureView}
+     */
     this.structureView = this.structure.getView(this.selection);
 
     if (structure.biomolDict) {
@@ -72671,33 +72392,33 @@ var StructureRepresentation = (function (Representation$$1) {
     }, params)
   };
 
-    /**
-     * Set representation parameters
-     * @alias StructureRepresentation#setSelection
-     * @param {String} string - selection string, see {@tutorial selection-language}
-     * @param {Boolean} [silent] - don't trigger a change event in the selection
-     * @return {StructureRepresentation} this object
-     */
+  /**
+   * Set representation parameters
+   * @alias StructureRepresentation#setSelection
+   * @param {String} string - selection string, see {@tutorial selection-language}
+   * @param {Boolean} [silent] - don't trigger a change event in the selection
+   * @return {StructureRepresentation} this object
+   */
   StructureRepresentation.prototype.setSelection = function setSelection (string, silent) {
     this.selection.setString(string, silent);
 
     return this
   };
 
-    /**
-     * Set representation parameters
-     * @alias StructureRepresentation#setParameters
-     * @param {StructureRepresentationParameters} params - structure parameter object
-     * @param {Object} [what] - buffer data attributes to be updated,
-     *                        note that this needs to be implemented in the
-     *                        derived classes. Generally it allows more
-     *                        fine-grained control over updating than
-     *                        forcing a rebuild.
-     * @param {Boolean} what.position - update position data
-     * @param {Boolean} what.color - update color data
-     * @param {Boolean} [rebuild] - whether or not to rebuild the representation
-     * @return {StructureRepresentation} this object
-     */
+  /**
+   * Set representation parameters
+   * @alias StructureRepresentation#setParameters
+   * @param {StructureRepresentationParameters} params - structure parameter object
+   * @param {Object} [what] - buffer data attributes to be updated,
+   *                        note that this needs to be implemented in the
+   *                        derived classes. Generally it allows more
+   *                        fine-grained control over updating than
+   *                        forcing a rebuild.
+   * @param {Boolean} what.position - update position data
+   * @param {Boolean} what.color - update color data
+   * @param {Boolean} [rebuild] - whether or not to rebuild the representation
+   * @return {StructureRepresentation} this object
+   */
   StructureRepresentation.prototype.setParameters = function setParameters (params, what, rebuild) {
     what = what || {};
 
@@ -72739,12 +72460,12 @@ var StructureRepresentation = (function (Representation$$1) {
 
   StructureRepresentation.prototype.getParameters = function getParameters () {
     var params = Object.assign(
-            Representation$$1.prototype.getParameters.call(this),
+      Representation$$1.prototype.getParameters.call(this),
       {
         sele: this.selection ? this.selection.string : undefined,
         defaultAssembly: this.defaultAssembly
       }
-        );
+    );
 
     return params
   };
@@ -72783,6 +72504,304 @@ var StructureRepresentation = (function (Representation$$1) {
 
   return StructureRepresentation;
 }(Representation));
+
+/**
+ * @file Cylinder Geometry Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var scale$1 = new Vector3();
+var eye = new Vector3();
+var target = new Vector3();
+var up = new Vector3(0, 1, 0);
+
+/**
+ * Cylinder geometry buffer.
+ *
+ * @example
+ * var cylinderGeometryBuffer = new CylinderGeometryBuffer( {
+ *     position1: new Float32Array( [ 0, 0, 0 ] ),
+ *     position2: new Float32Array( [ 1, 1, 1 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     color2: new Float32Array( [ 0, 1, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var CylinderGeometryBuffer = (function (GeometryBuffer$$1) {
+  function CylinderGeometryBuffer (data, params) {
+    var d = data || {};
+    var p = params || {};
+
+    var radialSegments = defaults(p.radialSegments, 10);
+    var openEnded = defaults(p.openEnded, true);
+    var matrix = new Matrix4().makeRotationX(Math.PI / 2);
+
+    var geo = new CylinderBufferGeometry(
+            1,  // radiusTop,
+            1,  // radiusBottom,
+            1,  // height,
+            radialSegments,  // radialSegments,
+            1,  // heightSegments,
+            openEnded  // openEnded
+        );
+    geo.applyMatrix(matrix);
+
+    var n = d.position1.length;
+    var m = d.radius.length;
+
+        //
+
+    var geoLength = geo.attributes.position.array.length / 3;
+    var count = n / 3;
+    var primitiveId = new Float32Array(count * 2 * geoLength);
+    serialBlockArray(count, geoLength, 0, primitiveId);
+    serialBlockArray(count, geoLength, count * geoLength, primitiveId);
+
+        //
+
+    var position = new Float32Array(n * 2);
+    var color = new Float32Array(n * 2);
+
+    GeometryBuffer$$1.call(this, {
+      position: position,
+      color: color,
+      primitiveId: primitiveId,
+      picking: d.picking
+    }, p, geo);
+
+    this.__center = new Float32Array(n);
+
+    this._position = position;
+    this._color = color;
+    this._from = new Float32Array(n * 2);
+    this._to = new Float32Array(n * 2);
+    this._radius = new Float32Array(m * 2);
+
+    this.setAttributes(d, true);
+  }
+
+  if ( GeometryBuffer$$1 ) CylinderGeometryBuffer.__proto__ = GeometryBuffer$$1;
+  CylinderGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
+  CylinderGeometryBuffer.prototype.constructor = CylinderGeometryBuffer;
+
+  var prototypeAccessors = { updateNormals: {} };
+
+  CylinderGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i, i3) {
+    eye.fromArray(this._from, i3);
+    target.fromArray(this._to, i3);
+    matrix.lookAt(eye, target, up);
+
+    var r = this._radius[ i ];
+    scale$1.set(r, r, eye.distanceTo(target));
+    matrix.scale(scale$1);
+  };
+
+  CylinderGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
+    var meshData = {};
+
+    if (data.position1 && data.position2) {
+      calculateCenterArray(
+                data.position1, data.position2, this.__center
+            );
+      calculateCenterArray(
+                data.position1, this.__center, this._position
+            );
+      calculateCenterArray(
+                this.__center, data.position2, this._position, data.position1.length
+            );
+      this._from.set(data.position1);
+      this._from.set(this.__center, data.position1.length);
+      this._to.set(this.__center);
+      this._to.set(data.position2, this.__center.length);
+      meshData.position = this._position;
+    }
+
+    if (data.color && data.color2) {
+      this._color.set(data.color);
+      this._color.set(data.color2, data.color.length);
+      meshData.color = this._color;
+    }
+
+    if (data.radius) {
+      this._radius.set(data.radius);
+      this._radius.set(data.radius, data.radius.length);
+      meshData.radius = this._radius;
+    }
+
+    GeometryBuffer$$1.prototype.setAttributes.call(this, meshData, initNormals);
+  };
+
+  prototypeAccessors.updateNormals.get = function () { return true };
+
+  Object.defineProperties( CylinderGeometryBuffer.prototype, prototypeAccessors );
+
+  return CylinderGeometryBuffer;
+}(GeometryBuffer));
+
+ShaderRegistry.add('shader/CylinderImpostor.vert', "\nattribute vec3 mapping;\nattribute vec3 position1;\nattribute vec3 position2;\nattribute float radius;\nvarying vec3 axis;\nvarying vec4 base_radius;\nvarying vec4 end_b;\nvarying vec3 U;\nvarying vec3 V;\nvarying vec4 w;\n#ifdef PICKING\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#else\nattribute vec3 color2;\nvarying vec3 vColor1;\nvarying vec3 vColor2;\n#endif\nuniform mat4 modelViewMatrixInverse;\nuniform float ortho;\n#include matrix_scale\nvoid main(){\n#ifdef PICKING\nvPickingColor = unpackColor( primitiveId );\n#else\nvColor1 = color;\nvColor2 = color2;\n#endif\nbase_radius.w = radius * matrixScale( modelViewMatrix );\nvec3 center = position;\nvec3 dir = normalize( position2 - position1 );\nfloat ext = length( position2 - position1 ) / 2.0;\nvec3 cam_dir;\nif( ortho == 0.0 ){\ncam_dir = ( modelViewMatrixInverse * vec4( 0, 0, 0, 1 ) ).xyz - center;\n}else{\ncam_dir = ( modelViewMatrixInverse * vec4( 0, 0, 1, 0 ) ).xyz;\n}\ncam_dir = normalize( cam_dir );\nvec3 ldir;\nfloat b = dot( cam_dir, dir );\nend_b.w = b;\nif( b < 0.0 )\nldir = -ext * dir;\nelse\nldir = ext * dir;\nvec3 left = normalize( cross( cam_dir, ldir ) );\nleft = radius * left;\nvec3 up = radius * normalize( cross( left, ldir ) );\naxis = normalize( normalMatrix * ldir );\nU = normalize( normalMatrix * up );\nV = normalize( normalMatrix * left );\nvec4 base4 = modelViewMatrix * vec4( center - ldir, 1.0 );\nbase_radius.xyz = base4.xyz / base4.w;\nvec4 top_position = modelViewMatrix * vec4( center + ldir, 1.0 );\nvec4 end4 = top_position;\nend_b.xyz = end4.xyz / end4.w;\nw = modelViewMatrix * vec4(\ncenter + mapping.x*ldir + mapping.y*left + mapping.z*up, 1.0\n);\ngl_Position = projectionMatrix * w;\ngl_Position.z = 0.99;\n}");
+
+ShaderRegistry.add('shader/CylinderImpostor.frag', "#define STANDARD\n#define IMPOSTOR\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform float roughness;\nuniform float metalness;\nuniform float opacity;\nuniform float nearClip;\nuniform mat4 projectionMatrix;\nuniform float ortho;\nvarying vec3 axis;\nvarying vec4 base_radius;\nvarying vec4 end_b;\nvarying vec3 U;\nvarying vec3 V;\nvarying vec4 w;\n#ifdef PICKING\nuniform float objectId;\nvarying vec3 vPickingColor;\n#else\nvarying vec3 vColor1;\nvarying vec3 vColor2;\n#include common\n#include fog_pars_fragment\n#include bsdfs\n#include lights_pars\n#include lights_physical_pars_fragment\n#endif\nbool interior = false;\nfloat distSq3( vec3 v3a, vec3 v3b ){\nreturn (\n( v3a.x - v3b.x ) * ( v3a.x - v3b.x ) +\n( v3a.y - v3b.y ) * ( v3a.y - v3b.y ) +\n( v3a.z - v3b.z ) * ( v3a.z - v3b.z )\n);\n}\nfloat calcDepth( in vec3 cameraPos ){\nvec2 clipZW = cameraPos.z * projectionMatrix[2].zw + projectionMatrix[3].zw;\nreturn 0.5 + 0.5 * clipZW.x / clipZW.y;\n}\nfloat calcClip( vec3 cameraPos ){\nreturn dot( vec4( cameraPos, 1.0 ), vec4( 0.0, 0.0, 1.0, nearClip - 0.5 ) );\n}\nvoid main(){\nvec3 point = w.xyz / w.w;\nvec3 base = base_radius.xyz;\nfloat vRadius = base_radius.w;\nvec3 end = end_b.xyz;\nfloat b = end_b.w;\nvec3 end_cyl = end;\nvec3 surface_point = point;\nvec3 ray_target = surface_point;\nvec3 ray_origin = vec3(0.0);\nvec3 ray_direction = mix(normalize(ray_origin - ray_target), vec3(0.0, 0.0, 1.0), ortho);\nmat3 basis = mat3( U, V, axis );\nvec3 diff = ray_target - 0.5 * (base + end_cyl);\nvec3 P = diff * basis;\nfloat dz = dot( axis, ray_direction );\nfloat radius2 = vRadius*vRadius;\nvec3 D = vec3(dot(U, ray_direction),\ndot(V, ray_direction),\ndz);\nfloat a0 = P.x*P.x + P.y*P.y - radius2;\nfloat a1 = P.x*D.x + P.y*D.y;\nfloat a2 = D.x*D.x + D.y*D.y;\nfloat d = a1*a1 - a0*a2;\nif (d < 0.0)\ndiscard;\nfloat dist = (-a1 + sqrt(d)) / a2;\nvec3 new_point = ray_target + dist * ray_direction;\nvec3 tmp_point = new_point - base;\nvec3 _normal = normalize( tmp_point - axis * dot(tmp_point, axis) );\nray_origin = mix( ray_origin, surface_point, ortho );\nfloat front_cap_test = dot( tmp_point, axis );\nfloat end_cap_test = dot((new_point - end_cyl), axis);\n#ifndef CAP\nvec3 new_point2 = ray_target + ( (-a1 - sqrt(d)) / a2 ) * ray_direction;\nvec3 tmp_point2 = new_point2 - base;\n#endif\nif (front_cap_test < 0.0)\n{\nfloat dNV = dot(-axis, ray_direction);\nif (dNV < 0.0)\ndiscard;\nfloat near = dot(-axis, (base)) / dNV;\nvec3 front_point = ray_direction * near + ray_origin;\nif (dot(front_point - base, front_point-base) > radius2)\ndiscard;\n#ifdef CAP\nnew_point = front_point;\n_normal = axis;\n#else\nnew_point = ray_target + ( (-a1 - sqrt(d)) / a2 ) * ray_direction;\ndNV = dot(-axis, ray_direction);\nnear = dot(axis, end_cyl) / dNV;\nnew_point2 = ray_direction * near + ray_origin;\nif (dot(new_point2 - end_cyl, new_point2-base) < radius2)\ndiscard;\ninterior = true;\n#endif\n}\nif( end_cap_test > 0.0 )\n{\nfloat dNV = dot(axis, ray_direction);\nif (dNV < 0.0)\ndiscard;\nfloat near = dot(axis, end_cyl) / dNV;\nvec3 end_point = ray_direction * near + ray_origin;\nif( dot(end_point - end_cyl, end_point-base) > radius2 )\ndiscard;\n#ifdef CAP\nnew_point = end_point;\n_normal = axis;\n#else\nnew_point = ray_target + ( (-a1 - sqrt(d)) / a2 ) * ray_direction;\ndNV = dot(-axis, ray_direction);\nnear = dot(-axis, (base)) / dNV;\nnew_point2 = ray_direction * near + ray_origin;\nif (dot(new_point2 - base, new_point2-base) < radius2)\ndiscard;\ninterior = true;\n#endif\n}\ngl_FragDepthEXT = calcDepth( new_point );\n#ifdef NEAR_CLIP\nif( calcClip( new_point ) > 0.0 ){\ndist = (-a1 - sqrt(d)) / a2;\nnew_point = ray_target + dist * ray_direction;\nif( calcClip( new_point ) > 0.0 )\ndiscard;\ninterior = true;\ngl_FragDepthEXT = calcDepth( new_point );\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = max( 0.0, calcDepth( vec3( - ( nearClip - 0.5 ) ) ) + ( 0.0000001 / vRadius ) );\n}\n}else if( gl_FragDepthEXT <= 0.0 ){\ndist = (-a1 - sqrt(d)) / a2;\nnew_point = ray_target + dist * ray_direction;\ninterior = true;\ngl_FragDepthEXT = calcDepth( new_point );\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n}\n#else\nif( gl_FragDepthEXT <= 0.0 ){\ndist = (-a1 - sqrt(d)) / a2;\nnew_point = ray_target + dist * ray_direction;\ninterior = true;\ngl_FragDepthEXT = calcDepth( new_point );\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / vRadius );\n}\n}\n#endif\nif (gl_FragDepthEXT < 0.0)\ndiscard;\nif (gl_FragDepthEXT > 1.0)\ndiscard;\n#ifdef PICKING\ngl_FragColor = vec4( vPickingColor, objectId );\n#else\nvec3 vViewPosition = -new_point;\nvec3 vNormal = _normal;\nvec3 vColor;\nif( distSq3( new_point, end_cyl ) < distSq3( new_point, base ) ){\nif( b < 0.0 ){\nvColor = vColor1;\n}else{\nvColor = vColor2;\n}\n}else{\nif( b > 0.0 ){\nvColor = vColor1;\n}else{\nvColor = vColor2;\n}\n}\nvec4 diffuseColor = vec4( diffuse, opacity );\nReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\nvec3 totalEmissiveLight = emissive;\n#include color_fragment\n#include roughnessmap_fragment\n#include metalnessmap_fragment\nvec3 normal = normalize( vNormal );\nif( interior ){\nnormal = vec3( 0.0, 0.0, 0.4 );\n}\n#include lights_physical_fragment\n#include lights_template\nvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveLight;\ngl_FragColor = vec4( outgoingLight, diffuseColor.a );\n#include premultiplied_alpha_fragment\n#include tonemapping_fragment\n#include encodings_fragment\n#include fog_fragment\n#endif\n}");
+
+/**
+ * @file Mapped Aligned Box Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var mapping$1 = new Float32Array([
+  -1.0, 1.0, -1.0,
+  -1.0, -1.0, -1.0,
+  1.0, 1.0, -1.0,
+  1.0, 1.0, 1.0,
+  1.0, -1.0, -1.0,
+  1.0, -1.0, 1.0
+]);
+
+var mappingIndices$1 = new Uint16Array([
+  0, 1, 2,
+  1, 4, 2,
+  2, 4, 3,
+  4, 5, 3
+]);
+
+/**
+ * Mapped Aligned box buffer. Draws boxes where one side is always screen-space aligned.
+ * Used to render cylinder imposters.
+ * @interface
+ */
+var MappedAlignedBoxBuffer = (function (MappedBuffer$$1) {
+  function MappedAlignedBoxBuffer () {
+    MappedBuffer$$1.apply(this, arguments);
+  }
+
+  if ( MappedBuffer$$1 ) MappedAlignedBoxBuffer.__proto__ = MappedBuffer$$1;
+  MappedAlignedBoxBuffer.prototype = Object.create( MappedBuffer$$1 && MappedBuffer$$1.prototype );
+  MappedAlignedBoxBuffer.prototype.constructor = MappedAlignedBoxBuffer;
+
+  var prototypeAccessors = { mapping: {},mappingIndices: {},mappingIndicesSize: {},mappingType: {},mappingSize: {},mappingItemSize: {} };
+
+  prototypeAccessors.mapping.get = function () { return mapping$1 };
+  prototypeAccessors.mappingIndices.get = function () { return mappingIndices$1 };
+  prototypeAccessors.mappingIndicesSize.get = function () { return 12 };
+  prototypeAccessors.mappingType.get = function () { return 'v3' };
+  prototypeAccessors.mappingSize.get = function () { return 6 };
+  prototypeAccessors.mappingItemSize.get = function () { return 3 };
+
+  Object.defineProperties( MappedAlignedBoxBuffer.prototype, prototypeAccessors );
+
+  return MappedAlignedBoxBuffer;
+}(MappedBuffer));
+
+/**
+ * @file Cylinder Impostor Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Cylinder impostor buffer.
+ *
+ * @example
+ * var cylinderimpostorBuffer = new CylinderImpostorBuffer( {
+ *     position1: new Float32Array( [ 0, 0, 0 ] ),
+ *     position2: new Float32Array( [ 1, 1, 1 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     color2: new Float32Array( [ 0, 1, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var CylinderImpostorBuffer = (function (MappedAlignedBoxBuffer$$1) {
+  function CylinderImpostorBuffer (data, params) {
+    MappedAlignedBoxBuffer$$1.call(this, data, params);
+
+    var p = params || {};
+
+    this.openEnded = defaults(p.openEnded, false);
+
+    this.addUniforms({
+      'modelViewMatrixInverse': { value: new Matrix4() },
+      'ortho': { value: 0.0 }
+    });
+
+    this.addAttributes({
+      'position1': { type: 'v3', value: null },
+      'position2': { type: 'v3', value: null },
+      'color2': { type: 'c', value: null },
+      'radius': { type: 'f', value: null }
+    });
+
+    this.setAttributes(data);
+    this.makeMapping();
+  }
+
+  if ( MappedAlignedBoxBuffer$$1 ) CylinderImpostorBuffer.__proto__ = MappedAlignedBoxBuffer$$1;
+  CylinderImpostorBuffer.prototype = Object.create( MappedAlignedBoxBuffer$$1 && MappedAlignedBoxBuffer$$1.prototype );
+  CylinderImpostorBuffer.prototype.constructor = CylinderImpostorBuffer;
+
+  var prototypeAccessors = { parameters: {},isImpostor: {},vertexShader: {},fragmentShader: {} };
+
+  prototypeAccessors.parameters.get = function () {
+    return Object.assign.call(this, {
+
+      openEnded: { updateShader: true }
+
+    }, MappedAlignedBoxBuffer$$1.prototype.parameters)
+  };
+
+  CylinderImpostorBuffer.prototype.getDefines = function getDefines (type) {
+    var defines = MappedAlignedBoxBuffer$$1.prototype.getDefines.call(this, type);
+
+    if (!this.openEnded) {
+      defines.CAP = 1;
+    }
+
+    return defines
+  };
+
+  prototypeAccessors.isImpostor.get = function () { return true };
+  prototypeAccessors.vertexShader.get = function () { return 'CylinderImpostor.vert' };
+  prototypeAccessors.fragmentShader.get = function () { return 'CylinderImpostor.frag' };
+
+  Object.defineProperties( CylinderImpostorBuffer.prototype, prototypeAccessors );
+
+  return CylinderImpostorBuffer;
+}(MappedAlignedBoxBuffer));
+
+/**
+ * @file Cylinder Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Cylinder buffer. Depending on the value {@link ExtensionFragDepth} and
+ * `params.disableImpostor` the constructor returns either a
+ * {@link CylinderGeometryBuffer} or a {@link CylinderImpostorBuffer}
+ * @implements {Buffer}
+ *
+ * @example
+ * var cylinderBuffer = new CylinderBuffer( {
+ *     position1: new Float32Array( [ 0, 0, 0 ] ),
+ *     position2: new Float32Array( [ 1, 1, 1 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     color2: new Float32Array( [ 0, 1, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var CylinderBuffer = function CylinderBuffer (data, params) {
+  if (!data.color2) {
+    data.color2 = data.color;
+  }
+
+  if (!ExtensionFragDepth || (params && params.disableImpostor)) {
+    return new CylinderGeometryBuffer(data, params)
+  } else {
+    return new CylinderImpostorBuffer(data, params)
+  }
+};
+
+BufferRegistry.add('cylinder', CylinderBuffer);
 
 /**
  * @file Line Buffer
@@ -72928,7 +72947,6 @@ var TrajectoryRepresentation = (function (StructureRepresentation$$1) {
     this.type = 'trajectory';
 
     this.parameters = Object.assign({
-
       drawLine: {
         type: 'boolean', rebuild: true
       },
@@ -72954,11 +72972,9 @@ var TrajectoryRepresentation = (function (StructureRepresentation$$1) {
       sort: {
         type: 'boolean', rebuild: true
       }
-
     }, this.parameters);
 
     this.manualAttach = true;
-
     this.trajectory = trajectory;
 
     this.init(params);
@@ -72985,54 +73001,51 @@ var TrajectoryRepresentation = (function (StructureRepresentation$$1) {
     StructureRepresentation$$1.prototype.init.call(this, p);
   };
 
-  TrajectoryRepresentation.prototype.attach = function attach (callback) {
+  TrajectoryRepresentation.prototype.attach = function attach () {
     var this$1 = this;
 
-    this.bufferList.forEach(function (buffer) {
-      this$1.viewer.add(buffer);
-    });
+    this.bufferList.forEach(function (buffer) { return this$1.viewer.add(buffer); });
     this.setVisibility(this.visible);
-
-    callback();
+    this.tasks.decrement();
   };
 
-  TrajectoryRepresentation.prototype.prepare = function prepare (callback) {
-        // TODO
-    callback();
-  };
+  // prepare (callback) {
+  //   // TODO
+  //   // - move loading of path here
+  //   // - get rid of manualAttach
+  //   callback()
+  // }
 
   TrajectoryRepresentation.prototype.create = function create () {
-        // Log.log( this.selection )
-        // Log.log( this.atomSet )
+    var this$1 = this;
 
-    if (this.atomSet.atomCount === 0) { return }
+    console.log('create', this.structureView.atomCount);
+    if (this.structureView.atomCount === 0) { return }
 
-    var scope = this;
-
-    var index = this.atomSet.atoms[ 0 ].index;
+    var index = this.structureView.getAtomIndices()[ 0 ];
 
     this.trajectory.getPath(index, function (path) {
       var n = path.length / 3;
-      var tc = new Color(scope.colorValue);
+      var tc = new Color(this$1.colorValue);
 
-      if (scope.drawSphere) {
+      if (this$1.drawSphere) {
         var sphereBuffer = new SphereBuffer(
           {
             position: path,
             color: uniformArray3(n, tc.r, tc.g, tc.b),
             radius: uniformArray(n, 0.2)
           },
-                    scope.getBufferParams({
-                      sphereDetail: scope.sphereDetail,
-                      dullInterior: true,
-                      disableImpostor: scope.disableImpostor
-                    })
-                );
+          this$1.getBufferParams({
+            sphereDetail: this$1.sphereDetail,
+            dullInterior: true,
+            disableImpostor: this$1.disableImpostor
+          })
+        );
 
-        scope.bufferList.push(sphereBuffer);
+        this$1.bufferList.push(sphereBuffer);
       }
 
-      if (scope.drawCylinder) {
+      if (this$1.drawCylinder) {
         var cylinderBuffer = new CylinderBuffer(
           {
             position1: path.subarray(0, -3),
@@ -73041,35 +73054,34 @@ var TrajectoryRepresentation = (function (StructureRepresentation$$1) {
             color2: uniformArray3(n - 1, tc.r, tc.g, tc.b),
             radius: uniformArray(n, 0.05)
           },
-                    scope.getBufferParams({
-                      openEnded: false,
-                      radialSegments: scope.radialSegments,
-                      disableImpostor: scope.disableImpostor,
-                      dullInterior: true
-                    })
+          this$1.getBufferParams({
+            openEnded: false,
+            radialSegments: this$1.radialSegments,
+            disableImpostor: this$1.disableImpostor,
+            dullInterior: true
+          })
+        );
 
-                );
-
-        scope.bufferList.push(cylinderBuffer);
+        this$1.bufferList.push(cylinderBuffer);
       }
 
-      if (scope.drawPoint) {
+      if (this$1.drawPoint) {
         var pointBuffer = new PointBuffer(
           {
             position: path,
             color: uniformArray3(n, tc.r, tc.g, tc.b)
           },
-                    scope.getBufferParams({
-                      pointSize: scope.pointSize,
-                      sizeAttenuation: scope.sizeAttenuation,
-                      sort: scope.sort
-                    })
-                );
+          this$1.getBufferParams({
+            pointSize: this$1.pointSize,
+            sizeAttenuation: this$1.sizeAttenuation,
+            sort: this$1.sort
+          })
+        );
 
-        scope.bufferList.push(pointBuffer);
+        this$1.bufferList.push(pointBuffer);
       }
 
-      if (scope.drawLine) {
+      if (this$1.drawLine) {
         var lineBuffer = new LineBuffer(
           {
             position1: path.subarray(0, -3),
@@ -73077,13 +73089,13 @@ var TrajectoryRepresentation = (function (StructureRepresentation$$1) {
             color: uniformArray3(n - 1, tc.r, tc.g, tc.b),
             color2: uniformArray3(n - 1, tc.r, tc.g, tc.b)
           },
-                    scope.getBufferParams()
-                );
+          this$1.getBufferParams()
+        );
 
-        scope.bufferList.push(lineBuffer);
+        this$1.bufferList.push(lineBuffer);
       }
 
-      scope.attach();
+      this$1.attach();
     });
   };
 
@@ -73173,7 +73185,7 @@ var _v = new Vector3();
 
 /**
  * @example
- * component.signals.representationAdded.add( function( representationComponent ){ ... } );
+ * component.signals.representationAdded.add(function (representationComponent) { ... });
  *
  * @typedef {Object} ComponentSignals
  * @property {Signal<RepresentationComponent>} representationAdded - when a representation is added
@@ -74014,6 +74026,10 @@ var Stage = function Stage (idOrElement, params) {
    * @type {MouseControls}
    */
   this.mouseControls = new MouseControls(this);
+  /**
+   * @type {KeyControls}
+   */
+  this.keyControls = new KeyControls(this);
 
   this.pickingBehavior = new PickingBehavior(this);
   this.mouseBehavior = new MouseBehavior(this);
@@ -77017,8 +77033,8 @@ ComponentRegistry.add('shape', ShapeComponent);
  * @typedef {Object} TrajectoryComponentSignals
  * @property {Signal<RepresentationComponent>} frameChanged - on frame change
  * @property {Signal<RepresentationComponent>} playerChanged - on player change
- * @property {Signal<String>} gotNumframes - when frame count is available
- * @property {Signal<String>} parametersChanged - on parameters change
+ * @property {Signal<Integer>} countChanged - when frame count is available
+ * @property {Signal<TrajectoryComponentParameters>} parametersChanged - on parameters change
  */
 
 /**
@@ -77040,7 +77056,7 @@ var TrajectoryComponent = (function (Component$$1) {
     this.signals = Object.assign(this.signals, {
       frameChanged: new Signal(),
       playerChanged: new Signal(),
-      gotNumframes: new Signal(),
+      countChanged: new Signal(),
       parametersChanged: new Signal()
     });
 
@@ -77065,8 +77081,8 @@ var TrajectoryComponent = (function (Component$$1) {
       this$1.signals.playerChanged.dispatch(player);
     });
 
-    trajectory.signals.gotNumframes.add(function (n) {
-      this$1.signals.gotNumframes.dispatch(n);
+    trajectory.signals.countChanged.add(function (n) {
+      this$1.signals.countChanged.dispatch(n);
     });
 
         //
@@ -77135,6 +77151,9 @@ var TrajectoryComponent = (function (Component$$1) {
  * @private
  */
 
+/**
+ * Frames trajectory class. Gets data from a frames object.
+ */
 var FramesTrajectory = (function (Trajectory$$1) {
   function FramesTrajectory (frames, structure, params) {
     var p = params || {};
@@ -77149,7 +77168,7 @@ var FramesTrajectory = (function (Trajectory$$1) {
     this.frames = frames.coordinates;
     this.boxes = frames.boxes;
 
-    this.getNumframes();
+    this._init(structure);
   }
 
   if ( Trajectory$$1 ) FramesTrajectory.__proto__ = Trajectory$$1;
@@ -77160,7 +77179,7 @@ var FramesTrajectory = (function (Trajectory$$1) {
 
   prototypeAccessors.type.get = function () { return 'frames' };
 
-  FramesTrajectory.prototype.makeAtomIndices = function makeAtomIndices () {
+  FramesTrajectory.prototype._makeAtomIndices = function _makeAtomIndices () {
     if (this.structure.type === 'StructureView') {
       this.atomIndices = this.structure.getAtomIndices();
     } else {
@@ -77191,25 +77210,25 @@ var FramesTrajectory = (function (Trajectory$$1) {
     }
 
     var box = this.boxes[ i ];
-    var numframes = this.frames.length;
+    var frameCount = this.frames.length;
 
-    this.process(i, box, coords, numframes);
+    this._process(i, box, coords, frameCount);
 
     if (typeof callback === 'function') {
       callback();
     }
   };
 
-  FramesTrajectory.prototype.getNumframes = function getNumframes () {
+  FramesTrajectory.prototype._loadFrameCount = function _loadFrameCount () {
     if (this.frames) {
-      this.setNumframes(this.frames.length);
+      this._setFrameCount(this.frames.length);
     }
   };
 
   FramesTrajectory.prototype.getPath = function getPath (index, callback) {
     var this$1 = this;
 
-    var n = this.numframes;
+    var n = this.frameCount;
     var k = index * 3;
 
     var path = new Float32Array(n * 3);
@@ -77237,9 +77256,13 @@ var FramesTrajectory = (function (Trajectory$$1) {
  * @private
  */
 
+/**
+ * Structure trajectory class. Gets data from a structure object.
+ */
 var StructureTrajectory = (function (Trajectory$$1) {
   function StructureTrajectory (trajPath, structure, params) {
     Trajectory$$1.call(this, '', structure, params);
+    this._init(structure);
   }
 
   if ( Trajectory$$1 ) StructureTrajectory.__proto__ = Trajectory$$1;
@@ -77250,7 +77273,7 @@ var StructureTrajectory = (function (Trajectory$$1) {
 
   prototypeAccessors.type.get = function () { return 'structure' };
 
-  StructureTrajectory.prototype.makeAtomIndices = function makeAtomIndices () {
+  StructureTrajectory.prototype._makeAtomIndices = function _makeAtomIndices () {
     if (this.structure.atomSet.getSize() < this.structure.atomStore.count) {
       this.atomIndices = this.structure.getAtomIndices();
     } else {
@@ -77282,23 +77305,23 @@ var StructureTrajectory = (function (Trajectory$$1) {
     }
 
     var box = structure.boxes[ i ];
-    var numframes = structure.frames.length;
+    var frameCount = structure.frames.length;
 
-    this.process(i, box, coords, numframes);
+    this._process(i, box, coords, frameCount);
 
     if (typeof callback === 'function') {
       callback();
     }
   };
 
-  StructureTrajectory.prototype.getNumframes = function getNumframes () {
-    this.setNumframes(this.structure.frames.length);
+  StructureTrajectory.prototype._loadFrameCount = function _loadFrameCount () {
+    this._setFrameCount(this.structure.frames.length);
   };
 
   StructureTrajectory.prototype.getPath = function getPath (index, callback) {
     var this$1 = this;
 
-    var n = this.numframes;
+    var n = this.frameCount;
     var k = index * 3;
 
     var path = new Float32Array(n * 3);
@@ -77326,9 +77349,13 @@ var StructureTrajectory = (function (Trajectory$$1) {
  * @private
  */
 
+/**
+ * Remote trajectory class. Gets data from an MDsrv instance.
+ */
 var RemoteTrajectory = (function (Trajectory$$1) {
-  function RemoteTrajectory () {
-    Trajectory$$1.apply(this, arguments);
+  function RemoteTrajectory (trajPath, structure, params) {
+    Trajectory$$1.call(this, trajPath, structure, params);
+    this._init(structure);
   }
 
   if ( Trajectory$$1 ) RemoteTrajectory.__proto__ = Trajectory$$1;
@@ -77339,7 +77366,7 @@ var RemoteTrajectory = (function (Trajectory$$1) {
 
   prototypeAccessors.type.get = function () { return 'remote' };
 
-  RemoteTrajectory.prototype.makeAtomIndices = function makeAtomIndices () {
+  RemoteTrajectory.prototype._makeAtomIndices = function _makeAtomIndices () {
     var atomIndices = [];
 
     if (this.structure.type === 'StructureView') {
@@ -77392,12 +77419,12 @@ var RemoteTrajectory = (function (Trajectory$$1) {
         return
       }
 
-      var numframes = new Int32Array(arrayBuffer, 0, 1)[ 0 ];
+      var frameCount = new Int32Array(arrayBuffer, 0, 1)[ 0 ];
       // const time = new Float32Array( arrayBuffer, 1 * 4, 1 )[ 0 ];
       var box = new Float32Array(arrayBuffer, 2 * 4, 9);
       var coords = new Float32Array(arrayBuffer, 11 * 4);
 
-      this$1.process(i, box, coords, numframes);
+      this$1._process(i, box, coords, frameCount);
       if (typeof callback === 'function') {
         callback();
       }
@@ -77406,17 +77433,17 @@ var RemoteTrajectory = (function (Trajectory$$1) {
     request.send(params);
   };
 
-  RemoteTrajectory.prototype.getNumframes = function getNumframes () {
+  RemoteTrajectory.prototype._loadFrameCount = function _loadFrameCount () {
     var this$1 = this;
 
     var request = new window.XMLHttpRequest();
 
     var ds = DatasourceRegistry.trajectory;
-    var url = ds.getNumframesUrl(this.trajPath);
+    var url = ds.getCountUrl(this.trajPath);
 
     request.open('GET', url, true);
     request.addEventListener('load', function () {
-      this$1.setNumframes(parseInt(request.response));
+      this$1._setFrameCount(parseInt(request.response));
     }, false);
     request.send(null);
   };
@@ -80333,6 +80360,626 @@ var ContactRepresentation = (function (StructureRepresentation$$1) {
 
 RepresentationRegistry.add('contact', ContactRepresentation);
 
+ShaderRegistry.add('shader/SDFFont.vert', "uniform float nearClip;\nuniform float clipRadius;\nuniform vec3 clipCenter;\nuniform float xOffset;\nuniform float yOffset;\nuniform float zOffset;\nuniform bool ortho;\n#if defined( NEAR_CLIP ) || defined( RADIUS_CLIP ) || ( !defined( PICKING ) && !defined( NOLIGHT ) )\nvarying vec3 vViewPosition;\n#endif\nvarying vec2 texCoord;\n#if defined( RADIUS_CLIP )\nvarying vec3 vClipCenter;\n#endif\n#if defined( PICKING )\n#include unpack_color\nattribute float primitiveId;\nvarying vec3 vPickingColor;\n#else\n#include color_pars_vertex\n#endif\nattribute vec2 mapping;\nattribute vec2 inputTexCoord;\nattribute float inputSize;\n#include matrix_scale\n#include common\nvoid main(void){\n#if defined( PICKING )\nvPickingColor = unpackColor( primitiveId );\n#else\n#include color_vertex\n#endif\ntexCoord = inputTexCoord;\nfloat scale = matrixScale( modelViewMatrix );\nfloat _zOffset = zOffset * scale;\nif( texCoord.x == 10.0 ){\n_zOffset -= 0.001;\n}\nvec3 pos = position;\nif( ortho ){\npos += normalize( cameraPosition ) * _zOffset;\n}\nvec4 cameraPos = modelViewMatrix * vec4( pos, 1.0 );\nvec4 cameraCornerPos = vec4( cameraPos.xyz, 1.0 );\ncameraCornerPos.xy += mapping * inputSize * 0.01 * scale;\ncameraCornerPos.x += xOffset * scale;\ncameraCornerPos.y += yOffset * scale;\nif( !ortho ){\ncameraCornerPos.xyz += normalize( -cameraCornerPos.xyz ) * _zOffset;\n}\ngl_Position = projectionMatrix * cameraCornerPos;\n#if defined( NEAR_CLIP ) || defined( RADIUS_CLIP ) || ( !defined( PICKING ) && !defined( NOLIGHT ) )\nvViewPosition = -cameraCornerPos.xyz;\n#endif\n#if defined( RADIUS_CLIP )\nvClipCenter = -( modelViewMatrix * vec4( clipCenter, 1.0 ) ).xyz;\n#endif\n#include nearclip_vertex\n#include radiusclip_vertex\n}");
+
+ShaderRegistry.add('shader/SDFFont.frag', "uniform sampler2D fontTexture;\nuniform float opacity;\nuniform bool showBorder;\nuniform vec3 borderColor;\nuniform float borderWidth;\nuniform vec3 backgroundColor;\nuniform float backgroundOpacity;\nuniform float nearClip;\nuniform float clipRadius;\nvarying vec3 vViewPosition;\nvarying vec2 texCoord;\n#if defined( RADIUS_CLIP )\nvarying vec3 vClipCenter;\n#endif\n#if defined( PICKING )\nuniform float objectId;\nvarying vec3 vPickingColor;\nconst vec3 vColor = vec3( 0.0 );\n#else\n#include common\n#include color_pars_fragment\n#include fog_pars_fragment\n#endif\n#ifdef SDF\nconst float smoothness = 16.0;\n#else\nconst float smoothness = 256.0;\n#endif\nconst float gamma = 2.2;\nvoid main(){\n#include nearclip_fragment\n#include radiusclip_fragment\nif( texCoord.x > 1.0 ){\ngl_FragColor = vec4( backgroundColor, backgroundOpacity );\n}else{\nfloat sdf = texture2D( fontTexture, texCoord ).a;\nif( showBorder ) sdf += borderWidth;\nfloat w = clamp(\nsmoothness * ( abs( dFdx( texCoord.x ) ) + abs( dFdy( texCoord.y ) ) ),\n0.0,\n0.5\n);\nfloat a = smoothstep( 0.5 - w, 0.5 + w, sdf );\na = pow( a, 1.0 / gamma );\nif( a < 0.2 ) discard;\na *= opacity;\nvec3 outgoingLight = vColor;\nif( showBorder && sdf < ( 0.5 + borderWidth ) ){\noutgoingLight = borderColor;\n}\ngl_FragColor = vec4( outgoingLight, a );\n}\n#if defined( PICKING )\ngl_FragColor = vec4( vPickingColor, objectId );\n#else\n#include premultiplied_alpha_fragment\n#include tonemapping_fragment\n#include encodings_fragment\n#include fog_fragment\n#endif\n}");
+
+/**
+ * @file Text Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var TextAtlasCache = {};
+
+function getTextAtlas (params) {
+  var hash = JSON.stringify(params);
+  if (TextAtlasCache[ hash ] === undefined) {
+    TextAtlasCache[ hash ] = new TextAtlas(params);
+  }
+  return TextAtlasCache[ hash ]
+}
+
+var TextAtlas = function TextAtlas (params) {
+      // adapted from https://github.com/unconed/mathbox
+      // MIT License Copyright (C) 2013+ Steven Wittens and contributors
+
+  var p = Object.assign({}, params);
+
+  this.font = defaults(p.font, [ 'sans-serif' ]);
+  this.size = defaults(p.size, 36);
+  this.style = defaults(p.style, 'normal');
+  this.variant = defaults(p.variant, 'normal');
+  this.weight = defaults(p.weight, 'normal');
+  this.outline = defaults(p.outline, 0);
+  this.width = defaults(p.width, 2048);
+  this.height = defaults(p.height, 2048);
+
+  this.gamma = 1;
+  if (typeof navigator !== 'undefined') {
+    var ua = navigator.userAgent;
+    if (ua.match(/Chrome/) && ua.match(/OS X/)) {
+      this.gamma = 0.5;
+    }
+  }
+
+  this.mapped = {};
+  this.scratchW = 0;
+  this.scratchH = 0;
+  this.currentX = 0;
+  this.currentY = 0;
+
+  this.build();
+  this.populate();
+
+  this.texture = new CanvasTexture(this.canvas2);
+  this.texture.flipY = false;
+  this.texture.needsUpdate = true;
+};
+
+TextAtlas.prototype.build = function build () {
+      // Prepare line-height with room for outline and descenders/ascenders
+  var lineHeight = this.size + 2 * this.outline + Math.round(this.size / 4);
+  var maxWidth = this.width / 4;
+
+      // Prepare scratch canvas
+  var canvas = document.createElement('canvas');
+  canvas.width = maxWidth;
+  canvas.height = lineHeight;
+
+  var ctx = canvas.getContext('2d');
+  ctx.font = this.style + ' ' + this.variant + ' ' + this.weight + ' ' + this.size + 'px ' + this.font;
+  ctx.fillStyle = '#FF0000';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.lineJoin = 'round';
+
+  var colors = [];
+  var dilate = this.outline * 3;
+  for (var i = 0; i < dilate; ++i) {
+          // 8 rgb levels = 1 step = .5 pixel increase
+    var val = Math.max(0, -i * 8 + 128 - (!i) * 8);
+    var hex = ('00' + val.toString(16)).slice(-2);
+    colors.push('#' + hex + hex + hex);
+  }
+  var scratch = new Uint8Array(maxWidth * lineHeight * 2);
+
+  this.canvas = canvas;
+  this.context = ctx;
+  this.lineHeight = lineHeight;
+  this.maxWidth = maxWidth;
+  this.colors = colors;
+  this.scratch = scratch;
+
+  this.data = new Uint8Array(this.width * this.height * 4);
+
+  this.canvas2 = document.createElement('canvas');
+  this.canvas2.width = this.width;
+  this.canvas2.height = this.height;
+  this.context2 = this.canvas2.getContext('2d');
+};
+
+TextAtlas.prototype.map = function map (text) {
+  if (this.mapped[ text ] === undefined) {
+    this.draw(text);
+
+    if (this.currentX + this.scratchW > this.width) {
+      this.currentX = 0;
+      this.currentY += this.scratchH;
+    }
+    if (this.currentY + this.scratchH > this.height) {
+      console.warn('canvas to small');
+    }
+
+    this.mapped[ text ] = {
+      x: this.currentX,
+      y: this.currentY,
+      w: this.scratchW,
+      h: this.scratchH
+    };
+
+    this.context2.drawImage(
+              this.canvas,
+              0, 0,
+              this.scratchW, this.scratchH,
+              this.currentX, this.currentY,
+              this.scratchW, this.scratchH
+          );
+
+    this.currentX += this.scratchW;
+  }
+
+  return this.mapped[ text ]
+};
+
+TextAtlas.prototype.get = function get (text) {
+  return this.mapped[ text ] || this.placeholder
+};
+
+TextAtlas.prototype.draw = function draw (text) {
+  var h = this.lineHeight;
+  var o = this.outline;
+  var ctx = this.context;
+  var dst = this.scratch;
+  var max = this.maxWidth;
+  var colors = this.colors;
+
+      // Bottom aligned, take outline into account
+  var x = o;
+  var y = h - this.outline;
+
+      // Measure text
+  var m = ctx.measureText(text);
+  var w = Math.min(max, Math.ceil(m.width + 2 * x + 1));
+
+      // Clear scratch area
+  ctx.clearRect(0, 0, w, h);
+
+  var i, il, j, imageData, data;
+
+  if (this.outline === 0) {
+    ctx.fillText(text, x, y);
+    imageData = ctx.getImageData(0, 0, w, h);
+    data = imageData.data;
+
+    j = 3;// Skip to alpha channel
+    for (i = 0, il = data.length / 4; i < il; ++i) {
+      dst[ i ] = data[ j ];
+      j += 4;
+    }
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+          // Draw strokes of decreasing width to create
+          // nested outlines (absolute distance)
+    for (i = o + 1; i > 0; --i) {
+              // Eliminate odd strokes once past > 1px,
+              // don't need the detail
+      j = i > 1 ? i * 2 - 2 : i;
+      ctx.strokeStyle = colors[ j - 1 ];
+      ctx.lineWidth = j;
+      ctx.strokeText(text, x, y);
+    }
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.fillStyle = '#FF00FF';
+    ctx.fillText(text, x, y);
+    imageData = ctx.getImageData(0, 0, w, h);
+    data = imageData.data;
+
+    j = 0;
+    var gamma = this.gamma;
+    for (i = 0, il = data.length / 4; i < il; ++i) {
+              // Get value + mask
+      var a = data[ j ];
+      var mask = a ? data[ j + 1 ] / a : 1;
+      if (gamma === 0.5) {
+        mask = Math.sqrt(mask);
+      }
+      mask = Math.min(1, Math.max(0, mask));
+
+              // Blend between positive/outside and negative/inside
+      var b = 256 - a;
+      var c = b + (a - b) * mask;
+
+              // Clamp (slight expansion to hide errors around the transition)
+      dst[ i ] = Math.max(0, Math.min(255, c + 2));
+      data[ j + 3 ] = dst[ i ];
+      j += 4;
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+  this.scratchW = w;
+  this.scratchH = h;
+};
+
+TextAtlas.prototype.populate = function populate () {
+    var this$1 = this;
+
+      // Replacement Character
+  this.placeholder = this.map(String.fromCharCode(0xFFFD));
+
+      // Basic Latin
+  for (var i = 0x0000; i < 0x007F; ++i) {
+    this$1.map(String.fromCharCode(i));
+  }
+
+      // Latin-1 Supplement
+  for (var i$1 = 0x0080; i$1 < 0x00FF; ++i$1) {
+    this$1.map(String.fromCharCode(i$1));
+  }
+
+      // Greek and Coptic
+  for (var i$2 = 0x0370; i$2 < 0x03FF; ++i$2) {
+    this$1.map(String.fromCharCode(i$2));
+  }
+
+      // Cyrillic
+  for (var i$3 = 0x0400; i$3 < 0x04FF; ++i$3) {
+    this$1.map(String.fromCharCode(i$3));
+  }
+
+      // Angstrom Sign
+  this.map(String.fromCharCode(0x212B));
+};
+
+/**
+ * Text buffer parameter object.
+ * @typedef {Object} TextBufferParameters - text buffer parameters
+ *
+ * @property {Float} opacity - translucency: 1 is fully opaque, 0 is fully transparent
+ * @property {Integer} clipNear - position of camera near/front clipping plane
+ *                                in percent of scene bounding box
+ * @property {String} labelType - type of the label, one of:
+ *                                 "atomname", "atomindex", "occupancy", "bfactor",
+ *                                 "serial", "element", "atom", "resname", "resno",
+ *                                 "res", "text", "qualified". When set to "text", the
+ *                                 `labelText` list is used.
+ * @property {String[]} labelText - list of label strings, must set `labelType` to "text"
+ *                                   to take effect
+ * @property {String} fontFamily - font family, one of: "sans-serif", "monospace", "serif"
+ * @property {String} fontStyle - font style, "normal" or "italic"
+ * @property {String} fontWeight - font weight, "normal" or "bold"
+ * @property {Boolean} sdf - use "signed distance field"-based rendering for sharper edges
+ * @property {Float} xOffset - offset in x-direction
+ * @property {Float} yOffset - offset in y-direction
+ * @property {Float} zOffset - offset in z-direction (i.e. in camera direction)
+ * @property {String} attachment - attachment of the label, one of:
+ *                                 "bottom-left", "bottom-center", "bottom-right",
+ *                                 "middle-left", "middle-center", "middle-right",
+ *                                 "top-left", "top-center", "top-right"
+ * @property {Boolean} showBorder - show border/outline
+ * @property {Color} borderColor - color of the border/outline
+ * @property {Float} borderWidth - width of the border/outline
+ * @property {Boolean} showBackground - show background rectangle
+ * @property {Color} backgroundColor - color of the background
+ * @property {Float} backgroundMargin - width of the background
+ * @property {Float} backgroundOpacity - opacity of the background
+ */
+
+/**
+ * Text buffer. Renders screen-aligned text strings.
+ *
+ * @example
+ * var textBuffer = new TextBuffer( {
+ *     position: new Float32Array( [ 0, 0, 0 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     size: new Float32Array( [ 2 ] ),
+ *     text: [ "Hello" ]
+ * } );
+ */
+var TextBuffer = (function (MappedQuadBuffer$$1) {
+  function TextBuffer (data, params) {
+    var d = data || {};
+    var p = params || {};
+
+    p.forceTransparent = true;
+
+    var n = d.position.length / 3;
+    var charCount = 0;
+    for (var i = 0; i < n; ++i) {
+      charCount += d.text[ i ].length;
+    }
+
+    var count = charCount;
+    if (p.showBackground) { count += n; }
+
+    MappedQuadBuffer$$1.call(this, {
+      position: new Float32Array(count * 3),
+      color: new Float32Array(count * 3),
+      picking: new IgnorePicker()
+    }, p);
+
+    this.fontFamily = defaults(p.fontFamily, 'sans-serif');
+    this.fontStyle = defaults(p.fontStyle, 'normal');
+    this.fontWeight = defaults(p.fontWeight, 'bold');
+    this.fontSize = defaults(p.fontSize, 48);
+    this.sdf = defaults(p.sdf, Browser === 'Chrome');
+    this.xOffset = defaults(p.xOffset, 0.0);
+    this.yOffset = defaults(p.yOffset, 0.0);
+    this.zOffset = defaults(p.zOffset, 0.5);
+    this.attachment = defaults(p.attachment, 'bottom-left');
+    this.showBorder = defaults(p.showBorder, false);
+    this.borderColor = defaults(p.borderColor, 'lightgrey');
+    this.borderWidth = defaults(p.borderWidth, 0.15);
+    this.showBackground = defaults(p.showBackground, false);
+    this.backgroundColor = defaults(p.backgroundColor, 'lightgrey');
+    this.backgroundMargin = defaults(p.backgroundMargin, 0.5);
+    this.backgroundOpacity = defaults(p.backgroundOpacity, 1.0);
+
+    this.text = d.text;
+    this.positionCount = n;
+
+    this.addUniforms({
+      'fontTexture': { value: null },
+      'xOffset': { value: this.xOffset },
+      'yOffset': { value: this.yOffset },
+      'zOffset': { value: this.zOffset },
+      'ortho': { value: false },
+      'showBorder': { value: this.showBorder },
+      'borderColor': { value: new Color(this.borderColor) },
+      'borderWidth': { value: this.borderWidth },
+      'backgroundColor': { value: new Color(this.backgroundColor) },
+      'backgroundOpacity': { value: this.backgroundOpacity }
+    });
+
+    this.addAttributes({
+      'inputTexCoord': { type: 'v2', value: null },
+      'inputSize': { type: 'f', value: null }
+    });
+
+    this.setAttributes(data);
+
+    this.makeTexture();
+    this.makeMapping();
+  }
+
+  if ( MappedQuadBuffer$$1 ) TextBuffer.__proto__ = MappedQuadBuffer$$1;
+  TextBuffer.prototype = Object.create( MappedQuadBuffer$$1 && MappedQuadBuffer$$1.prototype );
+  TextBuffer.prototype.constructor = TextBuffer;
+
+  var prototypeAccessors = { parameters: {},wireframe: {},isText: {},vertexShader: {},fragmentShader: {} };
+
+  prototypeAccessors.parameters.get = function () {
+    return Object.assign.call(this, {
+
+      fontFamily: { uniform: true },
+      fontStyle: { uniform: true },
+      fontWeight: { uniform: true },
+      fontSize: { uniform: true },
+      sdf: { updateShader: true, uniform: true },
+      xOffset: { uniform: true },
+      yOffset: { uniform: true },
+      zOffset: { uniform: true },
+      showBorder: { uniform: true },
+      borderColor: { uniform: true },
+      borderWidth: { uniform: true },
+      backgroundColor: { uniform: true },
+      backgroundOpacity: { uniform: true }
+
+    }, MappedQuadBuffer$$1.prototype.parameters, {
+
+      flatShaded: undefined
+
+    })
+  };
+
+  TextBuffer.prototype.makeMaterial = function makeMaterial () {
+    MappedQuadBuffer$$1.prototype.makeMaterial.call(this);
+
+    var tex = this.texture;
+
+    var m = this.material;
+    m.extensions.derivatives = true;
+    m.lights = false;
+    m.uniforms.fontTexture.value = tex;
+    m.needsUpdate = true;
+
+    var wm = this.wireframeMaterial;
+    wm.extensions.derivatives = true;
+    wm.lights = false;
+    wm.uniforms.fontTexture.value = tex;
+    wm.needsUpdate = true;
+
+    var pm = this.pickingMaterial;
+    pm.extensions.derivatives = true;
+    pm.lights = false;
+    pm.uniforms.fontTexture.value = tex;
+    pm.needsUpdate = true;
+  };
+
+  TextBuffer.prototype.setAttributes = function setAttributes (data) {
+    var this$1 = this;
+
+    var position, size, color;
+    var aPosition, inputSize, aColor;
+
+    var text = this.text;
+    var attributes = this.geometry.attributes;
+
+    if (data.position) {
+      position = data.position;
+      aPosition = attributes.position.array;
+      attributes.position.needsUpdate = true;
+    }
+
+    if (data.size) {
+      size = data.size;
+      inputSize = attributes.inputSize.array;
+      attributes.inputSize.needsUpdate = true;
+    }
+
+    if (data.color) {
+      color = data.color;
+      aColor = attributes.color.array;
+      attributes.color.needsUpdate = true;
+    }
+
+    var n = this.positionCount;
+
+    var j, o;
+    var iCharAll = 0;
+    var txt, iChar, nChar;
+
+    for (var v = 0; v < n; ++v) {
+      o = 3 * v;
+      txt = text[ v ];
+      nChar = txt.length;
+      if (this$1.showBackground) { nChar += 1; }
+
+      for (iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
+        for (var m = 0; m < 4; m++) {
+          j = iCharAll * 4 * 3 + (3 * m);
+
+          if (position) {
+            aPosition[ j ] = position[ o ];
+            aPosition[ j + 1 ] = position[ o + 1 ];
+            aPosition[ j + 2 ] = position[ o + 2 ];
+          }
+
+          if (size) {
+            inputSize[ (iCharAll * 4) + m ] = size[ v ];
+          }
+
+          if (color) {
+            aColor[ j ] = color[ o ];
+            aColor[ j + 1 ] = color[ o + 1 ];
+            aColor[ j + 2 ] = color[ o + 2 ];
+          }
+        }
+      }
+    }
+  };
+
+  TextBuffer.prototype.makeTexture = function makeTexture () {
+    this.textAtlas = getTextAtlas({
+      font: [ this.fontFamily ],
+      style: this.fontStyle,
+      weight: this.fontWeight,
+      size: this.fontSize,
+      outline: this.sdf ? 5 : 0
+    });
+
+    this.texture = this.textAtlas.texture;
+  };
+
+  TextBuffer.prototype.makeMapping = function makeMapping () {
+    var this$1 = this;
+
+    var ta = this.textAtlas;
+    var text = this.text;
+    var attachment = this.attachment;
+    var margin = (ta.lineHeight * this.backgroundMargin * 0.1) - 10;
+
+    var inputTexCoord = this.geometry.attributes.inputTexCoord.array;
+    var inputMapping = this.geometry.attributes.mapping.array;
+
+    var n = this.positionCount;
+    var iCharAll = 0;
+    var c, i, txt, xadvance, iChar, nChar, xShift, yShift;
+
+    for (var v = 0; v < n; ++v) {
+      txt = text[ v ];
+      xadvance = 0;
+      nChar = txt.length;
+
+            // calculate width
+      for (iChar = 0; iChar < nChar; ++iChar) {
+        c = ta.get(txt[ iChar ]);
+        xadvance += c.w - 2 * ta.outline;
+      }
+
+            // attachment
+      if (attachment.startsWith('top')) {
+        yShift = ta.lineHeight / 1.25;
+      } else if (attachment.startsWith('middle')) {
+        yShift = ta.lineHeight / 2.5;
+      } else {
+        yShift = 0;  // "bottom"
+      }
+      if (attachment.endsWith('right')) {
+        xShift = xadvance;
+      } else if (attachment.endsWith('center')) {
+        xShift = xadvance / 2;
+      } else {
+        xShift = 0;  // "left"
+      }
+      xShift += ta.outline;
+      yShift += ta.outline;
+
+            // background
+      if (this$1.showBackground) {
+        i = iCharAll * 2 * 4;
+        inputMapping[ i + 0 ] = -ta.lineHeight / 6 - xShift - margin;  // top left
+        inputMapping[ i + 1 ] = ta.lineHeight - yShift + margin;
+        inputMapping[ i + 2 ] = -ta.lineHeight / 6 - xShift - margin;  // bottom left
+        inputMapping[ i + 3 ] = 0 - yShift - margin;
+        inputMapping[ i + 4 ] = xadvance + ta.lineHeight / 6 - xShift + 2 * ta.outline + margin;  // top right
+        inputMapping[ i + 5 ] = ta.lineHeight - yShift + margin;
+        inputMapping[ i + 6 ] = xadvance + ta.lineHeight / 6 - xShift + 2 * ta.outline + margin;  // bottom right
+        inputMapping[ i + 7 ] = 0 - yShift - margin;
+        inputTexCoord[ i + 0 ] = 10;
+        inputTexCoord[ i + 2 ] = 10;
+        inputTexCoord[ i + 4 ] = 10;
+        inputTexCoord[ i + 6 ] = 10;
+        iCharAll += 1;
+      }
+
+      xadvance = 0;
+
+      for (iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
+        c = ta.get(txt[ iChar ]);
+        i = iCharAll * 2 * 4;
+
+        inputMapping[ i + 0 ] = xadvance - xShift;  // top left
+        inputMapping[ i + 1 ] = c.h - yShift;
+        inputMapping[ i + 2 ] = xadvance - xShift;  // bottom left
+        inputMapping[ i + 3 ] = 0 - yShift;
+        inputMapping[ i + 4 ] = xadvance + c.w - xShift;  // top right
+        inputMapping[ i + 5 ] = c.h - yShift;
+        inputMapping[ i + 6 ] = xadvance + c.w - xShift;  // bottom right
+        inputMapping[ i + 7 ] = 0 - yShift;
+
+        var texWidth = ta.width;
+        var texHeight = ta.height;
+
+        var texCoords = [
+          c.x / texWidth, c.y / texHeight,             // top left
+          c.x / texWidth, (c.y + c.h) / texHeight,       // bottom left
+          (c.x + c.w) / texWidth, c.y / texHeight,       // top right
+          (c.x + c.w) / texWidth, (c.y + c.h) / texHeight  // bottom right
+        ];
+        inputTexCoord.set(texCoords, i);
+
+        xadvance += c.w - 2 * ta.outline;
+      }
+    }
+
+    this.geometry.attributes.inputTexCoord.needsUpdate = true;
+    this.geometry.attributes.mapping.needsUpdate = true;
+  };
+
+  TextBuffer.prototype.getDefines = function getDefines (type) {
+    var defines = MappedQuadBuffer$$1.prototype.getDefines.call(this, type);
+
+    if (this.sdf) {
+      defines.SDF = 1;
+    }
+
+    return defines
+  };
+
+  TextBuffer.prototype.setUniforms = function setUniforms (data) {
+    if (data && (
+                data.fontFamily !== undefined ||
+                data.fontStyle !== undefined ||
+                data.fontWeight !== undefined ||
+                data.fontSize !== undefined ||
+                data.sdf !== undefined
+            )
+        ) {
+      this.makeTexture();
+      this.makeMapping();
+      this.texture.needsUpdate = true;
+      data.fontTexture = this.texture;
+    }
+
+    MappedQuadBuffer$$1.prototype.setUniforms.call(this, data);
+  };
+
+  prototypeAccessors.wireframe.set = function (value) {};
+  prototypeAccessors.wireframe.get = function () { return false };
+
+  prototypeAccessors.isText.get = function () { return true };
+  prototypeAccessors.vertexShader.get = function () { return 'SDFFont.vert' };
+  prototypeAccessors.fragmentShader.get = function () { return 'SDFFont.frag' };
+
+  Object.defineProperties( TextBuffer.prototype, prototypeAccessors );
+
+  return TextBuffer;
+}(MappedQuadBuffer));
+
+BufferRegistry.add('text', TextBuffer);
+
 /**
  * @file Distance Representation
  * @author Alexander Rose <alexander.rose@weirdbyte.de>
@@ -80899,7 +81546,7 @@ ShaderRegistry.add('shader/HyperballStickImpostor.vert', "\nattribute vec3 mappi
 ShaderRegistry.add('shader/HyperballStickImpostor.frag', "#define STANDARD\n#define IMPOSTOR\nuniform vec3 diffuse;\nuniform vec3 emissive;\nuniform float roughness;\nuniform float metalness;\nuniform float opacity;\nuniform float nearClip;\nuniform float shrink;\nuniform mat4 modelViewMatrix;\nuniform mat4 modelViewProjectionMatrix;\nuniform mat4 modelViewMatrixInverseTranspose;\nuniform mat4 projectionMatrix;\nvarying mat4 matrix_near;\nvarying vec4 prime1;\nvarying vec4 prime2;\nvarying float vRadius;\nvarying float vRadius2;\n#ifdef PICKING\nuniform float objectId;\nvarying vec3 vPickingColor;\n#else\nvarying vec3 vColor1;\nvarying vec3 vColor2;\n#include common\n#include fog_pars_fragment\n#include bsdfs\n#include lights_pars\n#include lights_physical_pars_fragment\n#endif\nbool interior = false;\nfloat calcClip( vec4 cameraPos ){\nreturn dot( cameraPos, vec4( 0.0, 0.0, 1.0, nearClip - 0.5 ) );\n}\nfloat calcClip( vec3 cameraPos ){\nreturn calcClip( vec4( cameraPos, 1.0 ) );\n}\nfloat calcDepth( in vec3 cameraPos ){\nvec2 clipZW = cameraPos.z * projectionMatrix[2].zw + projectionMatrix[3].zw;\nreturn 0.5 + 0.5 * clipZW.x / clipZW.y;\n}\nstruct Ray {\nvec3 origin ;\nvec3 direction ;\n};\nbool cutoff_plane (vec3 M, vec3 cutoff, vec3 x3){\nfloat a = x3.x;\nfloat b = x3.y;\nfloat c = x3.z;\nfloat d = -x3.x*cutoff.x-x3.y*cutoff.y-x3.z*cutoff.z;\nfloat l = a*M.x+b*M.y+c*M.z+d;\nif (l<0.0) {return true;}\nelse{return false;}\n}\nvec3 isect_surf(Ray r, mat4 matrix_coef){\nvec4 direction = vec4(r.direction, 0.0);\nvec4 origin = vec4(r.origin, 1.0);\nfloat a = dot(direction,(matrix_coef*direction));\nfloat b = dot(origin,(matrix_coef*direction));\nfloat c = dot(origin,(matrix_coef*origin));\nfloat delta =b*b-a*c;\ngl_FragColor.a = 1.0;\nif (delta<0.0){\ndiscard;\n}\nfloat t1 =(-b-sqrt(delta))/a;\nreturn r.origin+t1*r.direction;\n}\nvec3 isect_surf2(Ray r, mat4 matrix_coef){\nvec4 direction = vec4(r.direction, 0.0);\nvec4 origin = vec4(r.origin, 1.0);\nfloat a = dot(direction,(matrix_coef*direction));\nfloat b = dot(origin,(matrix_coef*direction));\nfloat c = dot(origin,(matrix_coef*origin));\nfloat delta =b*b-a*c;\ngl_FragColor.a = 1.0;\nif (delta<0.0){\ndiscard;\n}\nfloat t2 =(-b+sqrt(delta))/a;\nreturn r.origin+t2*r.direction;\n}\nRay primary_ray(vec4 near1, vec4 far1){\nvec3 near=near1.xyz/near1.w;\nvec3 far=far1.xyz/far1.w;\nreturn Ray(near,far-near);\n}\nfloat update_z_buffer(vec3 M, mat4 ModelViewP){\nfloat depth1;\nvec4 Ms=(ModelViewP*vec4(M,1.0));\nreturn depth1=(1.0+Ms.z/Ms.w)/2.0;\n}\nvoid main(){\nfloat radius = max( vRadius, vRadius2 );\nvec4 i_near, i_far, focus;\nvec3 e3, e1, e1_temp, e2;\ni_near = vec4(matrix_near[0][0],matrix_near[0][1],matrix_near[0][2],matrix_near[0][3]);\ni_far = vec4(matrix_near[1][0],matrix_near[1][1],matrix_near[1][2],matrix_near[1][3]);\nfocus = vec4(matrix_near[2][0],matrix_near[2][1],matrix_near[2][2],matrix_near[2][3]);\ne3 = vec3(matrix_near[3][0],matrix_near[3][1],matrix_near[3][2]);\ne1.x = 1.0;\ne1.y = 1.0;\ne1.z = ( (e3.x*focus.x + e3.y*focus.y + e3.z*focus.z) - e1.x*e3.x - e1.y*e3.y)/e3.z;\ne1_temp = e1 - focus.xyz;\ne1 = normalize(e1_temp);\ne2 = normalize(cross(e1,e3));\nvec4 equation = focus;\nfloat shrinkfactor = shrink;\nfloat t1 = -1.0/(1.0-shrinkfactor);\nfloat t2 = 1.0/(shrinkfactor);\nvec4 colonne1, colonne2, colonne3, colonne4;\nmat4 mat;\nvec3 equation1 = vec3(t2,t2,t1);\nfloat A1 = - e1.x*equation.x - e1.y*equation.y - e1.z*equation.z;\nfloat A2 = - e2.x*equation.x - e2.y*equation.y - e2.z*equation.z;\nfloat A3 = - e3.x*equation.x - e3.y*equation.y - e3.z*equation.z;\nfloat A11 = equation1.x*e1.x*e1.x + equation1.y*e2.x*e2.x + equation1.z*e3.x*e3.x;\nfloat A21 = equation1.x*e1.x*e1.y + equation1.y*e2.x*e2.y + equation1.z*e3.x*e3.y;\nfloat A31 = equation1.x*e1.x*e1.z + equation1.y*e2.x*e2.z + equation1.z*e3.x*e3.z;\nfloat A41 = equation1.x*e1.x*A1 + equation1.y*e2.x*A2 + equation1.z*e3.x*A3;\nfloat A22 = equation1.x*e1.y*e1.y + equation1.y*e2.y*e2.y + equation1.z*e3.y*e3.y;\nfloat A32 = equation1.x*e1.y*e1.z + equation1.y*e2.y*e2.z + equation1.z*e3.y*e3.z;\nfloat A42 = equation1.x*e1.y*A1 + equation1.y*e2.y*A2 + equation1.z*e3.y*A3;\nfloat A33 = equation1.x*e1.z*e1.z + equation1.y*e2.z*e2.z + equation1.z*e3.z*e3.z;\nfloat A43 = equation1.x*e1.z*A1 + equation1.y*e2.z*A2 + equation1.z*e3.z*A3;\nfloat A44 = equation1.x*A1*A1 + equation1.y*A2*A2 + equation1.z*A3*A3 - equation.w;\ncolonne1 = vec4(A11,A21,A31,A41);\ncolonne2 = vec4(A21,A22,A32,A42);\ncolonne3 = vec4(A31,A32,A33,A43);\ncolonne4 = vec4(A41,A42,A43,A44);\nmat = mat4(colonne1,colonne2,colonne3,colonne4);\nRay ray = primary_ray(i_near,i_far) ;\nvec3 M;\nM = isect_surf(ray, mat);\nif (cutoff_plane(M, prime1.xyz, -e3) || cutoff_plane(M, prime2.xyz, e3)){ discard; }\nvec4 M1 = vec4(M,1.0);\nvec4 M2 = mat*M1;\nvec3 _normal = ( modelViewMatrixInverseTranspose * M2 ).xyz;\ngl_FragDepthEXT = update_z_buffer(M, modelViewProjectionMatrix) ;\n#ifdef NEAR_CLIP\nif( calcClip( modelViewMatrix * vec4( M, 1.0 ) ) > 0.0 ){\nM = isect_surf2(ray, mat);\nif( calcClip( modelViewMatrix * vec4( M, 1.0 ) ) > 0.0 )\ndiscard;\ninterior = true;\ngl_FragDepthEXT = update_z_buffer(M, modelViewProjectionMatrix) ;\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = max( 0.0, calcDepth( vec3( - ( nearClip - 0.5 ) ) ) + ( 0.0000001 / radius ) );\n}\n}else if( gl_FragDepthEXT <= 0.0 ){\nM = isect_surf2(ray, mat);\ninterior = true;\ngl_FragDepthEXT = update_z_buffer(M, modelViewProjectionMatrix);\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / radius );\n}\n}\n#else\nif( gl_FragDepthEXT <= 0.0 ){\nM = isect_surf2(ray, mat);\ninterior = true;\ngl_FragDepthEXT = update_z_buffer(M, modelViewProjectionMatrix) ;\nif( gl_FragDepthEXT >= 0.0 ){\ngl_FragDepthEXT = 0.0 + ( 0.0000001 / radius );\n}\n}\n#endif\nif (cutoff_plane(M, prime1.xyz, -e3) || cutoff_plane(M, prime2.xyz, e3)){ discard; }\nif (gl_FragDepthEXT < 0.0)\ndiscard;\nif (gl_FragDepthEXT > 1.0)\ndiscard;\nfloat distance_ratio = ((M.x-prime2.x)*e3.x + (M.y-prime2.y)*e3.y +(M.z-prime2.z)*e3.z) /\ndistance(prime2.xyz,prime1.xyz);\n#ifdef PICKING\ngl_FragColor = vec4( vPickingColor, objectId );\n#else\nvec3 vViewPosition = -( modelViewMatrix * vec4( M, 1.0 ) ).xyz;\nvec3 vNormal = _normal;\nvec3 vColor;\nif( distance_ratio>0.5 ){\nvColor = vColor1;\n}else{\nvColor = vColor2;\n}\nvec4 diffuseColor = vec4( diffuse, opacity );\nReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );\nvec3 totalEmissiveLight = emissive;\n#include color_fragment\n#include roughnessmap_fragment\n#include metalnessmap_fragment\nvec3 normal = normalize( vNormal );\nif( interior ){\nnormal = vec3( 0.0, 0.0, 0.4 );\n}\n#include lights_physical_fragment\n#include lights_template\nvec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveLight;\ngl_FragColor = vec4( outgoingLight, diffuseColor.a );\n#include premultiplied_alpha_fragment\n#include tonemapping_fragment\n#include encodings_fragment\n#include fog_fragment\n#endif\n}");
 
 /**
- * @file Box Buffer
+ * @file Mapped Box Buffer
  * @author Alexander Rose <alexander.rose@weirdbyte.de>
  * @private
  */
@@ -80931,17 +81578,17 @@ var mappingIndices$2 = new Uint16Array([
 ]);
 
 /**
- * Box buffer. Draws boxes. Used to render general imposters.
+ * Mapped Box buffer. Draws boxes. Used to render general imposters.
  * @interface
  */
-var BoxBuffer = (function (MappedBuffer$$1) {
-  function BoxBuffer () {
+var MappedBoxBuffer = (function (MappedBuffer$$1) {
+  function MappedBoxBuffer () {
     MappedBuffer$$1.apply(this, arguments);
   }
 
-  if ( MappedBuffer$$1 ) BoxBuffer.__proto__ = MappedBuffer$$1;
-  BoxBuffer.prototype = Object.create( MappedBuffer$$1 && MappedBuffer$$1.prototype );
-  BoxBuffer.prototype.constructor = BoxBuffer;
+  if ( MappedBuffer$$1 ) MappedBoxBuffer.__proto__ = MappedBuffer$$1;
+  MappedBoxBuffer.prototype = Object.create( MappedBuffer$$1 && MappedBuffer$$1.prototype );
+  MappedBoxBuffer.prototype.constructor = MappedBoxBuffer;
 
   var prototypeAccessors = { mapping: {},mappingIndices: {},mappingIndicesSize: {},mappingType: {},mappingSize: {},mappingItemSize: {} };
 
@@ -80952,9 +81599,9 @@ var BoxBuffer = (function (MappedBuffer$$1) {
   prototypeAccessors.mappingSize.get = function () { return 8 };
   prototypeAccessors.mappingItemSize.get = function () { return 3 };
 
-  Object.defineProperties( BoxBuffer.prototype, prototypeAccessors );
+  Object.defineProperties( MappedBoxBuffer.prototype, prototypeAccessors );
 
-  return BoxBuffer;
+  return MappedBoxBuffer;
 }(MappedBuffer));
 
 /**
@@ -80976,9 +81623,9 @@ var BoxBuffer = (function (MappedBuffer$$1) {
  *     radius2: new Float32Array( [ 2 ] )
  * } );
  */
-var HyperballStickImpostorBuffer = (function (BoxBuffer$$1) {
+var HyperballStickImpostorBuffer = (function (MappedBoxBuffer$$1) {
   function HyperballStickImpostorBuffer (data, params) {
-    BoxBuffer$$1.call(this, data, params);
+    MappedBoxBuffer$$1.call(this, data, params);
 
     var d = data || {};
     var p = params || {};
@@ -81005,8 +81652,8 @@ var HyperballStickImpostorBuffer = (function (BoxBuffer$$1) {
     this.makeMapping();
   }
 
-  if ( BoxBuffer$$1 ) HyperballStickImpostorBuffer.__proto__ = BoxBuffer$$1;
-  HyperballStickImpostorBuffer.prototype = Object.create( BoxBuffer$$1 && BoxBuffer$$1.prototype );
+  if ( MappedBoxBuffer$$1 ) HyperballStickImpostorBuffer.__proto__ = MappedBoxBuffer$$1;
+  HyperballStickImpostorBuffer.prototype = Object.create( MappedBoxBuffer$$1 && MappedBoxBuffer$$1.prototype );
   HyperballStickImpostorBuffer.prototype.constructor = HyperballStickImpostorBuffer;
 
   var prototypeAccessors = { parameters: {},isImpostor: {},vertexShader: {},fragmentShader: {} };
@@ -81016,7 +81663,7 @@ var HyperballStickImpostorBuffer = (function (BoxBuffer$$1) {
 
       shrink: { uniform: true }
 
-    }, BoxBuffer$$1.prototype.parameters)
+    }, MappedBoxBuffer$$1.prototype.parameters)
   };
 
   prototypeAccessors.isImpostor.get = function () { return true };
@@ -81026,7 +81673,7 @@ var HyperballStickImpostorBuffer = (function (BoxBuffer$$1) {
   Object.defineProperties( HyperballStickImpostorBuffer.prototype, prototypeAccessors );
 
   return HyperballStickImpostorBuffer;
-}(BoxBuffer));
+}(MappedBoxBuffer));
 
 /**
  * @file Hyperball Stick Buffer
@@ -84802,6 +85449,516 @@ var ValidationRepresentation = (function (StructureRepresentation$$1) {
 RepresentationRegistry.add('validation', ValidationRepresentation);
 
 /**
+ * @file Cone Geometry Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var scale$2 = new Vector3();
+var eye$1 = new Vector3();
+var target$1 = new Vector3();
+var up$1 = new Vector3(0, 1, 0);
+
+/**
+ * Cone geometry buffer.
+ *
+ * @example
+ * var coneGeometryBuffer = new ConeGeometryBuffer( {
+ *     position1: new Float32Array( [ 0, 0, 0 ] ),
+ *     position2: new Float32Array( [ 1, 1, 1 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     color2: new Float32Array( [ 0, 1, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var ConeGeometryBuffer = (function (GeometryBuffer$$1) {
+  function ConeGeometryBuffer (data, params) {
+    var p = params || {};
+
+    var radialSegments = defaults(p.radialSegments, 60);
+    var openEnded = defaults(p.openEnded, false);
+    var matrix = new Matrix4().makeRotationX(-Math.PI / 2);
+
+    var geo = new ConeBufferGeometry(
+            1,  // radius
+            1,  // height
+            radialSegments,  // radialSegments
+            1,  // heightSegments
+            openEnded  // openEnded
+        );
+    geo.applyMatrix(matrix);
+
+    var n = data.position1.length;
+    var m = data.radius.length;
+
+    var position = new Float32Array(n);
+
+    GeometryBuffer$$1.call(this, {
+      position: position,
+      color: data.color,
+      picking: data.picking
+    }, p, geo);
+
+    this._position = position;
+    this._from = new Float32Array(n);
+    this._to = new Float32Array(n);
+    this._radius = new Float32Array(m);
+
+    this.setAttributes(data, true);
+  }
+
+  if ( GeometryBuffer$$1 ) ConeGeometryBuffer.__proto__ = GeometryBuffer$$1;
+  ConeGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
+  ConeGeometryBuffer.prototype.constructor = ConeGeometryBuffer;
+
+  var prototypeAccessors = { updateNormals: {} };
+
+  ConeGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i, i3) {
+    eye$1.fromArray(this._from, i3);
+    target$1.fromArray(this._to, i3);
+    matrix.lookAt(eye$1, target$1, up$1);
+
+    var r = this._radius[ i ];
+    scale$2.set(r, r, eye$1.distanceTo(target$1));
+    matrix.scale(scale$2);
+  };
+
+  ConeGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
+    var meshData = {};
+
+    if (data.position1 && data.position2) {
+      calculateCenterArray(
+                data.position1, data.position2, this._position
+            );
+      this._from.set(data.position1);
+      this._to.set(data.position2);
+      meshData.position = this._position;
+    }
+
+    if (data.color) {
+      meshData.color = data.color;
+    }
+
+    if (data.radius) {
+      this._radius.set(data.radius);
+    }
+
+    GeometryBuffer$$1.prototype.setAttributes.call(this, meshData, initNormals);
+  };
+
+  prototypeAccessors.updateNormals.get = function () { return true };
+
+  Object.defineProperties( ConeGeometryBuffer.prototype, prototypeAccessors );
+
+  return ConeGeometryBuffer;
+}(GeometryBuffer));
+
+/**
+ * @file Cone Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Cone buffer. Returns a {@link ConeGeometryBuffer}
+ * @implements {Buffer}
+ *
+ * @example
+ * var coneBuffer = new ConeBuffer( {
+ *     position1: new Float32Array( [ 0, 0, 0 ] ),
+ *     position2: new Float32Array( [ 1, 1, 1 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     color2: new Float32Array( [ 0, 1, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var ConeBuffer = function ConeBuffer (data, params) {
+  return new ConeGeometryBuffer(data, params)
+};
+
+BufferRegistry.add('cone', ConeBuffer);
+
+/**
+ * @file Geometry Group
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var GeometryGroup = function GeometryGroup (geometryList) {
+  this.geometryList = geometryList;
+  this.boundingBox = null;
+};
+
+GeometryGroup.prototype.computeBoundingBox = function computeBoundingBox () {
+    var this$1 = this;
+
+  if (!this.boundingBox) {
+    this.boundingBox = new Box3();
+  } else {
+    this.boundingBox.empty();
+  }
+
+  this.geometryList.forEach(function (geo) {
+    if (!geo.boundingBox) { geo.computeBoundingBox(); }
+    this$1.boundingBox.union(geo.boundingBox);
+  });
+};
+
+/**
+ * @file Arrow Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Arrow buffer. Draws arrows made from a cylinder and a cone.
+ * @implements {Buffer}
+ *
+ * @example
+ * var arrowBuffer = new ArrowBuffer( {
+ *     position1: new Float32Array( [ 0, 0, 0 ] ),
+ *     position2: new Float32Array( [ 10, 1, 1 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] )
+ * } );
+ */
+var ArrowBuffer = function ArrowBuffer (data, params) {
+  var d = data || {};
+  var p = params || {};
+
+  this.aspectRatio = defaults(p.aspectRatio, 1.5);
+  this.wireframe = defaults(p.wireframe, false);
+
+  this.splitPosition = new Float32Array(d.position1.length);
+  this.cylinderRadius = new Float32Array(d.radius.length);
+
+  var attr = this.makeAttributes(d);
+  var bufferParams = {
+    radialSegments: defaults(p.radialSegments, 50),
+    openEnded: defaults(p.openEnded, false),
+    disableImpostor: defaults(p.disableImpostor, false)
+  };
+
+  this.cylinderBuffer = new CylinderBuffer(
+          attr.cylinder, bufferParams
+      );
+  this.coneBuffer = new ConeBuffer(
+          attr.cone, bufferParams
+      );
+
+  this.geometry = new GeometryGroup([
+    this.cylinderBuffer.geometry,
+    this.coneBuffer.geometry
+  ]);
+
+  this.group = new Group();
+  this.wireframeGroup = new Group();
+  this.pickingGroup = new Group();
+
+      // requires Group objects to be present
+  this.matrix = defaults(p.matrix, new Matrix4());
+
+  this.picking = d.picking;
+};
+
+var prototypeAccessors$29 = { matrix: {},pickable: {} };
+
+prototypeAccessors$29.matrix.set = function (m) {
+  Buffer$1.prototype.setMatrix.call(this, m);
+};
+prototypeAccessors$29.matrix.get = function () {
+  return this.group.matrix.clone()
+};
+
+prototypeAccessors$29.pickable.get = function () {
+  return !!this.picking
+};
+
+ArrowBuffer.prototype.makeAttributes = function makeAttributes (data) {
+  var splitPosition = this.splitPosition;
+  var cylinderRadius = this.cylinderRadius;
+
+  var aspectRatio = this.aspectRatio;
+
+  var i, il;
+  var cylinder = {};
+  var cone = {};
+
+  if (data.radius) {
+    for (i = 0, il = cylinderRadius.length; i < il; ++i) {
+      cylinderRadius[ i ] = data.radius[ i ] / aspectRatio;
+    }
+    cylinder.radius = cylinderRadius;
+    cone.radius = data.radius;
+  }
+
+  if (data.position1 && data.position2) {
+    var vFrom = new Vector3();
+    var vTo = new Vector3();
+    var vDir = new Vector3();
+    var vSplit = new Vector3();
+    for (i = 0, il = splitPosition.length; i < il; i += 3) {
+      vFrom.fromArray(data.position1, i);
+      vTo.fromArray(data.position2, i);
+      vDir.subVectors(vFrom, vTo);
+      var fullLength = vDir.length();
+      var coneLength = cylinderRadius[ i / 3 ] * aspectRatio * 2;
+      var length = Math.min(fullLength, coneLength);
+      vDir.setLength(length);
+      vSplit.copy(vTo).add(vDir);
+      vSplit.toArray(splitPosition, i);
+    }
+    cylinder.position1 = data.position1;
+    cylinder.position2 = splitPosition;
+    cone.position1 = splitPosition;
+    cone.position2 = data.position2;
+  }
+
+  if (data.color) {
+    cylinder.color = data.color;
+    cylinder.color2 = data.color;
+    cone.color = data.color;
+  }
+
+  return {
+    cylinder: cylinder,
+    cone: cone
+  }
+};
+
+ArrowBuffer.prototype.getMesh = function getMesh (picking) {
+  return new Group().add(
+          this.cylinderBuffer.getMesh(picking),
+          this.coneBuffer.getMesh(picking)
+      )
+};
+
+ArrowBuffer.prototype.getWireframeMesh = function getWireframeMesh () {
+  return new Group().add(
+          this.cylinderBuffer.getWireframeMesh(),
+          this.coneBuffer.getWireframeMesh()
+      )
+};
+
+ArrowBuffer.prototype.getPickingMesh = function getPickingMesh () {
+  return new Group().add(
+          this.cylinderBuffer.getPickingMesh(),
+          this.coneBuffer.getPickingMesh()
+      )
+};
+
+ArrowBuffer.prototype.setAttributes = function setAttributes (data) {
+  var attr = this.makeAttributes(data);
+
+  this.cylinderBuffer.setAttributes(attr.cylinder);
+  this.coneBuffer.setAttributes(attr.cone);
+};
+
+  /**
+   * Set buffer parameters
+   * @param {BufferParameters} params - buffer parameters object
+   * @return {undefined}
+   */
+ArrowBuffer.prototype.setParameters = function setParameters (params) {
+  params = Object.assign({}, params);
+
+  if (params && params.matrix !== undefined) {
+    this.matrix = params.matrix;
+  }
+  delete params.matrix;
+
+  if (params && params.wireframe !== undefined) {
+    this.wireframe = params.wireframe;
+    this.setVisibility(this.visible);
+  }
+
+  this.cylinderBuffer.setParameters(params);
+  this.coneBuffer.setParameters(params);
+};
+
+ArrowBuffer.prototype.setVisibility = function setVisibility () {
+  Buffer$1.prototype.setVisibility.apply(this, arguments);
+};
+
+ArrowBuffer.prototype.dispose = function dispose () {
+  this.cylinderBuffer.dispose();
+  this.coneBuffer.dispose();
+};
+
+Object.defineProperties( ArrowBuffer.prototype, prototypeAccessors$29 );
+
+BufferRegistry.add('arrow', ArrowBuffer);
+
+/**
+ * @file Box Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var scale$3 = new Vector3();
+var target$2 = new Vector3();
+var up$2 = new Vector3();
+var eye$2 = new Vector3(0, 0, 0);
+
+/**
+ * Box buffer. Draws boxes.
+ *
+ * @example
+ * var boxBuffer = new BoxBuffer({
+ *   position: new Float32Array([ 0, 3, 0, -2, 0, 0 ]),
+ *   color: new Float32Array([ 1, 0, 1, 0, 1, 0 ]),
+ *   size: new Float32Array([ 2, 1.5 ]),
+ *   heightAxis: new Float32Array([ 0, 1, 1, 0, 2, 0 ]),
+ *   depthAxis: new Float32Array([ 1, 0, 1, 0, 0, 2 ])
+ * })
+ */
+var BoxBuffer = (function (GeometryBuffer$$1) {
+  function BoxBuffer (data, params) {
+    var p = params || {};
+    var geo = new BoxBufferGeometry(1, 1, 1);
+
+    GeometryBuffer$$1.call(this, data, p, geo);
+
+    this.setAttributes(data, true);
+  }
+
+  if ( GeometryBuffer$$1 ) BoxBuffer.__proto__ = GeometryBuffer$$1;
+  BoxBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
+  BoxBuffer.prototype.constructor = BoxBuffer;
+
+  var prototypeAccessors = { updateNormals: {} };
+
+  BoxBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i, i3) {
+    target$2.fromArray(this._heightAxis, i3);
+    up$2.fromArray(this._depthAxis, i3);
+    matrix.lookAt(eye$2, target$2, up$2);
+
+    scale$3.set(this._size[ i ], up$2.length(), target$2.length());
+    matrix.scale(scale$3);
+  };
+
+  BoxBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
+    if (data.size) {
+      this._size = data.size;
+    }
+
+    if (data.heightAxis) {
+      this._heightAxis = data.heightAxis;
+    }
+
+    if (data.depthAxis) {
+      this._depthAxis = data.depthAxis;
+    }
+
+    GeometryBuffer$$1.prototype.setAttributes.call(this, data, initNormals);
+  };
+
+  prototypeAccessors.updateNormals.get = function () { return true };
+
+  Object.defineProperties( BoxBuffer.prototype, prototypeAccessors );
+
+  return BoxBuffer;
+}(GeometryBuffer));
+
+BufferRegistry.add('box', BoxBuffer);
+
+/**
+ * @file Ellipsoid Geometry Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+var scale$4 = new Vector3();
+var target$3 = new Vector3();
+var up$3 = new Vector3();
+var eye$3 = new Vector3(0, 0, 0);
+
+/**
+ * Ellipsoid geometry buffer. Draws ellipsoids.
+ *
+ * @example
+ * var ellipsoidGeometryBuffer = new EllipsoidGeometryBuffer( {
+ *     position: new Float32Array( [ 0, 0, 0 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] ),
+ *     majorAxis: new Float32Array( [ 1, 1, 0 ] ),
+ *     minorAxis: new Float32Array( [ 0.5, 0, 0.5 ] ),
+ * } );
+ */
+var EllipsoidGeometryBuffer = (function (GeometryBuffer$$1) {
+  function EllipsoidGeometryBuffer (data, params) {
+    var p = params || {};
+    var detail = defaults(p.sphereDetail, 2);
+    var geo = new IcosahedronBufferGeometry(1, detail);
+
+    GeometryBuffer$$1.call(this, data, p, geo);
+
+    this.setAttributes(data, true);
+  }
+
+  if ( GeometryBuffer$$1 ) EllipsoidGeometryBuffer.__proto__ = GeometryBuffer$$1;
+  EllipsoidGeometryBuffer.prototype = Object.create( GeometryBuffer$$1 && GeometryBuffer$$1.prototype );
+  EllipsoidGeometryBuffer.prototype.constructor = EllipsoidGeometryBuffer;
+
+  var prototypeAccessors = { updateNormals: {} };
+
+  EllipsoidGeometryBuffer.prototype.applyPositionTransform = function applyPositionTransform (matrix, i, i3) {
+    target$3.fromArray(this._majorAxis, i3);
+    up$3.fromArray(this._minorAxis, i3);
+    matrix.lookAt(eye$3, target$3, up$3);
+
+    scale$4.set(this._radius[ i ], up$3.length(), target$3.length());
+    matrix.scale(scale$4);
+  };
+
+  EllipsoidGeometryBuffer.prototype.setAttributes = function setAttributes (data, initNormals) {
+    if (data.radius) {
+      this._radius = data.radius;
+    }
+
+    if (data.majorAxis) {
+      this._majorAxis = data.majorAxis;
+    }
+
+    if (data.minorAxis) {
+      this._minorAxis = data.minorAxis;
+    }
+
+    GeometryBuffer$$1.prototype.setAttributes.call(this, data, initNormals);
+  };
+
+  prototypeAccessors.updateNormals.get = function () { return true };
+
+  Object.defineProperties( EllipsoidGeometryBuffer.prototype, prototypeAccessors );
+
+  return EllipsoidGeometryBuffer;
+}(GeometryBuffer));
+
+/**
+ * @file Ellipsoid Buffer
+ * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @private
+ */
+
+/**
+ * Ellipsoid buffer. Returns an {@link EllipsoidGeometryBuffer}
+ *
+ * @example
+ * var ellipsoidBuffer = new EllipsoidBuffer( {
+ *     position: new Float32Array( [ 0, 0, 0 ] ),
+ *     color: new Float32Array( [ 1, 0, 0 ] ),
+ *     radius: new Float32Array( [ 1 ] ),
+ *     majorAxis: new Float32Array( [ 1, 1, 0 ] ),
+ *     minorAxis: new Float32Array( [ 0.5, 0, 0.5 ] ),
+ * } );
+ */
+var EllipsoidBuffer = function EllipsoidBuffer (data, params) {
+  return new EllipsoidGeometryBuffer(data, params)
+};
+
+BufferRegistry.add('ellipsoid', EllipsoidBuffer);
+
+/**
  * @file Parser
  * @author Alexander Rose <alexander.rose@weirdbyte.de>
  * @private
@@ -84816,13 +85973,13 @@ var Parser = function Parser (streamer, params) {
   this.path = defaults(p.path, '');
 };
 
-var prototypeAccessors$28 = { type: {},__objName: {},isBinary: {},isJson: {},isXml: {} };
+var prototypeAccessors$30 = { type: {},__objName: {},isBinary: {},isJson: {},isXml: {} };
 
-prototypeAccessors$28.type.get = function () { return '' };
-prototypeAccessors$28.__objName.get = function () { return '' };
-prototypeAccessors$28.isBinary.get = function () { return false };
-prototypeAccessors$28.isJson.get = function () { return false };
-prototypeAccessors$28.isXml.get = function () { return false };
+prototypeAccessors$30.type.get = function () { return '' };
+prototypeAccessors$30.__objName.get = function () { return '' };
+prototypeAccessors$30.isBinary.get = function () { return false };
+prototypeAccessors$30.isJson.get = function () { return false };
+prototypeAccessors$30.isXml.get = function () { return false };
 
 Parser.prototype.parse = function parse () {
     var this$1 = this;
@@ -84843,7 +86000,7 @@ Parser.prototype._afterParse = function _afterParse () {
   if (Debug) { Log.log(this[ this.__objName ]); }
 };
 
-Object.defineProperties( Parser.prototype, prototypeAccessors$28 );
+Object.defineProperties( Parser.prototype, prototypeAccessors$30 );
 
 /**
  * @file Structure Builder
@@ -85038,9 +86195,9 @@ var Entity = function Entity (structure, index, description, type, chainIndexLis
   });
 };
 
-var prototypeAccessors$29 = { type: {} };
+var prototypeAccessors$31 = { type: {} };
 
-prototypeAccessors$29.type.get = function () { return 'Entity' };
+prototypeAccessors$31.type.get = function () { return 'Entity' };
 
 Entity.prototype.getEntityType = function getEntityType () {
   return this.entityType
@@ -85071,7 +86228,7 @@ Entity.prototype.eachChain = function eachChain (callback) {
   });
 };
 
-Object.defineProperties( Entity.prototype, prototypeAccessors$29 );
+Object.defineProperties( Entity.prototype, prototypeAccessors$31 );
 
 /**
  * @file Unitcell
@@ -89439,11 +90596,11 @@ var Frames = function Frames (name, path) {
   this.deltaTime = 1;
 };
 
-var prototypeAccessors$30 = { type: {} };
+var prototypeAccessors$32 = { type: {} };
 
-prototypeAccessors$30.type.get = function () { return 'Frames' };
+prototypeAccessors$32.type.get = function () { return 'Frames' };
 
-Object.defineProperties( Frames.prototype, prototypeAccessors$30 );
+Object.defineProperties( Frames.prototype, prototypeAccessors$32 );
 
 /**
  * @file Trajectory Parser
@@ -89671,536 +90828,6 @@ var DcdParser = (function (TrajectoryParser$$1) {
 }(TrajectoryParser));
 
 ParserRegistry.add('dcd', DcdParser);
-
-/**
- * @file IO Buffer
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- * @private
- *
- * Adapted from https://github.com/image-js/iobuffer
- * MIT License, Copyright (c) 2015 Michaël Zasso
- */
-
-var defaultByteLength = 1024 * 8;
-var charArray = [];
-
-/**
- * IOBuffer
- * @constructor
- * @param {undefined|number|ArrayBuffer|TypedArray|IOBuffer|Buffer} data - The data to construct the IOBuffer with.
- *
- * If it's a number, it will initialize the buffer with the number as
- * the buffer's length. If it's undefined, it will initialize the buffer
- * with a default length of 8 Kb. If its an ArrayBuffer, a TypedArray,
- * an IOBuffer instance, or a Node.js Buffer, it will create a view over
- * the underlying ArrayBuffer.
- * @param {object} [options]
- * @param {number} [options.offset=0] - Ignore the first n bytes of the ArrayBuffer
- * @property {ArrayBuffer} buffer - Reference to the internal ArrayBuffer object
- * @property {number} length - Byte length of the internal ArrayBuffer
- * @property {number} offset - The current offset of the buffer's pointer
- * @property {number} byteLength - Byte length of the internal ArrayBuffer
- * @property {number} byteOffset - Byte offset of the internal ArrayBuffer
- */
-var IOBuffer = function IOBuffer (data, options) {
-  options = options || {};
-  var dataIsGiven = false;
-  if (data === undefined) {
-    data = defaultByteLength;
-  }
-  if (typeof data === 'number') {
-    data = new ArrayBuffer(data);
-  } else {
-    dataIsGiven = true;
-    this._lastWrittenByte = data.byteLength;
-  }
-
-  var offset = options.offset ? options.offset >>> 0 : 0;
-  var byteLength = data.byteLength - offset;
-  var dvOffset = offset;
-  if (data.buffer) {
-    if (data.byteLength !== data.buffer.byteLength) {
-      dvOffset = data.byteOffset + offset;
-    }
-    data = data.buffer;
-  }
-  if (dataIsGiven) {
-    this._lastWrittenByte = byteLength;
-  } else {
-    this._lastWrittenByte = 0;
-  }
-  this.buffer = data;
-  this.length = byteLength;
-  this.byteLength = byteLength;
-  this.byteOffset = dvOffset;
-  this.offset = 0;
-  this.littleEndian = true;
-  this._data = new DataView(this.buffer, dvOffset, byteLength);
-  this._mark = 0;
-  this._marks = [];
-};
-
-/**
- * Checks if the memory allocated to the buffer is sufficient to store more bytes after the offset
- * @param {number} [byteLength=1] The needed memory in bytes
- * @return {boolean} Returns true if there is sufficient space and false otherwise
- */
-IOBuffer.prototype.available = function available (byteLength) {
-  if (byteLength === undefined) { byteLength = 1; }
-  return (this.offset + byteLength) <= this.length
-};
-
-/**
- * Check if little-endian mode is used for reading and writing multi-byte values
- * @return {boolean} Returns true if little-endian mode is used, false otherwise
- */
-IOBuffer.prototype.isLittleEndian = function isLittleEndian () {
-  return this.littleEndian
-};
-
-/**
- * Set little-endian mode for reading and writing multi-byte values
- * @return {IOBuffer}
- */
-IOBuffer.prototype.setLittleEndian = function setLittleEndian () {
-  this.littleEndian = true;
-  return this
-};
-
-/**
- * Check if big-endian mode is used for reading and writing multi-byte values
- * @return {boolean} Returns true if big-endian mode is used, false otherwise
- */
-IOBuffer.prototype.isBigEndian = function isBigEndian () {
-  return !this.littleEndian
-};
-
-/**
- * Switches to big-endian mode for reading and writing multi-byte values
- * @return {IOBuffer}
- */
-IOBuffer.prototype.setBigEndian = function setBigEndian () {
-  this.littleEndian = false;
-  return this
-};
-
-/**
- * Move the pointer n bytes forward
- * @param {number} n
- * @return {IOBuffer}
- */
-IOBuffer.prototype.skip = function skip (n) {
-  if (n === undefined) { n = 1; }
-  this.offset += n;
-  return this
-};
-
-/**
- * Move the pointer to the given offset
- * @param {number} offset
- * @return {IOBuffer}
- */
-IOBuffer.prototype.seek = function seek (offset) {
-  this.offset = offset;
-  return this
-};
-
-/**
- * Store the current pointer offset.
- * @see {@link IOBuffer#reset}
- * @return {IOBuffer}
- */
-IOBuffer.prototype.mark = function mark () {
-  this._mark = this.offset;
-  return this
-};
-
-/**
- * Move the pointer back to the last pointer offset set by mark
- * @see {@link IOBuffer#mark}
- * @return {IOBuffer}
- */
-IOBuffer.prototype.reset = function reset () {
-  this.offset = this._mark;
-  return this
-};
-
-/**
- * Push the current pointer offset to the mark stack
- * @see {@link IOBuffer#popMark}
- * @return {IOBuffer}
- */
-IOBuffer.prototype.pushMark = function pushMark () {
-  this._marks.push(this.offset);
-  return this
-};
-
-/**
- * Pop the last pointer offset from the mark stack, and set the current pointer offset to the popped value
- * @see {@link IOBuffer#pushMark}
- * @return {IOBuffer}
- */
-IOBuffer.prototype.popMark = function popMark () {
-  var offset = this._marks.pop();
-  if (offset === undefined) { throw new Error('Mark stack empty') }
-  this.seek(offset);
-  return this
-};
-
-/**
- * Move the pointer offset back to 0
- * @return {IOBuffer}
- */
-IOBuffer.prototype.rewind = function rewind () {
-  this.offset = 0;
-  return this
-};
-
-/**
- * Make sure the buffer has sufficient memory to write a given byteLength at the current pointer offset
- * If the buffer's memory is insufficient, this method will create a new buffer (a copy) with a length
- * that is twice (byteLength + current offset)
- * @param {number} [byteLength = 1]
- * @return {IOBuffer}
- */
-IOBuffer.prototype.ensureAvailable = function ensureAvailable (byteLength) {
-  if (byteLength === undefined) { byteLength = 1; }
-  if (!this.available(byteLength)) {
-    var lengthNeeded = this.offset + byteLength;
-    var newLength = lengthNeeded * 2;
-    var newArray = new Uint8Array(newLength);
-    newArray.set(new Uint8Array(this.buffer));
-    this.buffer = newArray.buffer;
-    this.length = this.byteLength = newLength;
-    this._data = new DataView(this.buffer);
-  }
-  return this
-};
-
-/**
- * Read a byte and return false if the byte's value is 0, or true otherwise
- * Moves pointer forward
- * @return {boolean}
- */
-IOBuffer.prototype.readBoolean = function readBoolean () {
-  return this.readUint8() !== 0
-};
-
-/**
- * Read a signed 8-bit integer and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readInt8 = function readInt8 () {
-  return this._data.getInt8(this.offset++)
-};
-
-/**
- * Read an unsigned 8-bit integer and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readUint8 = function readUint8 () {
-  return this._data.getUint8(this.offset++)
-};
-
-/**
- * Alias for {@link IOBuffer#readUint8}
- * @return {number}
- */
-IOBuffer.prototype.readByte = function readByte () {
-  return this.readUint8()
-};
-
-/**
- * Read n bytes and move pointer forward.
- * @param {number} n
- * @return {Uint8Array}
- */
-IOBuffer.prototype.readBytes = function readBytes (n) {
-    var this$1 = this;
-
-  if (n === undefined) { n = 1; }
-  var bytes = new Uint8Array(n);
-  for (var i = 0; i < n; i++) {
-    bytes[i] = this$1.readByte();
-  }
-  return bytes
-};
-
-/**
- * Read a 16-bit signed integer and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readInt16 = function readInt16 () {
-  var value = this._data.getInt16(this.offset, this.littleEndian);
-  this.offset += 2;
-  return value
-};
-
-/**
- * Read a 16-bit unsigned integer and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readUint16 = function readUint16 () {
-  var value = this._data.getUint16(this.offset, this.littleEndian);
-  this.offset += 2;
-  return value
-};
-
-/**
- * Read a 32-bit signed integer and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readInt32 = function readInt32 () {
-  var value = this._data.getInt32(this.offset, this.littleEndian);
-  this.offset += 4;
-  return value
-};
-
-/**
- * Read a 32-bit unsigned integer and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readUint32 = function readUint32 () {
-  var value = this._data.getUint32(this.offset, this.littleEndian);
-  this.offset += 4;
-  return value
-};
-
-/**
- * Read a 32-bit floating number and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readFloat32 = function readFloat32 () {
-  var value = this._data.getFloat32(this.offset, this.littleEndian);
-  this.offset += 4;
-  return value
-};
-
-/**
- * Read a 64-bit floating number and move pointer forward
- * @return {number}
- */
-IOBuffer.prototype.readFloat64 = function readFloat64 () {
-  var value = this._data.getFloat64(this.offset, this.littleEndian);
-  this.offset += 8;
-  return value
-};
-
-/**
- * Read 1-byte ascii character and move pointer forward
- * @return {string}
- */
-IOBuffer.prototype.readChar = function readChar () {
-  return String.fromCharCode(this.readInt8())
-};
-
-/**
- * Read n 1-byte ascii characters and move pointer forward
- * @param {number} n
- * @return {string}
- */
-IOBuffer.prototype.readChars = function readChars (n) {
-    var this$1 = this;
-
-  if (n === undefined) { n = 1; }
-  charArray.length = n;
-  for (var i = 0; i < n; i++) {
-    charArray[i] = this$1.readChar();
-  }
-  return charArray.join('')
-};
-
-/**
- * Write 0xff if the passed value is truthy, 0x00 otherwise
- * @param {any} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeBoolean = function writeBoolean (value) {
-  this.writeUint8(value ? 0xff : 0x00);
-  return this
-};
-
-/**
- * Write value as an 8-bit signed integer
- * @param {number} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeInt8 = function writeInt8 (value) {
-  this.ensureAvailable(1);
-  this._data.setInt8(this.offset++, value);
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write value as a 8-bit unsigned integer
- * @param {number} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeUint8 = function writeUint8 (value) {
-  this.ensureAvailable(1);
-  this._data.setUint8(this.offset++, value);
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * An alias for {@link IOBuffer#writeUint8}
- * @param {number} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeByte = function writeByte (value) {
-  return this.writeUint8(value)
-};
-
-/**
- * Write bytes
- * @param {Array|Uint8Array} bytes
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeBytes = function writeBytes (bytes) {
-    var this$1 = this;
-
-  this.ensureAvailable(bytes.length);
-  for (var i = 0; i < bytes.length; i++) {
-    this$1._data.setUint8(this$1.offset++, bytes[i]);
-  }
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write value as an 16-bit signed integer
- * @param {number} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeInt16 = function writeInt16 (value) {
-  this.ensureAvailable(2);
-  this._data.setInt16(this.offset, value, this.littleEndian);
-  this.offset += 2;
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write value as a 16-bit unsigned integer
- * @param {number} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeUint16 = function writeUint16 (value) {
-  this.ensureAvailable(2);
-  this._data.setUint16(this.offset, value, this.littleEndian);
-  this.offset += 2;
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write a 32-bit signed integer at the current pointer offset
- * @param {number} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeInt32 = function writeInt32 (value) {
-  this.ensureAvailable(4);
-  this._data.setInt32(this.offset, value, this.littleEndian);
-  this.offset += 4;
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write a 32-bit unsigned integer at the current pointer offset
- * @param {number} value - The value to set
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeUint32 = function writeUint32 (value) {
-  this.ensureAvailable(4);
-  this._data.setUint32(this.offset, value, this.littleEndian);
-  this.offset += 4;
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write a 32-bit floating number at the current pointer offset
- * @param {number} value - The value to set
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeFloat32 = function writeFloat32 (value) {
-  this.ensureAvailable(4);
-  this._data.setFloat32(this.offset, value, this.littleEndian);
-  this.offset += 4;
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write a 64-bit floating number at the current pointer offset
- * @param {number} value
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeFloat64 = function writeFloat64 (value) {
-  this.ensureAvailable(8);
-  this._data.setFloat64(this.offset, value, this.littleEndian);
-  this.offset += 8;
-  this._updateLastWrittenByte();
-  return this
-};
-
-/**
- * Write the charCode of the passed string's first character to the current pointer offset
- * @param {string} str - The character to set
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeChar = function writeChar (str) {
-  return this.writeUint8(str.charCodeAt(0))
-};
-
-/**
- * Write the charCodes of the passed string's characters to the current pointer offset
- * @param {string} str
- * @return {IOBuffer}
- */
-IOBuffer.prototype.writeChars = function writeChars (str) {
-    var this$1 = this;
-
-  for (var i = 0; i < str.length; i++) {
-    this$1.writeUint8(str.charCodeAt(i));
-  }
-  return this
-};
-
-/**
- * Export a Uint8Array view of the internal buffer.
- * The view starts at the byte offset and its length
- * is calculated to stop at the last written byte or the original length.
- * @return {Uint8Array}
- */
-IOBuffer.prototype.toArray = function toArray () {
-  return new Uint8Array(this.buffer, this.byteOffset, this._lastWrittenByte)
-};
-
-/**
- * Same as {@link IOBuffer#toArray} but returns a Buffer if possible. Otherwise returns a Uint8Array.
- * @return {Buffer|Uint8Array}
- */
-IOBuffer.prototype.getBuffer = function getBuffer () {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(this.toArray())
-  } else {
-    return this.toArray()
-  }
-};
-
-/**
- * Update the last written byte offset
- * @private
- */
-IOBuffer.prototype._updateLastWrittenByte = function _updateLastWrittenByte () {
-  if (this.offset > this._lastWrittenByte) {
-    this._lastWrittenByte = this.offset;
-  }
-};
 
 /**
  * @file Netcdf Reader
@@ -90691,12 +91318,12 @@ var NetcdfReader = function NetcdfReader (data) {
   this.buffer = buffer;
 };
 
-var prototypeAccessors$31 = { version: {},recordDimension: {},dimensions: {},globalAttributes: {},variables: {} };
+var prototypeAccessors$33 = { version: {},recordDimension: {},dimensions: {},globalAttributes: {},variables: {} };
 
 /**
  * @return {string} - Version for the NetCDF format
  */
-prototypeAccessors$31.version.get = function () {
+prototypeAccessors$33.version.get = function () {
   if (this.header.version === 1) {
     return 'classic format'
   } else {
@@ -90711,7 +91338,7 @@ prototypeAccessors$31.version.get = function () {
  ** `name`: String with the name of the record dimension
  ** `recordStep`: Number with the record variables step size
  */
-prototypeAccessors$31.recordDimension.get = function () {
+prototypeAccessors$33.recordDimension.get = function () {
   return this.header.recordDimension
 };
 
@@ -90720,7 +91347,7 @@ prototypeAccessors$31.recordDimension.get = function () {
  ** `name`: String with the name of the dimension
  ** `size`: Number with the size of the dimension
  */
-prototypeAccessors$31.dimensions.get = function () {
+prototypeAccessors$33.dimensions.get = function () {
   return this.header.dimensions
 };
 
@@ -90730,7 +91357,7 @@ prototypeAccessors$31.dimensions.get = function () {
  ** `type`: String with the type of the attribute
  ** `value`: A number or string with the value of the attribute
  */
-prototypeAccessors$31.globalAttributes.get = function () {
+prototypeAccessors$33.globalAttributes.get = function () {
   return this.header.globalAttributes
 };
 
@@ -90744,7 +91371,7 @@ prototypeAccessors$31.globalAttributes.get = function () {
  ** `offset`: Number with the offset where of the variable begins
  ** `record`: True if is a record variable, false otherwise
  */
-prototypeAccessors$31.variables.get = function () {
+prototypeAccessors$33.variables.get = function () {
   return this.header.variables
 };
 
@@ -90790,7 +91417,7 @@ NetcdfReader.prototype.getDataVariable = function getDataVariable (variableName)
   }
 };
 
-Object.defineProperties( NetcdfReader.prototype, prototypeAccessors$31 );
+Object.defineProperties( NetcdfReader.prototype, prototypeAccessors$33 );
 
 /**
  * @file Nctraj Parser
@@ -93718,9 +94345,9 @@ var Validation = function Validation (name, path) {
   this.clashSele = 'NONE';
 };
 
-var prototypeAccessors$32 = { type: {} };
+var prototypeAccessors$34 = { type: {} };
 
-prototypeAccessors$32.type.get = function () { return 'validation' };
+prototypeAccessors$34.type.get = function () { return 'validation' };
 
 Validation.prototype.fromXml = function fromXml (xml) {
   if (Debug) { Log.time('Validation.fromXml'); }
@@ -93911,7 +94538,7 @@ Validation.prototype.getClashData = function getClashData (params) {
   }
 };
 
-Object.defineProperties( Validation.prototype, prototypeAccessors$32 );
+Object.defineProperties( Validation.prototype, prototypeAccessors$34 );
 
 /**
  * @file Validation Parser
@@ -97166,7 +97793,7 @@ var MdsrvDatasource = (function (Datasource$$1) {
     return this.baseUrl + 'file/' + info.path
   };
 
-  MdsrvDatasource.prototype.getNumframesUrl = function getNumframesUrl (src) {
+  MdsrvDatasource.prototype.getCountUrl = function getCountUrl (src) {
     var info = getFileInfo(src);
     return this.baseUrl + 'traj/numframes/' + info.path
   };
@@ -97188,7 +97815,7 @@ var MdsrvDatasource = (function (Datasource$$1) {
   return MdsrvDatasource;
 }(Datasource));
 
-var version$1 = "0.10.5-9";
+var version$1 = "0.10.5-14";
 
 /**
  * @file Version
@@ -97237,5 +97864,5 @@ if (typeof window !== 'undefined' && !window.Promise) {
   window.Promise = Promise$1;
 }
 
-export { Version, Debug, setDebug, DatasourceRegistry, StaticDatasource, MdsrvDatasource, ParserRegistry, autoLoad, RepresentationRegistry, ColormakerRegistry, Colormaker, Selection, PdbWriter, StlWriter, Stage, Collection, ComponentCollection, RepresentationCollection, Assembly, TrajectoryPlayer, superpose, guessElement, flatten, Queue, Counter, throttle, download, getQuery, getDataInfo, getFileInfo, uniqueArray, BufferRepresentation, SphereBuffer, EllipsoidBuffer, CylinderBuffer, ConeBuffer, ArrowBuffer, TextBuffer, Shape$1 as Shape, Structure, Kdtree, SpatialHash, MolecularSurface, Volume, LeftMouseButton, MiddleMouseButton, RightMouseButton, MouseActions, Signal, Matrix3, Matrix4, Vector2, Vector3, Box3, Quaternion, Euler, Plane, Color };
+export { Version, Debug, setDebug, ScriptExtensions, DatasourceRegistry, DecompressorRegistry, StaticDatasource, MdsrvDatasource, ParserRegistry, autoLoad, RepresentationRegistry, ColormakerRegistry, Colormaker, Selection, PdbWriter, StlWriter, Stage, Collection, ComponentCollection, RepresentationCollection, Assembly, TrajectoryPlayer, superpose, guessElement, flatten, Queue, Counter, throttle, download, getQuery, getDataInfo, getFileInfo, uniqueArray, BufferRepresentation, ArrowBuffer, BoxBuffer, ConeBuffer, CylinderBuffer, EllipsoidBuffer, SphereBuffer, TextBuffer, Shape$1 as Shape, Structure, Kdtree, SpatialHash, MolecularSurface, Volume, LeftMouseButton, MiddleMouseButton, RightMouseButton, MouseActions, KeyActions, Signal, Matrix3, Matrix4, Vector2, Vector3, Box3, Quaternion, Euler, Plane, Color };
 //# sourceMappingURL=ngl.esm.js.map

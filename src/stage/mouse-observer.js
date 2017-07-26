@@ -7,7 +7,7 @@
 import { Vector2 } from '../../lib/three.es6.js'
 import Signal from '../../lib/signals.es6.js'
 
-import { RightMouseButton } from '../constants.js'
+import { LeftMouseButton, RightMouseButton } from '../constants.js'
 import { defaults } from '../utils.js'
 
 /**
@@ -72,118 +72,126 @@ function getMouseButtons (event) {
  * mouseObserver.signals.dragged.add( function( deltaX, deltaY ){ ... } );
  *
  * @example
- * // listen to clicking (and touch-clicking) events
+ * // listen to clicking (and tapping) events
  * mouseObserver.signals.clicked.add( function(){ ... } );
+ *
+ * @example
+ * // listen to double clicking (and double tapping) events
+ * mouseObserver.signals.doubleClicked.add( function(){ ... } );
  *
  * @example
  * // listen to hovering events
  * mouseObserver.signals.hovered.add( function(){ ... } );
  */
 class MouseObserver {
-    /**
-     * @param  {Element} domElement - the dom element to observe mouse events in
-     * @param  {Object} params - parameters object
-     * @param  {Integer} params.hoverTimeout - timeout until the {@link MouseSignals.hovered}
-     *                                         signal is fired, set to -1 to ignore hovering
-     */
+  /**
+   * @param  {Element} domElement - the dom element to observe mouse events in
+   * @param  {Object} params - parameters object
+   * @param  {Integer} params.hoverTimeout - timeout in ms until the {@link MouseSignals.hovered}
+   *                                         signal is fired, set to -1 to ignore hovering
+   * @param  {Boolean} params.handleScroll - whether or not to handle scroll events
+   * @param  {Integer} params.doubleClickSpeed - max time in ms to trigger double click
+   */
   constructor (domElement, params) {
-        /**
-         * Events emitted by the mouse observer
-         * @type {MouseSignals}
-         */
+    /**
+     * Events emitted by the mouse observer
+     * @type {MouseSignals}
+     */
     this.signals = {
       moved: new Signal(),
       scrolled: new Signal(),
       dragged: new Signal(),
       dropped: new Signal(),
       clicked: new Signal(),
-      hovered: new Signal()
+      hovered: new Signal(),
+      doubleClicked: new Signal()
     }
 
     var p = Object.assign({}, params)
 
     this.hoverTimeout = defaults(p.hoverTimeout, 50)
     this.handleScroll = defaults(p.handleScroll, true)
+    this.doubleClickSpeed = defaults(p.doubleClickSpeed, 200)
 
     this.domElement = domElement
 
-        /**
-         * Position on page
-         * @type {Vector2}
-         */
+    /**
+     * Position on page
+     * @type {Vector2}
+     */
     this.position = new Vector2()
-        /**
-         * Previous position on page
-         * @type {Vector2}
-         */
+    /**
+     * Previous position on page
+     * @type {Vector2}
+     */
     this.prevPosition = new Vector2()
-        /**
-         * Position on page when clicked
-         * @type {Vector2}
-         */
+    /**
+     * Position on page when clicked
+     * @type {Vector2}
+     */
     this.down = new Vector2()
-        /**
-         * Position on dom element
-         * @type {Vector2}
-         */
+    /**
+     * Position on dom element
+     * @type {Vector2}
+     */
     this.canvasPosition = new Vector2()
-        /**
-         * Flag indicating if the mouse is moving
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if the mouse is moving
+     * @type {Boolean}
+     */
     this.moving = false
-        /**
-         * Flag indicating if the mouse is hovering
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if the mouse is hovering
+     * @type {Boolean}
+     */
     this.hovering = true
-        /**
-         * Flag indicating if there was a scolling event
-         * since the last mouse move
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if there was a scolling event
+     * since the last mouse move
+     * @type {Boolean}
+     */
     this.scrolled = false
-        /**
-         * Timestamp of last mouse move
-         * @type {Number}
-         */
+    /**
+     * Timestamp of last mouse move
+     * @type {Number}
+     */
     this.lastMoved = Infinity
-        /**
-         * Indicates which mouse button was pressed:
-         * 0: No button; 1: Left button; 2: Middle button; 3: Right button
-         * @type {Integer}
-         */
+    /**
+     * Indicates which mouse button was pressed:
+     * 0: No button; 1: Left button; 2: Middle button; 3: Right button
+     * @type {Integer}
+     */
     this.which = undefined
-        /**
-         * Indicates which mouse buttons were pressed:
-         * 0: No button; 1: Left button; 2: Right button; 4: Middle button
-         * @type {Integer}
-         */
+    /**
+     * Indicates which mouse buttons were pressed:
+     * 0: No button; 1: Left button; 2: Right button; 4: Middle button
+     * @type {Integer}
+     */
     this.buttons = undefined
-        /**
-         * Flag indicating if the mouse is pressed down
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if the mouse is pressed down
+     * @type {Boolean}
+     */
     this.pressed = undefined
-        /**
-         * Flag indicating if the alt key is pressed
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if the alt key is pressed
+     * @type {Boolean}
+     */
     this.altKey = undefined
-        /**
-         * Flag indicating if the ctrl key is pressed
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if the ctrl key is pressed
+     * @type {Boolean}
+     */
     this.ctrlKey = undefined
-        /**
-         * Flag indicating if the meta key is pressed
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if the meta key is pressed
+     * @type {Boolean}
+     */
     this.metaKey = undefined
-        /**
-         * Flag indicating if the shift key is pressed
-         * @type {Boolean}
-         */
+    /**
+     * Flag indicating if the shift key is pressed
+     * @type {Boolean}
+     */
     this.shiftKey = undefined
 
     this._listen = this._listen.bind(this)
@@ -208,6 +216,8 @@ class MouseObserver {
     document.addEventListener('touchstart', this._onTouchstart)
     document.addEventListener('touchend', this._onTouchend)
     document.addEventListener('touchmove', this._onTouchmove)
+
+    this.prevClickCP = new Vector2()
   }
 
   get key () {
@@ -224,32 +234,41 @@ class MouseObserver {
     this.hoverTimeout = defaults(p.hoverTimeout, this.hoverTimeout)
   }
 
-    /**
-     * listen to mouse actions
-     * @emits {MouseSignals.hovered} when hovered
-     * @return {undefined}
-     */
+  /**
+   * listen to mouse actions
+   * @emits {MouseSignals.clicked} when clicked
+   * @emits {MouseSignals.hovered} when hovered
+   * @return {undefined}
+   */
   _listen () {
-    if (window.performance.now() - this.lastMoved > this.hoverTimeout) {
+    const now = window.performance.now()
+    const cp = this.canvasPosition
+    if (this.clickPending && now - this.lastClicked > this.doubleClickSpeed) {
+      this.signals.clicked.dispatch(cp.x, cp.y)
+      this.clickPending = false
+      this.which = undefined
+      this.buttons = undefined
+      this.pressed = undefined
+    }
+    if (now - this.lastMoved > this.hoverTimeout) {
       this.moving = false
     }
     if (this.scrolled || (!this.moving && !this.hovering)) {
       this.scrolled = false
       if (this.hoverTimeout !== -1 && this.overElement) {
         this.hovering = true
-        const cp = this.canvasPosition
         this.signals.hovered.dispatch(cp.x, cp.y)
       }
     }
     window.requestAnimationFrame(this._listen)
   }
 
-    /**
-     * handle mouse scroll
-     * @emits {MouseSignals.scrolled} when scrolled
-     * @param  {Event} event - mouse event
-     * @return {undefined}
-     */
+  /**
+   * handle mouse scroll
+   * @emits {MouseSignals.scrolled} when scrolled
+   * @param  {Event} event - mouse event
+   * @return {undefined}
+   */
   _onMousewheel (event) {
     if (event.target !== this.domElement || !this.handleScroll) {
       return
@@ -259,13 +278,13 @@ class MouseObserver {
 
     var delta = 0
     if (event.wheelDelta) {
-            // WebKit / Opera / Explorer 9
+      // WebKit / Opera / Explorer 9
       delta = event.wheelDelta / 40
     } else if (event.detail) {
-            // Firefox
+      // Firefox
       delta = -event.detail / 3
     } else {
-            // Firefox or IE 11
+      // Firefox or IE 11
       delta = -event.deltaY / (event.deltaMode ? 0.33 : 30)
     }
     this.signals.scrolled.dispatch(delta)
@@ -275,13 +294,13 @@ class MouseObserver {
     }, this.hoverTimeout)
   }
 
-    /**
-     * handle mouse move
-     * @emits {MouseSignals.moved} when moved
-     * @emits {MouseSignals.dragged} when dragged
-     * @param  {Event} event - mouse event
-     * @return {undefined}
-     */
+  /**
+   * handle mouse move
+   * @emits {MouseSignals.moved} when moved
+   * @emits {MouseSignals.dragged} when dragged
+   * @param  {Event} event - mouse event
+   * @return {undefined}
+   */
   _onMousemove (event) {
     if (event.target === this.domElement) {
       event.preventDefault()
@@ -320,26 +339,39 @@ class MouseObserver {
     this._setCanvasPosition(event)
   }
 
-    /**
-     * handle mouse up
-     * @emits {MouseSignals.clicked} when clicked
-     * @emits {MouseSignals.dropped} when dropped
-     * @param  {Event} event - mouse event
-     * @return {undefined}
-     */
+  /**
+   * handle mouse up
+   * @emits {MouseSignals.doubleClicked} when double clicked
+   * @emits {MouseSignals.dropped} when dropped
+   * @param  {Event} event - mouse event
+   * @return {undefined}
+   */
   _onMouseup (event) {
     if (event.target === this.domElement) {
       event.preventDefault()
     }
     this._setKeys(event)
     const cp = this.canvasPosition
-    this.signals.clicked.dispatch(cp.x, cp.y)
-        // if( this.distance() > 3 || event.which === RightMouseButton ){
-        //     this.signals.dropped.dispatch();
-        // }
-    this.which = undefined
-    this.buttons = undefined
-    this.pressed = undefined
+    if (this._distance() < 4) {
+      this.lastClicked = window.performance.now()
+      if (this.clickPending && this.prevClickCP.distanceTo(cp) < 4) {
+        this.signals.doubleClicked.dispatch(cp.x, cp.y)
+        this.clickPending = false
+        this.which = undefined
+        this.buttons = undefined
+        this.pressed = undefined
+      } else {
+        this.clickPending = true
+      }
+      this.prevClickCP.copy(cp)
+    } else {
+      this.which = undefined
+      this.buttons = undefined
+      this.pressed = undefined
+    }
+    // if (this._distance() > 3 || event.which === RightMouseButton) {
+    //   this.signals.dropped.dispatch();
+    // }
   }
 
   _onContextmenu (event) {
@@ -359,26 +391,26 @@ class MouseObserver {
         this.moving = false
         this.hovering = false
         this.down.set(
-                    event.touches[ 0 ].pageX,
-                    event.touches[ 0 ].pageY
-                )
+          event.touches[ 0 ].pageX,
+          event.touches[ 0 ].pageY
+        )
         this.position.set(
-                    event.touches[ 0 ].pageX,
-                    event.touches[ 0 ].pageY
-                )
+          event.touches[ 0 ].pageX,
+          event.touches[ 0 ].pageY
+        )
         this._setCanvasPosition(event.touches[ 0 ])
         break
       }
 
       case 2: {
         this.down.set(
-                    (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
-                    (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
-                )
+          (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
+          (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
+        )
         this.position.set(
-                    (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
-                    (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
-                )
+          (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
+          (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
+        )
         this.lastTouchDistance = getTouchDistance(event)
       }
     }
@@ -388,7 +420,9 @@ class MouseObserver {
     if (event.target === this.domElement) {
       event.preventDefault()
     }
-    this.pressed = false
+    this.which = undefined
+    this.buttons = undefined
+    this.pressed = undefined
   }
 
   _onTouchmove (event) {
@@ -401,16 +435,16 @@ class MouseObserver {
     switch (event.touches.length) {
       case 1: {
         this._setKeys(event)
-        this.which = undefined
-        this.buttons = undefined
+        this.which = LeftMouseButton
+        this.buttons = 1
         this.moving = true
         this.hovering = false
         this.lastMoved = window.performance.now()
         this.prevPosition.copy(this.position)
         this.position.set(
-                    event.touches[ 0 ].pageX,
-                    event.touches[ 0 ].pageY
-                )
+          event.touches[ 0 ].pageX,
+          event.touches[ 0 ].pageY
+        )
         this._setCanvasPosition(event.touches[ 0 ])
         const dx = this.prevPosition.x - this.position.x
         const dy = this.prevPosition.y - this.position.y
@@ -422,19 +456,23 @@ class MouseObserver {
       }
 
       case 2: {
-        this.which = RightMouseButton
-        this.buttons = 2
         const touchDistance = getTouchDistance(event)
         const delta = touchDistance - this.lastTouchDistance
         this.lastTouchDistance = touchDistance
-        if (Math.abs(delta) > 1) {
+        this.prevPosition.copy(this.position)
+        this.position.set(
+          (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
+          (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
+        )
+        if (Math.abs(delta) > 2 && this.handleScroll &&
+            this.position.distanceTo(this.prevPosition) < 2
+        ) {
+          this.which = 0
+          this.buttons = 0
           this.signals.scrolled.dispatch(delta / 2)
         } else {
-          this.prevPosition.copy(this.position)
-          this.position.set(
-                        (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX) / 2,
-                        (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY) / 2
-                    )
+          this.which = RightMouseButton
+          this.buttons = 2
           const dx = this.prevPosition.x - this.position.x
           const dy = this.prevPosition.y - this.position.y
           this.signals.moved.dispatch(dx, dy)

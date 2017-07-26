@@ -14,10 +14,12 @@ import _Promise from '../lib/promise.es6.js'
 
 import {
   Debug, setDebug,
-  ColormakerRegistry, DatasourceRegistry, ParserRegistry, RepresentationRegistry
+  ScriptExtensions, ColormakerRegistry,
+  DatasourceRegistry, DecompressorRegistry,
+  ParserRegistry, RepresentationRegistry
 } from './globals.js'
 import { autoLoad, getDataInfo } from './loader/loader-utils.js'
-import Selection from './selection.js'
+import Selection from './selection/selection.js'
 import PdbWriter from './writer/pdb-writer.js'
 import StlWriter from './writer/stl-writer.js'
 import Stage from './stage/stage.js'
@@ -98,6 +100,7 @@ import './representation/validation-representation.js'
 
 import BufferRepresentation from './representation/buffer-representation.js'
 import ArrowBuffer from './buffer/arrow-buffer.js'
+import BoxBuffer from './buffer/box-buffer.js'
 import ConeBuffer from './buffer/cone-buffer.js'
 import CylinderBuffer from './buffer/cylinder-buffer.js'
 import EllipsoidBuffer from './buffer/ellipsoid-buffer.js'
@@ -169,6 +172,7 @@ import {
   LeftMouseButton, MiddleMouseButton, RightMouseButton
 } from './constants.js'
 import MouseActions from './controls/mouse-actions.js'
+import KeyActions from './controls/key-actions.js'
 
 //
 
@@ -189,7 +193,9 @@ export {
   Version,
   Debug,
   setDebug,
+  ScriptExtensions,
   DatasourceRegistry,
+  DecompressorRegistry,
   StaticDatasource,
   MdsrvDatasource,
   ParserRegistry,
@@ -223,11 +229,12 @@ export {
   uniqueArray,
 
   BufferRepresentation,
-  SphereBuffer,
-  EllipsoidBuffer,
-  CylinderBuffer,
-  ConeBuffer,
   ArrowBuffer,
+  BoxBuffer,
+  ConeBuffer,
+  CylinderBuffer,
+  EllipsoidBuffer,
+  SphereBuffer,
   TextBuffer,
 
   Shape,
@@ -242,6 +249,7 @@ export {
   MiddleMouseButton,
   RightMouseButton,
   MouseActions,
+  KeyActions,
 
   Signal,
 
